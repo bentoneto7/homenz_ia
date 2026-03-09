@@ -123,3 +123,31 @@
 - [x] Página /painel/ranking: ranking da rede Homenz com pódio, tabela e taxas de conversão
 - [x] Menu do painel atualizado com Health Score, Check-in Diário e Ranking da Rede
 - [x] Seed: rede Homenz e franquia de Uberaba no banco (brandId=1)
+
+## Landing Page de Vendas Homenz
+- [x] Baixar assets do Google Drive da Homenz (fotos profissionais, criativos, lifestyle)
+- [x] Capturar identidade visual do site homologacao.homenzbrasil.com.br
+- [x] Upload de fotos para CDN (10 fotos profissionais + 4 lifestyle)
+- [x] Criar página HomenzLanding.tsx com branding Homenz (azul navy + teal)
+- [x] Seção Hero com foto de fundo, headline impactante e CTAs
+- [x] Seção de estatísticas com contadores animados
+- [x] Seção de problema/solução com foto do fundador
+- [x] Seção "Como funciona" (5 etapas do funil)
+- [x] Seção de funcionalidades com tabs interativos
+- [x] Seção de resultados/prova social
+- [x] Seção de ranking da rede (mock visual)
+- [x] Seção de planos/preços
+- [x] CTA final com foto de fundo
+- [x] Footer com links de navegação
+- [x] Rota / aponta para HomenzLanding (rota /plataforma para Home antiga)
+
+## Alertas Automáticos de Temperatura de Lead
+- [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
+- [ ] Notificação automática: 🌡️ Lead esfriando (>30min sem avançar)
+- [ ] Notificação automática: ❄️ Lead frio (>2h sem avançar)
+- [ ] Notificação automática: 💀 Lead perdido (>24h sem avançar)
+- [ ] Cada notificação inclui playbook de ação específico para a etapa do lead
+- [ ] Controle de deduplicação: não disparar o mesmo alerta duas vezes para o mesmo lead/temperatura
+- [ ] Campo lastAlertSentAt e lastAlertTemperature na tabela de leads
+- [ ] Badge de alertas não lidos no menu do painel
+- [ ] Testes do job de monitoramento

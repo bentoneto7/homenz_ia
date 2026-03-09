@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import HomenzLanding from "./pages/HomenzLanding";
 import ClinicLanding from "./pages/funnel/ClinicLanding";
 import FunnelChat from "./pages/funnel/FunnelChat";
 import FunnelPhotos from "./pages/funnel/FunnelPhotos";
@@ -30,7 +31,8 @@ function Router() {
   return (
     <Switch>
       {/* Plataforma */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={HomenzLanding} />
+      <Route path="/plataforma" component={Home} />
       <Route path="/cadastro" component={ClinicOnboarding} />
 
       {/* Funil público da clínica */}

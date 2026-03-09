@@ -192,11 +192,12 @@ export const leads = mysqlTable("leads", {
 
   // ── Sessão anônima ────────────────────────────────────────────────────────
   sessionToken: varchar("sessionToken", { length: 128 }).unique(),
-
+  // ── Controle de alertas de temperatura ──────────────────────────────────────────────────
+  lastAlertSentAt: timestamp("lastAlertSentAt"),       // quando foi enviado o último alerta
+  lastAlertTemperature: mysqlEnum("lastAlertTemperature", ["hot", "warm", "cold", "lost"]), // temperatura do último alerta
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = typeof leads.$inferInsert;
 
