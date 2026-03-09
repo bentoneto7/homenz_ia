@@ -73,3 +73,13 @@
 
 ## Bugs
 - [x] leadId chegando como NaN na inserção de notificação ao criar lead
+
+## Sistema de Agendamento Próprio
+- [x] Remover pergunta "Como nos conheceu?" do chat TypeBot
+- [x] Criar tabela clinic_availability (dias/horários configuráveis por clínica)
+- [x] Criar tabela clinic_blocked_dates (feriados e datas bloqueadas)
+- [x] Backend: procedures availability.list, save, getSlots, blockedDates, blockDate, unblockDate
+- [x] UI de agendamento próprio com calendário e slots reais da API
+- [x] Painel admin: página de configuração de disponibilidade (/painel/disponibilidade)
+- [x] Menu do painel admin atualizado com link para Disponibilidade
+- [x] Disponibilidade padrão inserida para clínica demo (seg-sex 09-18h, sáb 09-13h)

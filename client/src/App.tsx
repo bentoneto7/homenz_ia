@@ -18,6 +18,7 @@ import AdminLeadDetail from "./pages/admin/LeadDetail";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminNotifications from "./pages/admin/Notifications";
 import AdminSettings from "./pages/admin/Settings";
+import AdminAvailability from "./pages/admin/Availability";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/painel/agendamentos" component={AdminAppointments} />
       <Route path="/painel/notificacoes" component={AdminNotifications} />
       <Route path="/painel/configuracoes" component={AdminSettings} />
+      <Route path="/painel/disponibilidade" component={AdminAvailability} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

@@ -19,7 +19,6 @@ type Answers = {
   hairLossTime?: string;
   previousTreatments?: string;
   expectations?: string;
-  howDidYouHear?: string;
 };
 
 const FLOW: {
@@ -104,17 +103,6 @@ const FLOW: {
       { label: "Solução rápida sem cirurgia", value: "Solução rápida sem cirurgia", emoji: "⚡" },
     ],
   },
-  {
-    key: "howDidYouHear",
-    question: "Última pergunta: como você ficou sabendo sobre nós?",
-    options: [
-      { label: "Instagram / Facebook", value: "Redes sociais", emoji: "📱" },
-      { label: "Google", value: "Google", emoji: "🔍" },
-      { label: "Indicação de amigo", value: "Indicação", emoji: "👥" },
-      { label: "YouTube", value: "YouTube", emoji: "▶️" },
-      { label: "Outro", value: "Outro", emoji: "💬" },
-    ],
-  },
 ];
 
 // Mensagens de reforço positivo após cada resposta
@@ -172,7 +160,7 @@ export default function FunnelChat() {
         text: "Olá! 👋 Sou o assistente do Instituto Capilar Uberaba.",
       });
       setTimeout(() => {
-        showBotMessage("Vou fazer 8 perguntas rápidas para personalizar sua análise capilar com IA. Leva menos de 2 minutos! 🚀", undefined, 600);
+        showBotMessage("Vou fazer 7 perguntas rápidas para personalizar sua análise capilar com IA. Leva menos de 2 minutos! 🚀", undefined, 600);
         setTimeout(() => {
           showBotMessage(FLOW[0].question, FLOW[0].options, 800);
         }, 1800);
@@ -223,7 +211,6 @@ export default function FunnelChat() {
                 hairLossTime: finalAnswers.hairLossTime,
                 previousTreatments: finalAnswers.previousTreatments,
                 expectations: finalAnswers.expectations,
-                howDidYouHear: finalAnswers.howDidYouHear,
                 chatAnswers: finalAnswers,
               });
             }, 1200);

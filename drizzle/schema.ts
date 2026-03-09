@@ -258,10 +258,6 @@ export const appointments = mysqlTable("appointments", {
     "evaluation", "procedure", "followup"
   ]).default("evaluation").notNull(),
   // Integrações de calendário
-  googleEventId: varchar("googleEventId", { length: 255 }),
-  googleEventLink: text("googleEventLink"),
-  calComBookingId: varchar("calComBookingId", { length: 255 }),
-  calComBookingUrl: text("calComBookingUrl"),
   // Status e notas
   status: mysqlEnum("status", [
     "pending", "confirmed", "cancelled", "completed", "no_show"
@@ -364,3 +360,41 @@ export const npsResponses = mysqlTable("nps_responses", {
 });
 
 export type NpsResponse = typeof npsResponses.$inferSelect;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DISPONIBILIDADE DA CLÍNICA (sistema de agendamento próprio)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Configuração de disponibilidade semanal da clínica
+export const clinicAvailability = mysqlTable("clinic_availability", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  // Dia da semana: 0=Domingo, 1=Segunda, ..., 6=Sábado
+  dayOfWeek: tinyint("dayOfWeek").notNull(),
+  // Horário de início e fim (formato "HH:MM")
+  startTime: varchar("startTime", { length: 5 }).notNull(),  // ex: "08:00"
+  endTime: varchar("endTime", { length: 5 }).notNull(),      // ex: "18:00"
+  // Duração de cada slot em minutos
+  slotDurationMinutes: int("slotDurationMinutes").default(60).notNull(),
+  // Intervalo entre slots (pausa)
+  breakBetweenMinutes: int("breakBetweenMinutes").default(0).notNull(),
+  // Máximo de agendamentos simultâneos nesse dia
+  maxConcurrentAppointments: int("maxConcurrentAppointments").default(1).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClinicAvailability = typeof clinicAvailability.$inferSelect;
+export type InsertClinicAvailability = typeof clinicAvailability.$inferInsert;
+
+// Bloqueios de data específica (feriados, férias, etc.)
+export const clinicBlockedDates = mysqlTable("clinic_blocked_dates", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  blockedDate: varchar("blockedDate", { length: 10 }).notNull(), // "YYYY-MM-DD"
+  reason: varchar("reason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClinicBlockedDate = typeof clinicBlockedDates.$inferSelect;

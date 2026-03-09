@@ -1,0 +1,9 @@
+{
+  "query": "\nINSERT INTO clinic_availability (clinicId, dayOfWeek, startTime, endTime, slotDurationMinutes, breakBetweenMinutes, maxConcurrentAppointments, active)\nVALUES\n  (1, 1, '09:00', '18:00', 60, 0, 1, true),\n  (1, 2, '09:00', '18:00', 60, 0, 1, true),\n  (1, 3, '09:00', '18:00', 60, 0, 1, true),\n  (1, 4, '09:00', '18:00', 60, 0, 1, true),\n  (1, 5, '09:00', '18:00', 60, 0, 1, true),\n  (1, 6, '09:00', '13:00', 60, 0, 1, true)\nON DUPLICATE KEY UPDATE startTime = VALUES(startTime);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute \nINSERT INTO clinic_availability (clinicId, dayOfWeek, startTime, endTime, slotDurationMinutes, breakBetweenMinutes, maxConcurrentAppointments, active)\nVALUES\n  (1, 1, '09:00', '18:00', 60, 0, 1, true),\n  (1, 2, '09:00', '18:00', 60, 0, 1, true),\n  (1, 3, '09:00', '18:00', 60, 0, 1, true),\n  (1, 4, '09:00', '18:00', 60, 0, 1, true),\n  (1, 5, '09:00', '18:00', 60, 0, 1, true),\n  (1, 6, '09:00', '13:00', 60, 0, 1, true)\nON DUPLICATE KEY UPDATE startTime = VALUES(startTime);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 381
+}

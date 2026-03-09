@@ -8,6 +8,13 @@
       "when": 1773073307254,
       "tag": "0000_hot_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1773078135691,
+      "tag": "0001_lonely_steel_serpent",
+      "breakpoints": true
     }
   ]
 }
