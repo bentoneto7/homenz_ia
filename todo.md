@@ -168,6 +168,18 @@
 - [x] Tema claro (light) para os dashboards internos (não cansar a visão do time)
 - [x] Rotas registradas: /franqueado, /vendedor, /rede
 
+## Disclaimer + Seção Antes/Depois 3D + Timeline Real
+- [x] Adicionar disclaimer legal antes da seção de fotos/resultados na landing page
+- [x] Criar seção antes/depois 3D: mockup de celular com slider de transformação capilar animado
+- [x] Seção antes/depois clínico: atendimento antes (lead frio, sem controle) vs depois (agenda cheia, lead quente, sistema rodando)
+- [x] Implementar tabela lead_events no banco com enum de tipos de evento (existia no schema)
+- [x] Backend tRPC: procedure para registrar evento de lead (journey.addEvent)
+- [x] Backend tRPC: procedure para listar timeline de eventos por lead (journey.getTimeline)
+- [x] Dashboard Vendedor: botões de ação (WhatsApp, Follow-up, Agendar, Confirmar) registram evento automaticamente
+- [x] Dashboard Vendedor: timeline visual em tempo real com refetch a cada 10s
+- [x] Dashboard Vendedor: leads reais do banco com leadScore, temperatura e funnelStep
+- [ ] Dashboard Franqueado: ver timeline de qualquer lead da unidade
+
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
 - [ ] Notificação automática: 🌡️ Lead esfriando (>30min sem avançar)

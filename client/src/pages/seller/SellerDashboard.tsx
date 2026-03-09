@@ -8,101 +8,12 @@ import { toast } from "sonner";
 import {
   Users, Calendar, Star, Clock, Target, Award,
   ChevronRight, Phone, MessageCircle, CheckCircle,
-  Zap, Home, BarChart3, LogOut, TrendingUp,
-  ArrowUp, Flame, Thermometer, Snowflake,
+  Zap, BarChart3, LogOut, TrendingUp,
+  Flame, Thermometer, Snowflake, RefreshCw,
+  UserCheck, AlertCircle, Plus,
 } from "lucide-react";
 
-// ── Mock data ────────────────────────────────────────────────────────────────
-const MOCK_MY_STATS = {
-  leadsAssigned: 12,
-  leadsContacted: 9,
-  scheduled: 6,
-  conversionRate: 50,
-  avgResponseMin: 11,
-  performanceScore: 78,
-  rank: 2,
-  totalSellers: 3,
-};
-
-const MOCK_MY_LEADS = [
-  {
-    id: 1, name: "João Ferreira", phone: "(34) 99812-3456", score: 88,
-    temperature: "hot", step: "scheduled", stepLabel: "Agendado ✅",
-    stepColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
-    lastActivity: "há 2h", notes: "Consulta confirmada para sexta-feira",
-    funnelPct: 100,
-    timeline: [
-      { label: "Lead criado", done: true, time: "09:00" },
-      { label: "Chat concluído", done: true, time: "09:15" },
-      { label: "Fotos enviadas", done: true, time: "09:30" },
-      { label: "IA processada", done: true, time: "09:45" },
-      { label: "Agendado", done: true, time: "10:00" },
-      { label: "Consulta realizada", done: false, time: "" },
-    ],
-  },
-  {
-    id: 2, name: "Pedro Alves", phone: "(34) 99823-4567", score: 74,
-    temperature: "warm", step: "chat_done", stepLabel: "Chat concluído",
-    stepColor: "text-blue-700 bg-blue-50 border-blue-200",
-    lastActivity: "há 4h", notes: "Aguardando envio das fotos",
-    funnelPct: 60,
-    timeline: [
-      { label: "Lead criado", done: true, time: "11:00" },
-      { label: "Chat concluído", done: true, time: "11:20" },
-      { label: "Fotos enviadas", done: false, time: "" },
-      { label: "IA processada", done: false, time: "" },
-      { label: "Agendado", done: false, time: "" },
-      { label: "Consulta realizada", done: false, time: "" },
-    ],
-  },
-  {
-    id: 3, name: "Marcos Souza", phone: "(34) 99834-5678", score: 91,
-    temperature: "hot", step: "waiting", stepLabel: "Aguardando resposta ⚡",
-    stepColor: "text-amber-700 bg-amber-50 border-amber-200",
-    lastActivity: "há 6h", notes: "Lead quente! Não respondeu ainda — ligar agora",
-    funnelPct: 80,
-    timeline: [
-      { label: "Lead criado", done: true, time: "08:00" },
-      { label: "Chat concluído", done: true, time: "08:25" },
-      { label: "Fotos enviadas", done: true, time: "08:40" },
-      { label: "IA processada", done: true, time: "08:55" },
-      { label: "Agendado", done: false, time: "" },
-      { label: "Consulta realizada", done: false, time: "" },
-    ],
-  },
-  {
-    id: 4, name: "Lucas Rocha", phone: "(34) 99845-6789", score: 55,
-    temperature: "warm", step: "photos_done", stepLabel: "Fotos enviadas",
-    stepColor: "text-purple-700 bg-purple-50 border-purple-200",
-    lastActivity: "há 8h", notes: "",
-    funnelPct: 70,
-    timeline: [
-      { label: "Lead criado", done: true, time: "14:00" },
-      { label: "Chat concluído", done: true, time: "14:30" },
-      { label: "Fotos enviadas", done: true, time: "14:50" },
-      { label: "IA processada", done: false, time: "" },
-      { label: "Agendado", done: false, time: "" },
-      { label: "Consulta realizada", done: false, time: "" },
-    ],
-  },
-  {
-    id: 5, name: "Bruno Martins", phone: "(34) 99856-7890", score: 38,
-    temperature: "cold", step: "cold", stepLabel: "Lead frio ❄️",
-    stepColor: "text-slate-600 bg-slate-50 border-slate-200",
-    lastActivity: "há 1d", notes: "Sem interação há mais de 24h",
-    funnelPct: 20,
-    timeline: [
-      { label: "Lead criado", done: true, time: "ontem" },
-      { label: "Chat concluído", done: false, time: "" },
-      { label: "Fotos enviadas", done: false, time: "" },
-      { label: "IA processada", done: false, time: "" },
-      { label: "Agendado", done: false, time: "" },
-      { label: "Consulta realizada", done: false, time: "" },
-    ],
-  },
-];
-
-// ── Componentes ──────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function TempIcon({ temp }: { temp: string }) {
   if (temp === "hot") return <Flame className="w-4 h-4 text-red-500" />;
   if (temp === "warm") return <Thermometer className="w-4 h-4 text-amber-500" />;
@@ -114,23 +25,160 @@ function ScoreBadge({ score }: { score: number }) {
   return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>{score}</span>;
 }
 
-function LeadTimeline({ steps }: { steps: { label: string; done: boolean; time: string }[] }) {
+// Mapeamento de eventType para label e cor
+const EVENT_META: Record<string, { label: string; color: string; icon: string }> = {
+  lead_created:          { label: "Lead criado", color: "bg-blue-500", icon: "👤" },
+  chat_started:          { label: "Chat iniciado", color: "bg-violet-500", icon: "💬" },
+  chat_completed:        { label: "Chat concluído", color: "bg-violet-600", icon: "✅" },
+  chat_abandoned:        { label: "Chat abandonado", color: "bg-slate-400", icon: "⏸️" },
+  photos_started:        { label: "Fotos iniciadas", color: "bg-amber-400", icon: "📷" },
+  photos_completed:      { label: "Fotos enviadas", color: "bg-amber-500", icon: "📸" },
+  photos_abandoned:      { label: "Fotos abandonadas", color: "bg-slate-400", icon: "⏸️" },
+  ai_processing_started: { label: "IA processando", color: "bg-cyan-500", icon: "🤖" },
+  ai_result_ready:       { label: "Diagnóstico pronto", color: "bg-cyan-600", icon: "🧬" },
+  schedule_opened:       { label: "Agenda aberta", color: "bg-teal-500", icon: "📅" },
+  appointment_created:   { label: "Agendamento criado", color: "bg-emerald-500", icon: "📆" },
+  appointment_confirmed: { label: "Consulta confirmada", color: "bg-emerald-600", icon: "✅" },
+  appointment_cancelled: { label: "Agendamento cancelado", color: "bg-red-400", icon: "❌" },
+  appointment_completed: { label: "Consulta realizada", color: "bg-emerald-700", icon: "🏆" },
+  appointment_no_show:   { label: "Não compareceu", color: "bg-red-500", icon: "🚫" },
+  followup_sent:         { label: "Follow-up enviado", color: "bg-blue-400", icon: "📩" },
+  whatsapp_contacted:    { label: "Contato WhatsApp", color: "bg-green-500", icon: "📱" },
+  nps_sent:              { label: "NPS enviado", color: "bg-indigo-400", icon: "⭐" },
+  nps_responded:         { label: "NPS respondido", color: "bg-indigo-600", icon: "⭐" },
+  status_changed:        { label: "Status alterado", color: "bg-slate-500", icon: "🔄" },
+};
+
+function formatRelativeTime(date: Date | string): string {
+  const d = new Date(date);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `há ${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `há ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  return `há ${diffD}d`;
+}
+
+// ── Timeline real do lead ─────────────────────────────────────────────────────
+function LeadTimelinePanel({ leadId, clinicId }: { leadId: number; clinicId: number }) {
+  const utils = trpc.useUtils();
+  const { data: events, isLoading } = trpc.journey.getTimeline.useQuery(
+    { leadId },
+    { refetchInterval: 10000 } // atualiza a cada 10s
+  );
+
+  const addEvent = trpc.journey.addEvent.useMutation({
+    onSuccess: () => {
+      utils.journey.getTimeline.invalidate({ leadId });
+      toast.success("Evento registrado na timeline!");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleAction = (eventType: "whatsapp_contacted" | "followup_sent" | "appointment_created" | "appointment_confirmed", label: string) => {
+    addEvent.mutate({
+      leadId,
+      eventType,
+      description: `${label} registrado pelo vendedor`,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-4 text-slate-400 text-sm">
+        <RefreshCw className="w-4 h-4 animate-spin" />
+        Carregando timeline...
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-0">
-      {steps.map((step, i) => (
-        <div key={step.label} className="flex items-center">
-          <div className="flex flex-col items-center">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${step.done ? "bg-blue-600 text-white shadow-sm shadow-blue-200" : "bg-slate-100 text-slate-400"}`}>
-              {step.done ? <CheckCircle className="w-3.5 h-3.5" /> : i + 1}
-            </div>
-            <div className="text-[9px] text-slate-400 mt-1 text-center w-14 leading-tight">{step.label}</div>
-            {step.time && <div className="text-[9px] text-blue-500 font-medium">{step.time}</div>}
+    <div className="space-y-4">
+      {/* Timeline vertical */}
+      <div className="relative">
+        {(!events || events.length === 0) ? (
+          <div className="text-center py-6 text-slate-400 text-sm">
+            <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40" />
+            Nenhum evento registrado ainda.
           </div>
-          {i < steps.length - 1 && (
-            <div className={`h-0.5 w-6 mb-5 flex-shrink-0 ${step.done && steps[i + 1].done ? "bg-blue-600" : "bg-slate-200"}`} />
-          )}
+        ) : (
+          <div className="space-y-2">
+            {events.map((ev, i) => {
+              const meta = EVENT_META[ev.eventType] ?? { label: ev.eventType, color: "bg-slate-400", icon: "📌" };
+              return (
+                <div key={ev.id} className="flex items-start gap-3">
+                  {/* Dot + line */}
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className={`w-7 h-7 rounded-full ${meta.color} flex items-center justify-center text-white text-xs shadow-sm`}>
+                      {meta.icon}
+                    </div>
+                    {i < events.length - 1 && <div className="w-0.5 h-4 bg-slate-200 mt-1" />}
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-800">{meta.label}</span>
+                      <span className="text-[10px] text-slate-400">{formatRelativeTime(ev.createdAt)}</span>
+                      {ev.triggeredBy === "clinic" && (
+                        <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">vendedor</span>
+                      )}
+                    </div>
+                    {ev.description && (
+                      <p className="text-[11px] text-slate-500 mt-0.5">{ev.description}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Botões de ação que registram eventos */}
+      <div className="pt-3 border-t border-slate-100">
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-semibold">Registrar ação</p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs h-8"
+            disabled={addEvent.isPending}
+            onClick={() => handleAction("whatsapp_contacted", "Contato WhatsApp")}
+          >
+            <MessageCircle className="w-3.5 h-3.5 mr-1" />
+            WhatsApp
+          </Button>
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs h-8"
+            disabled={addEvent.isPending}
+            onClick={() => handleAction("followup_sent", "Follow-up")}
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            Follow-up
+          </Button>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs h-8"
+            disabled={addEvent.isPending}
+            onClick={() => handleAction("appointment_created", "Agendamento")}
+          >
+            <Calendar className="w-3.5 h-3.5 mr-1" />
+            Agendar
+          </Button>
+          <Button
+            size="sm"
+            className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs h-8"
+            disabled={addEvent.isPending}
+            onClick={() => handleAction("appointment_confirmed", "Confirmação de consulta")}
+          >
+            <CheckCircle className="w-3.5 h-3.5 mr-1" />
+            Confirmar consulta
+          </Button>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -191,6 +239,12 @@ export default function SellerDashboard() {
   const [selectedLead, setSelectedLead] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "hot" | "warm" | "cold">("all");
 
+  // Buscar leads reais da clínica
+  const { data: leadsRaw, isLoading: leadsLoading } = trpc.leads.list.useQuery(
+    { limit: 50, offset: 0 },
+    { enabled: isAuthenticated }
+  );
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -208,8 +262,21 @@ export default function SellerDashboard() {
     );
   }
 
-  const filteredLeads = filter === "all" ? MOCK_MY_LEADS : MOCK_MY_LEADS.filter(l => l.temperature === filter);
-  const activeLead = selectedLead !== null ? MOCK_MY_LEADS.find(l => l.id === selectedLead) : null;
+  // Processar leads com temperatura baseada no score
+  const allLeads = (leadsRaw ?? []).map((lead) => {
+    const score = lead.leadScore ?? 0;
+    const temperature = score >= 75 ? "hot" : score >= 50 ? "warm" : "cold";
+    return { ...lead, temperature };
+  });
+
+  const filteredLeads = filter === "all" ? allLeads : allLeads.filter((l) => l.temperature === filter);
+
+  // Stats calculados dos leads reais
+  const stats = {
+    total: allLeads.length,
+    hot: allLeads.filter((l) => l.temperature === "hot").length,
+    scheduled: allLeads.filter((l) => l.funnelStep === "scheduled" || l.funnelStep === "confirmed").length,
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -224,15 +291,14 @@ export default function SellerDashboard() {
             </h1>
             <p className="text-xs text-slate-400">Foque nos leads quentes primeiro</p>
           </div>
-          {/* Score pessoal */}
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-xs text-slate-400">Seu score hoje</div>
-              <div className="text-xl font-black text-blue-600">{MOCK_MY_STATS.performanceScore}<span className="text-sm text-slate-400">/100</span></div>
+              <div className="text-xs text-slate-400">Leads quentes</div>
+              <div className="text-xl font-black text-red-500">{stats.hot} 🔥</div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-slate-400">Ranking</div>
-              <div className="text-xl font-black text-amber-500">#{MOCK_MY_STATS.rank}<span className="text-sm text-slate-400">/{MOCK_MY_STATS.totalSellers}</span></div>
+              <div className="text-xs text-slate-400">Agendados</div>
+              <div className="text-xl font-black text-emerald-600">{stats.scheduled}</div>
             </div>
           </div>
         </div>
@@ -241,10 +307,10 @@ export default function SellerDashboard() {
           {/* Mini KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: "Leads atribuídos", value: MOCK_MY_STATS.leadsAssigned, icon: <Users className="w-4 h-4 text-blue-600" />, color: "bg-blue-50" },
-              { label: "Leads abordados", value: MOCK_MY_STATS.leadsContacted, icon: <MessageCircle className="w-4 h-4 text-violet-600" />, color: "bg-violet-50" },
-              { label: "Agendados", value: MOCK_MY_STATS.scheduled, icon: <Calendar className="w-4 h-4 text-emerald-600" />, color: "bg-emerald-50" },
-              { label: "Tempo médio resposta", value: `${MOCK_MY_STATS.avgResponseMin}min`, icon: <Clock className="w-4 h-4 text-amber-600" />, color: "bg-amber-50" },
+              { label: "Total de leads", value: stats.total, icon: <Users className="w-4 h-4 text-blue-600" />, color: "bg-blue-50" },
+              { label: "Leads quentes", value: stats.hot, icon: <Flame className="w-4 h-4 text-red-500" />, color: "bg-red-50" },
+              { label: "Agendados", value: stats.scheduled, icon: <Calendar className="w-4 h-4 text-emerald-600" />, color: "bg-emerald-50" },
+              { label: "Mornos", value: allLeads.filter(l => l.temperature === "warm").length, icon: <Thermometer className="w-4 h-4 text-amber-600" />, color: "bg-amber-50" },
             ].map(kpi => (
               <div key={kpi.label} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${kpi.color}`}>{kpi.icon}</div>
@@ -252,28 +318,6 @@ export default function SellerDashboard() {
                 <div className="text-xs text-slate-500 mt-0.5">{kpi.label}</div>
               </div>
             ))}
-          </div>
-
-          {/* Performance bar gamificada */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-black text-slate-900">Sua performance hoje</span>
-              </div>
-              <span className="text-sm font-black text-blue-600">{MOCK_MY_STATS.performanceScore}/100 pts</span>
-            </div>
-            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all"
-                style={{ width: `${MOCK_MY_STATS.performanceScore}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-[10px] text-slate-400">0 — Iniciante</span>
-              <span className="text-[10px] text-amber-500 font-semibold">🏆 Top vendedor a {100 - MOCK_MY_STATS.performanceScore} pts</span>
-              <span className="text-[10px] text-slate-400">100 — Campeão</span>
-            </div>
           </div>
 
           {/* Lista de leads */}
@@ -293,97 +337,101 @@ export default function SellerDashboard() {
               </div>
             </div>
 
-            <div className="divide-y divide-slate-50">
-              {filteredLeads.map(lead => (
-                <div key={lead.id}>
-                  <button
-                    onClick={() => setSelectedLead(selectedLead === lead.id ? null : lead.id)}
-                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-slate-50/50 transition-colors text-left"
-                  >
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-600 flex-shrink-0">
-                      {lead.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <TempIcon temp={lead.temperature} />
-                        <span className="text-sm font-bold text-slate-900">{lead.name}</span>
-                        <ScoreBadge score={lead.score} />
+            {leadsLoading ? (
+              <div className="flex items-center justify-center py-16 text-slate-400">
+                <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+                Carregando leads...
+              </div>
+            ) : filteredLeads.length === 0 ? (
+              <div className="text-center py-16 text-slate-400">
+                <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p className="font-semibold">Nenhum lead {filter !== "all" ? `${filter === "hot" ? "quente" : filter === "warm" ? "morno" : "frio"}` : ""} ainda.</p>
+                <p className="text-sm mt-1">Os leads aparecerão aqui conforme chegarem pelo funil.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {filteredLeads.map(lead => (
+                  <div key={lead.id}>
+                    <button
+                      onClick={() => setSelectedLead(selectedLead === lead.id ? null : lead.id)}
+                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-slate-50/50 transition-colors text-left"
+                    >
+                      {/* Avatar */}
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-600 flex-shrink-0">
+                        {(lead.name ?? "?").split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${lead.stepColor}`}>{lead.stepLabel}</span>
-                        <span className="text-[10px] text-slate-400">{lead.lastActivity}</span>
-                      </div>
-                      {lead.notes && (
-                        <div className="text-[10px] text-slate-500 mt-1 italic">"{lead.notes}"</div>
-                      )}
-                    </div>
 
-                    {/* Progress mini */}
-                    <div className="hidden sm:flex flex-col items-end gap-1">
-                      <div className="text-[10px] text-slate-400">{lead.funnelPct}% do funil</div>
-                      <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${lead.funnelPct}%` }} />
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <a
-                        href={`tel:${lead.phone}`}
-                        onClick={e => e.stopPropagation()}
-                        className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                      </a>
-                      <a
-                        href={`https://wa.me/55${lead.phone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        className="w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 flex items-center justify-center transition-colors"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5 text-green-600" />
-                      </a>
-                      <ChevronRight className={`w-4 h-4 text-slate-300 transition-transform ${selectedLead === lead.id ? "rotate-90" : ""}`} />
-                    </div>
-                  </button>
-
-                  {/* Timeline expandida */}
-                  {selectedLead === lead.id && (
-                    <div className="px-5 pb-5 bg-slate-50/50 border-t border-slate-100">
-                      <div className="pt-4">
-                        <div className="text-xs font-semibold text-slate-500 mb-4">Jornada do lead</div>
-                        <div className="overflow-x-auto pb-2">
-                          <LeadTimeline steps={lead.timeline} />
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <TempIcon temp={lead.temperature} />
+                          <span className="text-sm font-bold text-slate-900">{lead.name ?? "Lead anônimo"}</span>
+                          <ScoreBadge score={lead.leadScore ?? 0} />
                         </div>
-                        <div className="mt-4 flex gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs"
-                            onClick={() => toast.success("Contato registrado!")}
-                          >
-                            <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                            Registrar contato
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs"
-                            onClick={() => toast.success("Agendamento aberto!")}
-                          >
-                            <Calendar className="w-3.5 h-3.5 mr-1" />
-                            Agendar consulta
-                          </Button>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600">
+                            {lead.funnelStep?.replace(/_/g, " ") ?? "novo"}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {lead.lastActivityAt ? formatRelativeTime(lead.lastActivityAt) : "sem atividade"}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+
+                      {/* Score bar */}
+                      <div className="hidden sm:flex flex-col items-end gap-1">
+                        <div className="text-[10px] text-slate-400">Score {lead.leadScore ?? 0}/100</div>
+                        <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${(lead.leadScore ?? 0) >= 75 ? "bg-red-500" : (lead.leadScore ?? 0) >= 50 ? "bg-amber-500" : "bg-blue-400"}`}
+                            style={{ width: `${lead.leadScore ?? 0}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Actions rápidas */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {lead.phone && (
+                          <a
+                            href={`tel:${lead.phone}`}
+                            onClick={e => e.stopPropagation()}
+                            className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                          </a>
+                        )}
+                        {lead.phone && (
+                          <a
+                            href={`https://wa.me/55${lead.phone.replace(/\D/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 flex items-center justify-center transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 text-green-600" />
+                          </a>
+                        )}
+                        <ChevronRight className={`w-4 h-4 text-slate-300 transition-transform ${selectedLead === lead.id ? "rotate-90" : ""}`} />
+                      </div>
+                    </button>
+
+                    {/* Timeline expandida — real do banco */}
+                    {selectedLead === lead.id && (
+                      <div className="px-5 pb-5 bg-slate-50/50 border-t border-slate-100">
+                        <div className="pt-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <TrendingUp className="w-4 h-4 text-blue-600" />
+                            <span className="text-xs font-semibold text-slate-700">Jornada do lead — atualizada em tempo real</span>
+                            <span className="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">ao vivo</span>
+                          </div>
+                          <LeadTimelinePanel leadId={lead.id} clinicId={0} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -29,6 +29,351 @@ const PHOTOS = {
   lifestyleTennis: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/lifestyle_tennis_sq_32e2fef4.jpg",
 };
 
+// ─── 3D Phone Before/After Slider Component ───
+function PhoneBeforeAfter() {
+  const [sliderPos, setSliderPos] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useState<HTMLDivElement | null>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+    setSliderPos(x);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(5, Math.min(95, ((e.touches[0].clientX - rect.left) / rect.width) * 100));
+    setSliderPos(x);
+  };
+
+  return (
+    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+      {/* Phone 3D mockup */}
+      <div className="flex-1 flex justify-center">
+        <div
+          className="relative w-[280px] sm:w-[320px] cursor-ew-resize select-none"
+          style={{ perspective: "1200px" }}
+          onMouseMove={handleMouseMove}
+          onMouseDown={() => setIsDragging(true)}
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
+          onTouchMove={handleTouchMove}
+        >
+          {/* Phone shell 3D */}
+          <div
+            className="relative rounded-[40px] overflow-hidden shadow-2xl"
+            style={{
+              transform: "rotateY(-8deg) rotateX(4deg)",
+              transformStyle: "preserve-3d",
+              boxShadow: "0 40px 80px rgba(0,0,0,0.7), 0 0 0 2px rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.05)",
+              background: "linear-gradient(135deg, #1a1a2e 0%, #0d0d1a 100%)",
+            }}
+          >
+            {/* Status bar */}
+            <div className="bg-[#0a0a14] px-6 py-2 flex justify-between items-center">
+              <span className="text-white/60 text-[10px] font-medium">9:41</span>
+              <div className="w-20 h-4 bg-[#1a1a2e] rounded-full" />
+              <div className="flex gap-1">
+                <div className="w-3 h-2 bg-white/40 rounded-sm" />
+                <div className="w-1.5 h-2 bg-white/40 rounded-sm" />
+              </div>
+            </div>
+
+            {/* Screen content with before/after slider */}
+            <div className="relative h-[480px] overflow-hidden bg-[#0d0d1a]">
+              {/* AFTER — full screen teal/green */}
+              <div className="absolute inset-0 flex flex-col">
+                {/* After header */}
+                <div className="bg-gradient-to-b from-[#003d40] to-[#004d4d] px-4 py-3 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#00c4cc] flex items-center justify-center">
+                    <span className="text-[8px] font-black text-[#003d40]">H</span>
+                  </div>
+                  <span className="text-white text-xs font-bold">Homenz IA</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#00c4cc] animate-pulse" />
+                    <span className="text-[#00c4cc] text-[9px]">Online</span>
+                  </div>
+                </div>
+                {/* After content */}
+                <div className="flex-1 p-3 flex flex-col gap-2 overflow-hidden">
+                  {/* Lead card */}
+                  <div className="bg-[#003d40]/60 border border-[#00c4cc]/30 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-[#00c4cc]/20 flex items-center justify-center">
+                        <span className="text-[#00c4cc] text-xs font-bold">JM</span>
+                      </div>
+                      <div>
+                        <p className="text-white text-xs font-bold">João M., 36 anos</p>
+                        <p className="text-[#00c4cc] text-[9px]">Score: 94 — Quente 🔥</p>
+                      </div>
+                      <div className="ml-auto bg-[#00c4cc] text-[#003d40] text-[8px] font-black px-2 py-0.5 rounded-full">AGENDADO</div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1">
+                      {["Transplante", "PRP", "Laser"].map(t => (
+                        <div key={t} className="bg-[#00c4cc]/10 rounded-lg p-1.5 text-center">
+                          <p className="text-[#00c4cc] text-[8px] font-bold">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Timeline */}
+                  <div className="bg-white/3 rounded-xl p-3">
+                    <p className="text-white/40 text-[8px] uppercase tracking-wider mb-2">Timeline do Lead</p>
+                    {[
+                      { time: "09:14", label: "Lead entrou no funil", color: "#60a5fa" },
+                      { time: "09:16", label: "Chat iniciado", color: "#a78bfa" },
+                      { time: "09:22", label: "Fotos enviadas", color: "#34d399" },
+                      { time: "09:23", label: "IA processou diagnóstico", color: "#00c4cc" },
+                      { time: "09:31", label: "Agendamento confirmado ✔", color: "#00c4cc" },
+                    ].map((ev, i) => (
+                      <div key={i} className="flex items-center gap-2 mb-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
+                        <span className="text-white/30 text-[8px] w-8">{ev.time}</span>
+                        <span className="text-white/70 text-[8px]">{ev.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Metrics */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="bg-[#003d40]/40 border border-[#00c4cc]/20 rounded-xl p-2 text-center">
+                      <p className="text-[#00c4cc] text-lg font-black">47</p>
+                      <p className="text-white/40 text-[8px]">Agendados/mês</p>
+                    </div>
+                    <div className="bg-[#003d40]/40 border border-[#00c4cc]/20 rounded-xl p-2 text-center">
+                      <p className="text-[#00c4cc] text-lg font-black">R$38k</p>
+                      <p className="text-white/40 text-[8px]">Faturamento</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BEFORE — clipped by slider */}
+              <div
+                className="absolute inset-0 flex flex-col overflow-hidden"
+                style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
+              >
+                {/* Before header */}
+                <div className="bg-gradient-to-b from-[#1a0a0a] to-[#2a1010] px-4 py-3 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-red-500/40 flex items-center justify-center">
+                    <span className="text-[8px] font-black text-red-300">?</span>
+                  </div>
+                  <span className="text-white/50 text-xs">Sem sistema</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
+                    <span className="text-red-400/60 text-[9px]">Offline</span>
+                  </div>
+                </div>
+                {/* Before content */}
+                <div className="flex-1 p-3 flex flex-col gap-2 overflow-hidden">
+                  {/* Chaos card */}
+                  <div className="bg-red-900/20 border border-red-500/20 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <span className="text-red-400/60 text-xs">?</span>
+                      </div>
+                      <div>
+                        <p className="text-white/40 text-xs">Lead desconhecido</p>
+                        <p className="text-red-400/60 text-[9px]">Sem qualificação — Frio ❄️</p>
+                      </div>
+                      <div className="ml-auto bg-red-500/20 text-red-400 text-[8px] font-bold px-2 py-0.5 rounded-full">SEM RETORNO</div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1">
+                      {["?", "?", "?"].map((t, i) => (
+                        <div key={i} className="bg-red-500/5 rounded-lg p-1.5 text-center">
+                          <p className="text-red-400/30 text-[8px] font-bold">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* No timeline */}
+                  <div className="bg-white/2 rounded-xl p-3">
+                    <p className="text-white/20 text-[8px] uppercase tracking-wider mb-2">Histórico</p>
+                    <div className="flex flex-col gap-2">
+                      {["Sem registro de contato", "Sem histórico de interação", "Sem diagnóstico"].map((t, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500/30" />
+                          <span className="text-white/20 text-[8px]">{t}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Bad metrics */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="bg-red-900/10 border border-red-500/10 rounded-xl p-2 text-center">
+                      <p className="text-red-400/60 text-lg font-black">8</p>
+                      <p className="text-white/20 text-[8px]">Agendados/mês</p>
+                    </div>
+                    <div className="bg-red-900/10 border border-red-500/10 rounded-xl p-2 text-center">
+                      <p className="text-red-400/60 text-lg font-black">R$6k</p>
+                      <p className="text-white/20 text-[8px]">Faturamento</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Slider handle */}
+              <div
+                className="absolute top-0 bottom-0 z-20 flex items-center justify-center"
+                style={{ left: `${sliderPos}%`, transform: "translateX(-50%)" }}
+              >
+                <div className="w-0.5 h-full bg-white/30" />
+                <div className="absolute w-10 h-10 rounded-full bg-white shadow-2xl flex items-center justify-center cursor-ew-resize">
+                  <div className="flex gap-0.5">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="w-0.5 h-3 bg-[#1a56db] rounded-full" />
+                    </div>
+                    <div className="text-[#1a56db] text-xs font-black">&#8644;</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Labels */}
+              <div className="absolute top-14 left-3 z-10 bg-red-500/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Antes</div>
+              <div className="absolute top-14 right-3 z-10 bg-[#00c4cc]/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Depois</div>
+            </div>
+
+            {/* Home indicator */}
+            <div className="bg-[#0a0a14] py-3 flex justify-center">
+              <div className="w-24 h-1 bg-white/20 rounded-full" />
+            </div>
+          </div>
+
+          {/* 3D shadow/reflection */}
+          <div
+            className="absolute -bottom-6 left-4 right-4 h-12 rounded-full opacity-40"
+            style={{
+              background: "radial-gradient(ellipse, rgba(0,196,204,0.4) 0%, transparent 70%)",
+              filter: "blur(12px)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Text side */}
+      <div className="flex-1 max-w-lg">
+        <h3 className="text-3xl sm:text-4xl font-black mb-6">
+          DO LEAD FRIO<br />
+          <span className="text-[#00c4cc]">AO AGENDAMENTO CONFIRMADO.</span>
+        </h3>
+        <p className="text-white/60 mb-8 leading-relaxed">
+          Arraste o slider para ver a diferença entre uma clínica que opera no escuro e uma clínica que usa o Homenz IA. Cada lead chega qualificado, com score, diagnóstico e histórico de interação.
+        </p>
+        <div className="space-y-4">
+          {[
+            { before: "Lead anônimo sem qualificação", after: "Lead com score 0–100 e diagnóstico IA", icon: "🎯" },
+            { before: "8 agendamentos por mês", after: "47 agendamentos por mês", icon: "📅" },
+            { before: "Sem histórico de interação", after: "Timeline completa de cada lead", icon: "📊" },
+            { before: "R$ 6k de faturamento", after: "R$ 38k de faturamento", icon: "💰" },
+          ].map((row, i) => (
+            <div key={i} className="flex items-center gap-4 bg-white/3 border border-white/8 rounded-2xl p-4">
+              <span className="text-2xl">{row.icon}</span>
+              <div className="flex-1 grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[10px] text-red-400/60 uppercase tracking-wider mb-0.5">Antes</p>
+                  <p className="text-white/40 text-sm line-through">{row.before}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-[#00c4cc] uppercase tracking-wider mb-0.5">Depois</p>
+                  <p className="text-white font-semibold text-sm">{row.after}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/30 text-xs mt-6">* Dados baseados em médias da rede Homenz. Resultados individuais podem variar.</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Clinic Before/After ───
+function ClinicBeforeAfter() {
+  const scenarios = [
+    {
+      icon: "📱",
+      title: "Resposta ao Lead",
+      before: { label: "Antes", value: "2h+ de espera", detail: "Lead chega frio, sem informação, vendedor não sabe o que oferecer", color: "#ef4444" },
+      after: { label: "Depois", value: "< 5 min", detail: "Lead chega quente, com score e diagnóstico. Vendedor sabe exatamente o que dizer", color: "#00c4cc" },
+    },
+    {
+      icon: "📅",
+      title: "Agendamentos por Mês",
+      before: { label: "Antes", value: "8 — 12", detail: "Agenda vazia, sem previsibilidade, dependendo de indicação", color: "#ef4444" },
+      after: { label: "Depois", value: "40 — 60+", detail: "Funil ativo 24h, leads qualificados chegando todos os dias, agenda cheia", color: "#00c4cc" },
+    },
+    {
+      icon: "💰",
+      title: "Faturamento Mensal",
+      before: { label: "Antes", value: "R$ 6k — 12k", detail: "Ticket baixo, sem upsell, sem protocolo definido para o lead", color: "#ef4444" },
+      after: { label: "Depois", value: "R$ 30k — 60k+", detail: "Lead já chega sabendo o protocolo ideal. Ticket médio e conversão sobem juntos", color: "#00c4cc" },
+    },
+    {
+      icon: "🏆",
+      title: "Visibilidade do Negócio",
+      before: { label: "Antes", value: "Zero", detail: "Sem dados, sem ranking, sem saber quem são os melhores vendedores", color: "#ef4444" },
+      after: { label: "Depois", value: "Total", detail: "Score de cada lead, ranking de vendedores, qualidade do tráfego, tudo em tempo real", color: "#00c4cc" },
+    },
+  ];
+
+  return (
+    <div>
+      <h3 className="text-3xl font-black text-center mb-12">
+        A SUA CLÍNICA,<br />
+        <span className="text-[#00c4cc]">ANTES E DEPOIS DO SISTEMA.</span>
+      </h3>
+      <div className="grid md:grid-cols-2 gap-6">
+        {scenarios.map((s, i) => (
+          <div
+            key={i}
+            className="relative bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden"
+            style={{
+              boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+              transform: `perspective(800px) rotateY(${i % 2 === 0 ? -1 : 1}deg) rotateX(1deg)`,
+            }}
+          >
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{s.icon}</span>
+                <h4 className="text-lg font-black text-white">{s.title}</h4>
+              </div>
+            </div>
+
+            {/* Before / After split */}
+            <div className="grid grid-cols-2">
+              {/* Before */}
+              <div className="p-5 border-r border-white/5 bg-red-950/10">
+                <div className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-3">
+                  ✖ {s.before.label}
+                </div>
+                <p className="text-2xl font-black mb-2" style={{ color: s.before.color }}>{s.before.value}</p>
+                <p className="text-white/40 text-xs leading-relaxed">{s.before.detail}</p>
+              </div>
+              {/* After */}
+              <div className="p-5 bg-[#003d40]/10">
+                <div className="inline-flex items-center gap-1 bg-[#00c4cc]/20 text-[#00c4cc] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-3">
+                  ✔ {s.after.label}
+                </div>
+                <p className="text-2xl font-black mb-2" style={{ color: s.after.color }}>{s.after.value}</p>
+                <p className="text-white/60 text-xs leading-relaxed">{s.after.detail}</p>
+              </div>
+            </div>
+
+            {/* Glow accent */}
+            <div
+              className="absolute bottom-0 right-0 w-32 h-32 rounded-full opacity-10 pointer-events-none"
+              style={{ background: "radial-gradient(circle, #00c4cc 0%, transparent 70%)", transform: "translate(30%, 30%)" }}
+            />
+          </div>
+        ))}
+      </div>
+      <p className="text-center text-white/20 text-xs mt-8">* Resultados baseados em médias da rede Homenz. Resultados individuais podem variar conforme gestão, tráfego e equipe de cada unidade.</p>
+    </div>
+  );
+}
+
 function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
@@ -548,6 +893,23 @@ export default function HomenzLanding() {
       </section>
 
       {/* Before-After Section — Clientes Reais */}
+      {/* ─── DISCLAIMER ─── */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-[#060b18] border-y border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex gap-4 items-start bg-white/3 border border-white/8 rounded-2xl p-5">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center mt-0.5">
+              <Shield className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-yellow-400 text-xs font-bold uppercase tracking-widest mb-1">Aviso Legal — Resultados Individuais</p>
+              <p className="text-white/40 text-xs leading-relaxed">
+                As imagens e resultados apresentados nesta página são ilustrativos e baseados em casos reais de pacientes atendidos pela rede Homenz. Os resultados podem variar de acordo com o perfil capilar, histórico clínico, protocolo aplicado e adesão ao tratamento de cada paciente. As transformações capilares exibidas foram realizadas por profissionais habilitados em unidades credenciadas da rede. O Homenz IA é um sistema de captação, qualificação e gestão de leads — não substitui a avaliação médica ou tricológica presencial. Antes de iniciar qualquer protocolo, o paciente deve ser avaliado por um profissional de saúde qualificado.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0a0f1e]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -671,6 +1033,33 @@ export default function HomenzLanding() {
             <p className="text-white/60 text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
             <p className="font-bold text-white">Ele chega pronto. A sua clínica só precisa confirmar o agendamento.</p>
           </div>
+        </div>
+      </section>
+
+      {/* ─── 3D BEFORE/AFTER — Mockup Celular + Clínica ─── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#060b18] overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00c4cc]/10 border border-[#00c4cc]/20 text-[#00c4cc] text-xs font-semibold uppercase tracking-widest mb-6">
+              A transformação completa
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-black mb-4">
+              O ANTES E DEPOIS<br />
+              <span className="text-[#00c4cc]">QUE IMPORTA DE VERDADE.</span>
+            </h2>
+            <p className="text-lg text-white/50 max-w-2xl mx-auto">
+              Não é só o cabelo que muda. É o resultado da sua clínica.
+            </p>
+          </div>
+
+          {/* 3D Phone Mockup Slider */}
+          <div className="mb-24">
+            <PhoneBeforeAfter />
+          </div>
+
+          {/* Clinic Before/After */}
+          <ClinicBeforeAfter />
         </div>
       </section>
 
