@@ -234,7 +234,13 @@ export default function FunnelChat() {
 
   const progress = Math.round((Math.min(currentStep, FLOW.length) / FLOW.length) * 100);
   const currentQuestion = FLOW[currentStep];
-  const canShowInput = !isTyping && !done && messages.length > 0 && messages[messages.length - 1]?.from === "bot";
+
+  // As opções só aparecem quando:
+  // 1. O bot não está digitando
+  // 2. A última mensagem é do bot
+  // 3. A última mensagem do bot tem opções (ou é uma pergunta de input)
+  const lastBotMessage = [...messages].reverse().find(m => m.from === "bot");
+  const canShowInput = !isTyping && !done && !!lastBotMessage;
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] flex flex-col">
@@ -326,18 +332,19 @@ export default function FunnelChat() {
         </div>
       </div>
 
-      {/* Input area */}
+      {/* Input area — só aparece após o bot terminar de digitar */}
       {canShowInput && (
         <div className="sticky bottom-0 bg-[#0a0f1e]/95 backdrop-blur border-t border-white/10 px-4 py-4 animate-in slide-in-from-bottom-3 duration-300">
           <div className="max-w-lg mx-auto">
-            {/* Subtext hint */}
-            {currentQuestion?.subtext && (
+            {/* Subtext hint da última mensagem do bot */}
+            {currentQuestion?.subtext && lastBotMessage?.options && (
               <p className="text-xs text-white/30 mb-2 text-center">{currentQuestion.subtext}</p>
             )}
 
-            {currentQuestion?.options ? (
+            {/* Se a última mensagem do bot tem opções, mostra os botões */}
+            {lastBotMessage?.options ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {currentQuestion.options.map((opt) => (
+                {lastBotMessage.options.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => handleAnswer(opt.value, opt.label)}
@@ -349,25 +356,28 @@ export default function FunnelChat() {
                 ))}
               </div>
             ) : (
-              <div className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  type={currentQuestion?.inputType ?? "text"}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && inputValue.trim() && handleAnswer(inputValue.trim())}
-                  placeholder={currentQuestion?.placeholder ?? "Digite sua resposta..."}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#1a56db]/60 transition-colors"
-                  autoFocus
-                />
-                <button
-                  onClick={() => inputValue.trim() && handleAnswer(inputValue.trim())}
-                  disabled={!inputValue.trim()}
-                  className="bg-[#1a56db] hover:bg-[#1a56db]/90 text-white px-4 rounded-xl disabled:opacity-40 transition-opacity"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              /* Se não tem opções na última mensagem, mostra o input de texto */
+              currentQuestion && !currentQuestion.options ? (
+                <div className="flex gap-2">
+                  <input
+                    ref={inputRef}
+                    type={currentQuestion?.inputType ?? "text"}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && inputValue.trim() && handleAnswer(inputValue.trim())}
+                    placeholder={currentQuestion?.placeholder ?? "Digite sua resposta..."}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#1a56db]/60 transition-colors"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => inputValue.trim() && handleAnswer(inputValue.trim())}
+                    disabled={!inputValue.trim()}
+                    className="bg-[#1a56db] hover:bg-[#1a56db]/90 text-white px-4 rounded-xl disabled:opacity-40 transition-opacity"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : null
             )}
           </div>
         </div>

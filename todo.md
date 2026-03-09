@@ -180,6 +180,9 @@
 - [x] Dashboard Vendedor: leads reais do banco com leadScore, temperatura e funnelStep
 - [ ] Dashboard Franqueado: ver timeline de qualquer lead da unidade
 
+## Bug: Chat mostrando opções antes de terminar de digitar
+- [x] Corrigir FunnelChat: opções de resposta só devem aparecer após o bot terminar de "digitar" a última mensagem da sequência (usa lastBotMessage.options ao invés de currentQuestion)
+
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
 - [ ] Notificação automática: 🌡️ Lead esfriando (>30min sem avançar)
