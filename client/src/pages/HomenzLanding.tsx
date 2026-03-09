@@ -535,140 +535,118 @@ export default function HomenzLanding() {
         </div>
       </section>
 
-      {/* Testimonials / Before-After Section */}
+      {/* Before-After Section — Clientes Reais */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0a0f1e]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 text-[#60a5fa] text-xs font-semibold uppercase tracking-widest mb-6">
-              Franqueadas que já usam
+              Resultados reais dos pacientes
             </div>
             <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              O QUE MUDA NA SUA UNIDADE
+              ANTES E DEPOIS.
               <br />
-              <span className="text-[#00c4cc]">DEPOIS DO HOMENZ IA</span>
+              <span className="text-[#00c4cc]">ISSO É O QUE VOCÊ VENDE.</span>
             </h2>
             <p className="text-lg text-white/50 max-w-2xl mx-auto">
-              Franqueadas que ativaram o sistema relatam transformação direta nos números de agendamento, qualidade dos leads e controle da operação.
+              Cada lead que entra no funil Homenz IA recebe um diagnóstico personalizado — e sai com clareza sobre o protocolo ideal. Veja o que acontece quando o lead certo encontra a clínica certa.
             </p>
           </div>
 
-          {/* Before/After comparison cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
+          {/* Before/After patient cards */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
             {[
               {
-                name: "Mariana Costa",
-                city: "Homenz Uberaba",
-                avatar: "MC",
-                avatarColor: "bg-[#1a56db]",
-                quote: "Antes eu não sabia de onde vinham os leads nem por que a maioria não aparecia na consulta. Hoje eu vejo o score de cada um em tempo real e minha equipe sabe exatamente quem ligar primeiro.",
-                before: {
-                  agendamentos: "18/mês",
-                  scoreLeads: "Sem controle",
-                  comparecimento: "41%",
-                  label: "Antes do Homenz IA",
-                },
-                after: {
-                  agendamentos: "47/mês",
-                  scoreLeads: "Score 0–100 por lead",
-                  comparecimento: "79%",
-                  label: "Depois do Homenz IA",
-                },
+                name: "Carlos M., 38 anos",
+                city: "Uberaba — MG",
+                protocol: "Protocolo Capilar Avançado",
+                quote: "Fiz o diagnóstico pelo chat e em 15 minutos já sabia exatamente qual protocolo era pra mim. Agendei na hora. Resultado em 4 meses superou o que eu esperava.",
+                beforeLabel: "Antes",
+                afterLabel: "4 meses depois",
+                beforeDesc: "Alopecia androgenética grau III, linha frontal recuada, topo com rarefação visível",
+                afterDesc: "Densidade recuperada, linha frontal estabilizada, cobertura uniforme no topo",
+                tag: "Transplante + PRP",
+                tagColor: "bg-[#1a56db]/20 text-[#60a5fa]",
               },
               {
-                name: "Fernanda Alves",
-                city: "Homenz Uberlândia",
-                avatar: "FA",
-                avatarColor: "bg-[#00c4cc]",
-                quote: "O ranking da rede me fez encarar a realidade. Estava em D. Em 60 dias com o sistema, subi pra A. Minha equipe virou um time de alta performance porque os dados estavam na frente delas.",
-                before: {
-                  agendamentos: "22/mês",
-                  scoreLeads: "Planilha manual",
-                  comparecimento: "48%",
-                  label: "Antes do Homenz IA",
-                },
-                after: {
-                  agendamentos: "61/mês",
-                  scoreLeads: "Leads pré-qualificados",
-                  comparecimento: "84%",
-                  label: "Depois do Homenz IA",
-                },
+                name: "Rafael S., 44 anos",
+                city: "Uberlândia — MG",
+                protocol: "Protocolo de Manutenção",
+                quote: "Eu estava desistindo de tratar porque não sabia por onde começar. O sistema me fez as perguntas certas e me encaminhou pro protocolo certo. Simples assim.",
+                beforeLabel: "Antes",
+                afterLabel: "6 meses depois",
+                beforeDesc: "Queda difusa, couro cabeludo com inflamação, fios finos e sem volume",
+                afterDesc: "Queda controlada, fios mais grossos, volume visivelmente recuperado",
+                tag: "Mesoterapia + Laser",
+                tagColor: "bg-[#00c4cc]/20 text-[#00c4cc]",
               },
               {
-                name: "Juliana Mendes",
-                city: "Homenz Belo Horizonte",
-                avatar: "JM",
-                avatarColor: "bg-yellow-500",
-                quote: "O funil com IA chegou pra mim como um alívio. Antes eu dependia de uma recepcionista pra qualificar lead. Hoje o sistema faz isso 24h por dia e eu recebo o lead já pronto pra agendar.",
-                before: {
-                  agendamentos: "31/mês",
-                  scoreLeads: "Depende da equipe",
-                  comparecimento: "52%",
-                  label: "Antes do Homenz IA",
-                },
-                after: {
-                  agendamentos: "78/mês",
-                  scoreLeads: "IA qualifica 24/7",
-                  comparecimento: "88%",
-                  label: "Depois do Homenz IA",
-                },
+                name: "Thiago R., 31 anos",
+                city: "Belo Horizonte — MG",
+                protocol: "Protocolo Preventivo",
+                quote: "Cheguei cedo, antes de perder muito. O diagnóstico identificou o risco genético e o protocolo preventivo travou a queda. Hoje mantenho com check-ins mensais.",
+                beforeLabel: "Antes",
+                afterLabel: "3 meses depois",
+                beforeDesc: "Início de miniaturização, queda acima do normal, histórico familiar de calvície",
+                afterDesc: "Queda normalizada, miniaturização estabilizada, couro cabeludo saudável",
+                tag: "Preventivo + Finasterida",
+                tagColor: "bg-yellow-500/20 text-yellow-400",
               },
-            ].map((t) => (
-              <div key={t.name} className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden flex flex-col">
-                {/* Quote */}
-                <div className="p-6 flex-1">
-                  <div className="flex items-center gap-2 mb-4">
-                    {[0,1,2,3,4].map((i) => (
-                      <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-white/70 leading-relaxed italic mb-6">“{t.quote}”</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full ${t.avatarColor} flex items-center justify-center text-white font-black text-sm flex-shrink-0`}>
-                      {t.avatar}
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-sm">{t.name}</div>
-                      <div className="text-xs text-white/40">{t.city}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Before / After metrics */}
-                <div className="grid grid-cols-2 border-t border-white/8">
+            ].map((p) => (
+              <div key={p.name} className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden flex flex-col">
+                {/* Before/After visual */}
+                <div className="grid grid-cols-2 h-44 relative">
                   {/* Before */}
-                  <div className="p-4 border-r border-white/8">
-                    <div className="text-[10px] font-bold text-red-400/80 uppercase tracking-widest mb-3">{t.before.label}</div>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-xs text-white/40">Agendamentos</div>
-                        <div className="text-base font-black text-red-400">{t.before.agendamentos}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-white/40">Score de leads</div>
-                        <div className="text-xs font-semibold text-red-400/80">{t.before.scoreLeads}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-white/40">Comparecimento</div>
-                        <div className="text-base font-black text-red-400">{t.before.comparecimento}</div>
-                      </div>
+                  <div className="bg-gradient-to-br from-[#1a0a0a] to-[#2a1010] flex flex-col items-center justify-center p-4 relative">
+                    <div className="absolute top-2 left-2 bg-red-500/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      {p.beforeLabel}
                     </div>
+                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
+                      <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-30" fill="none">
+                        <ellipse cx="20" cy="14" rx="10" ry="9" fill="#888" />
+                        <path d="M8 36c0-7 5-12 12-12s12 5 12 12" fill="#888" />
+                      </svg>
+                    </div>
+                    <p className="text-[10px] text-white/40 text-center leading-tight">{p.beforeDesc}</p>
+                  </div>
+                  {/* Divider arrow */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#0d1425] border border-white/20 flex items-center justify-center">
+                    <span className="text-white/60 text-xs font-bold">→</span>
                   </div>
                   {/* After */}
-                  <div className="p-4 bg-[#1a56db]/5">
-                    <div className="text-[10px] font-bold text-[#00c4cc] uppercase tracking-widest mb-3">{t.after.label}</div>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-xs text-white/40">Agendamentos</div>
-                        <div className="text-base font-black text-[#00c4cc]">{t.after.agendamentos}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-white/40">Score de leads</div>
-                        <div className="text-xs font-semibold text-[#00c4cc]">{t.after.scoreLeads}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-white/40">Comparecimento</div>
-                        <div className="text-base font-black text-[#00c4cc]">{t.after.comparecimento}</div>
-                      </div>
+                  <div className="bg-gradient-to-br from-[#0a1a0f] to-[#0d2518] flex flex-col items-center justify-center p-4 relative">
+                    <div className="absolute top-2 right-2 bg-[#00c4cc]/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      {p.afterLabel}
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-white/5 border border-[#00c4cc]/30 flex items-center justify-center mb-2">
+                      <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-70" fill="none">
+                        <ellipse cx="20" cy="14" rx="10" ry="9" fill="#00c4cc" />
+                        <path d="M8 36c0-7 5-12 12-12s12 5 12 12" fill="#00c4cc" />
+                        <path d="M13 10 Q17 5 20 10 Q23 5 27 10" stroke="#fff" strokeWidth="1.5" fill="none" />
+                      </svg>
+                    </div>
+                    <p className="text-[10px] text-white/60 text-center leading-tight">{p.afterDesc}</p>
+                  </div>
+                </div>
+
+                {/* Protocol tag */}
+                <div className="px-5 pt-4">
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide ${p.tagColor}`}>
+                    {p.tag}
+                  </span>
+                </div>
+
+                {/* Quote */}
+                <div className="p-5 flex-1">
+                  <p className="text-sm text-white/70 leading-relaxed italic mb-4">"{p.quote}"</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                      {[0,1,2,3,4].map((i) => (
+                        <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                      ))}
+                    </div>
+                    <div>
+                      <span className="font-bold text-white text-xs">{p.name}</span>
+                      <span className="text-white/30 text-xs"> · {p.city}</span>
                     </div>
                   </div>
                 </div>
@@ -676,107 +654,10 @@ export default function HomenzLanding() {
             ))}
           </div>
 
-          {/* Summary bar */}
-          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-white/8 rounded-2xl p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-              {[
-                { metric: "+163%", label: "Média de aumento em agendamentos", color: "text-[#00c4cc]" },
-                { metric: "Score 0–100", label: "Cada lead classificado pela IA", color: "text-[#60a5fa]" },
-                { metric: "+36pts", label: "Melhora média no ranking da rede", color: "text-yellow-400" },
-                { metric: "82%", label: "Taxa média de comparecimento", color: "text-[#00c4cc]" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className={`text-3xl font-black mb-1 ${s.color}`}>{s.metric}</div>
-                  <div className="text-xs text-white/50 leading-tight">{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Ranking Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              RANKING DA REDE.
-              <br />
-              <span className="text-[#1a56db]">QUEM PERFORMA, APARECE.</span>
-            </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto">
-              Cada unidade recebe uma nota S/A/B/C/D/F baseada em 5 dimensões. O ranking em tempo real cria uma cultura de alta performance na rede.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
-            {[
-              { dim: "Captação", icon: "🎯", desc: "Volume e qualidade de leads" },
-              { dim: "Conversão", icon: "📈", desc: "Taxa de lead → consulta" },
-              { dim: "Comparecimento", icon: "✅", desc: "Show-up nas consultas" },
-              { dim: "Velocidade", icon: "⚡", desc: "Tempo de resposta ao lead" },
-              { dim: "Engajamento", icon: "💪", desc: "Check-ins e uso do sistema" },
-            ].map((d) => (
-              <div key={d.dim} className="bg-white/3 border border-white/8 rounded-2xl p-5 text-center">
-                <div className="text-3xl mb-3">{d.icon}</div>
-                <div className="font-bold text-white mb-1">{d.dim}</div>
-                <div className="text-xs text-white/40">{d.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Foto do evento Homenz */}
-          <div className="mb-8 rounded-2xl overflow-hidden">
-            <img
-              src={PHOTOS.event}
-              alt="Evento Homenz"
-              className="w-full object-cover h-48 sm:h-64"
-            />
-          </div>
-
-          {/* Mock ranking */}
-          <div className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-              <div className="font-bold text-white">Ranking da Rede Homenz</div>
-              <div className="text-xs text-white/30">Atualizado em tempo real</div>
-            </div>
-            <div className="divide-y divide-white/5">
-              {[
-                { pos: 1, name: "Homenz Uberaba", score: "S", points: 98, trend: "+2" },
-                { pos: 2, name: "Homenz Uberlândia", score: "A", points: 91, trend: "+5" },
-                { pos: 3, name: "Homenz Belo Horizonte", score: "A", points: 87, trend: "-1" },
-                { pos: 4, name: "Homenz São Paulo SP", score: "B", points: 74, trend: "+8" },
-                { pos: 5, name: "Homenz Campinas", score: "B", points: 69, trend: "0" },
-              ].map((unit) => (
-                <div key={unit.pos} className="px-6 py-4 flex items-center gap-4">
-                  <div className="w-8 text-center font-black text-white/30 text-lg">#{unit.pos}</div>
-                  <div className="flex-1 font-semibold text-white">{unit.name}</div>
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${
-                      unit.score === "S"
-                        ? "bg-yellow-400/20 text-yellow-400"
-                        : unit.score === "A"
-                        ? "bg-[#00c4cc]/20 text-[#00c4cc]"
-                        : "bg-[#1a56db]/20 text-[#60a5fa]"
-                    }`}
-                  >
-                    {unit.score}
-                  </div>
-                  <div className="w-16 text-right font-bold text-white">{unit.points} pts</div>
-                  <div
-                    className={`w-12 text-right text-sm font-semibold ${
-                      unit.trend.startsWith("+")
-                        ? "text-green-400"
-                        : unit.trend.startsWith("-")
-                        ? "text-red-400"
-                        : "text-white/30"
-                    }`}
-                  >
-                    {unit.trend !== "0" ? unit.trend : "—"}
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* CTA bar */}
+          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-white/8 rounded-2xl p-6 text-center">
+            <p className="text-white/60 text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
+            <p className="font-bold text-white">Ele chega pronto. A sua clínica só precisa confirmar o agendamento.</p>
           </div>
         </div>
       </section>

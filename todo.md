@@ -147,6 +147,9 @@
 - [x] Atualizar preços: plano 1 = R$ 897, plano 2 = R$ 1.497, 15 dias grátis
 - [x] Mover seção de planos para após a demo (ao fim da página)
 - [x] Criar seção de depoimentos antes/depois focada na franqueada: métricas de agendamento, qualidade de lead e score das clínicas
+- [x] Remover seção de ranking da rede Homenz
+- [x] Remover seção de depoimentos de franqueadas
+- [x] Criar seção de antes/depois de clientes reais (homens que fizeram o procedimento)
 
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
