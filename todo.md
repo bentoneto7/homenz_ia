@@ -140,6 +140,7 @@
 - [x] CTA final com foto de fundo
 - [x] Footer com links de navegação
 - [x] Rota / aponta para HomenzLanding (rota /plataforma para Home antiga)
+- [x] Renomear sistema de CapilarIA para Homenz IA em toda a landing page
 
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura

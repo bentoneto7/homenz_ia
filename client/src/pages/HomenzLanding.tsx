@@ -121,12 +121,11 @@ export default function HomenzLanding() {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <span className="text-xl font-black tracking-tight text-white">CAPILAR</span>
-                <span className="text-xl font-black tracking-tight text-[#00c4cc]">IA</span>
+               <span className="text-xl font-black tracking-tight text-white">HOMENZ</span>
+                <span className="text-xl font-black tracking-tight text-[#00c4cc]"> IA</span>
               </div>
               <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
-                <span className="text-[10px] font-medium text-white/50 uppercase tracking-widest">by</span>
-                <span className="text-[10px] font-bold text-[#1a56db] uppercase tracking-widest">Homenz</span>
+                <span className="text-[10px] font-bold text-[#1a56db] uppercase tracking-widest">Homenz Brasil</span>
               </div>
             </div>
 
@@ -183,18 +182,18 @@ export default function HomenzLanding() {
 
             {/* Headline */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-              O SISTEMA QUE{" "}
-              <span className="text-[#00c4cc]">TRANSFORMA</span>
-              <br />
-              TRÁFEGO PAGO EM{" "}
+              TRANSFORME SUA CLÍNICA EM UMA{" "}
               <span className="relative inline-block">
-                <span className="text-white">CONSULTAS</span>
+                <span className="text-[#00c4cc]">MÁQUINA</span>
                 <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-[#1a56db] to-[#00c4cc] rounded-full" />
               </span>
+              <br />
+              DE AGENDAR CONSULTAS E{" "}
+              <span className="text-white">VENDER PROTOCOLOS</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-white/60 mb-10 leading-relaxed max-w-2xl">
-              Funil completo com IA para clínicas Homenz: chat qualificador, análise capilar, visualização 3D, agendamento automático e rastreamento de leads com temperatura em tempo real.
+              Funil completo com IA para clínicas Homenz: chat qualificador, análise capilar, visualização 3D, agendamento automático e rastreamento de leads com temperatura em tempo real. O sistema oficial da rede.
             </p>
 
             {/* CTAs */}
@@ -203,15 +202,15 @@ export default function HomenzLanding() {
                 onClick={() => navigate("/cadastro")}
                 className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1a56db] hover:bg-[#1a56db]/90 text-white font-bold text-base transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(26,86,219,0.5)]"
               >
-                Ativar minha unidade grátis
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              Ativar minha unidade grátis
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
               <button
                 onClick={() => navigate("/c/demo")}
                 className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base transition-all"
               >
                 <Play className="w-4 h-4 text-[#00c4cc]" />
-                Ver funil ao vivo
+                Ver demo ao vivo
               </button>
             </div>
 
@@ -304,7 +303,7 @@ export default function HomenzLanding() {
               />
               <div className="absolute -bottom-6 -left-6 bg-[#1a56db] rounded-2xl p-5 shadow-2xl max-w-xs">
                 <div className="text-2xl font-black text-white mb-1">+47%</div>
-                <div className="text-sm text-white/80">de aumento em consultas agendadas com o funil CapilarIA</div>
+                <div className="text-sm text-white/80">de aumento em consultas agendadas com o Homenz IA</div>
               </div>
             </div>
           </div>
@@ -383,7 +382,7 @@ export default function HomenzLanding() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold transition-all"
             >
               <Play className="w-4 h-4 text-[#00c4cc]" />
-              Experimentar o funil demo agora
+              Experimentar o Homenz IA agora
             </button>
           </div>
         </div>
@@ -472,7 +471,7 @@ export default function HomenzLanding() {
                   {
                     metric: "+47%",
                     label: "Aumento em consultas agendadas",
-                    desc: "Unidades que usam o funil CapilarIA convertem mais leads em consultas.",
+                    desc: "Unidades que usam o Homenz IA convertem mais leads em consultas.",
                     color: "text-[#00c4cc]",
                   },
                   {
@@ -736,7 +735,7 @@ export default function HomenzLanding() {
             <span className="text-[#00c4cc]">O MELHOR SISTEMA.</span>
           </h2>
           <p className="text-lg text-white/50 mb-10">
-            Ative o CapilarIA na sua unidade Homenz hoje. Configure em 5 minutos, gere seu link exclusivo e comece a converter tráfego pago em consultas agendadas.
+            Ative o Homenz IA na sua unidade hoje. Configure em 5 minutos, gere seu link exclusivo e comece a converter tráfego pago em consultas agendadas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -763,11 +762,10 @@ export default function HomenzLanding() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <span className="text-lg font-black text-white">CAPILAR</span>
-                <span className="text-lg font-black text-[#00c4cc]">IA</span>
+                <span className="text-lg font-black text-white">HOMENZ</span>
+                <span className="text-lg font-black text-[#00c4cc]"> IA</span>
               </div>
-              <span className="text-white/20">×</span>
-              <span className="text-sm font-bold text-[#1a56db]">HOMENZ</span>
+
             </div>
             <div className="flex items-center gap-8 text-sm text-white/30">
               <a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a>
@@ -776,7 +774,7 @@ export default function HomenzLanding() {
               <a href="/c/demo" className="hover:text-white transition-colors">Demo</a>
             </div>
             <p className="text-xs text-white/20">
-              © 2026 CapilarIA. Todos os direitos reservados.
+              © 2026 Homenz IA. Todos os direitos reservados.
             </p>
           </div>
         </div>
