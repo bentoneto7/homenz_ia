@@ -22,6 +22,9 @@ import AdminAvailability from "./pages/admin/Availability";
 import AdminLeadJourney from "./pages/admin/LeadJourney";
 import AdminRecovery from "./pages/admin/Recovery";
 import AdminAnalytics from "./pages/admin/Analytics";
+import AdminHealthScore from "./pages/admin/HealthScore";
+import AdminDailyCheckin from "./pages/admin/DailyCheckin";
+import AdminNetworkRanking from "./pages/admin/NetworkRanking";
 
 function Router() {
   return (
@@ -49,6 +52,9 @@ function Router() {
       <Route path="/painel/leads/:id/jornada" component={AdminLeadJourney} />
       <Route path="/painel/recuperacao" component={AdminRecovery} />
       <Route path="/painel/analytics" component={AdminAnalytics} />
+      <Route path="/painel/health" component={AdminHealthScore} />
+      <Route path="/painel/checkin" component={AdminDailyCheckin} />
+      <Route path="/painel/ranking" component={AdminNetworkRanking} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

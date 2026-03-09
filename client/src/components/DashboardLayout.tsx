@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Bell, Calendar, Clock, Settings, TrendingUp, RefreshCw } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Bell, Calendar, Clock, Settings, TrendingUp, RefreshCw, Heart, ClipboardList, Trophy } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -32,6 +32,9 @@ const menuItems = [
   { icon: Users, label: "Leads", path: "/painel/leads" },
   { icon: RefreshCw, label: "Recuperação", path: "/painel/recuperacao" },
   { icon: TrendingUp, label: "Analytics", path: "/painel/analytics" },
+  { icon: Heart, label: "Health Score", path: "/painel/health" },
+  { icon: ClipboardList, label: "Check-in Diário", path: "/painel/checkin" },
+  { icon: Trophy, label: "Ranking da Rede", path: "/painel/ranking" },
   { icon: Calendar, label: "Agendamentos", path: "/painel/agendamentos" },
   { icon: Clock, label: "Disponibilidade", path: "/painel/disponibilidade" },
   { icon: Bell, label: "Notificações", path: "/painel/notificacoes" },

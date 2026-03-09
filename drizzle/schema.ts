@@ -92,6 +92,13 @@ export const clinics = mysqlTable("clinics", {
   // Notificações
   notifyWhatsapp: varchar("notifyWhatsapp", { length: 20 }), // número para receber alertas
   notifyEmail: varchar("notifyEmail", { length: 320 }),
+  // Rede / Franquia
+  brandId: int("brandId"),                    // FK → brands.id (se for franquia de uma rede)
+
+  // Trial de 15 dias
+  trialActive: boolean("trialActive").default(true).notNull(),
+  trialEndsAt: timestamp("trialEndsAt"),      // null = sem trial (plano pago)
+
   // Plano e status
   plan: mysqlEnum("plan", ["free", "pro", "enterprise"]).default("free").notNull(),
   active: boolean("active").default(true).notNull(),
@@ -469,3 +476,120 @@ export const leadFollowups = mysqlTable("lead_followups", {
 
 export type LeadFollowup = typeof leadFollowups.$inferSelect;
 export type InsertLeadFollowup = typeof leadFollowups.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REDES / MARCAS (Franqueadoras como Homenz)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const brands = mysqlTable("brands", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),        // ex: "Homenz"
+  slug: varchar("slug", { length: 100 }).notNull().unique(), // ex: "homenz"
+  logoUrl: text("logoUrl"),
+  coverUrl: text("coverUrl"),
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#D4A843"),
+  website: varchar("website", { length: 255 }),
+  ownerUserId: int("ownerUserId").notNull(), // FK → users.id (ADM da rede)
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Brand = typeof brands.$inferSelect;
+export type InsertBrand = typeof brands.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEALTH SCORE DIÁRIO POR CLÍNICA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const clinicHealthScores = mysqlTable("clinic_health_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  brandId: int("brandId"),                    // FK → brands.id (se for franquia)
+  scoreDate: varchar("scoreDate", { length: 10 }).notNull(), // "YYYY-MM-DD"
+
+  // ─ Dimensão 1: Qualidade do Lead (25 pontos) ─────────────────────────────
+  // Calculado automaticamente com base nos dados do funil
+  leadsTotal: int("leadsTotal").default(0).notNull(),
+  leadsWithPhoto: int("leadsWithPhoto").default(0).notNull(),
+  leadsWithAiResult: int("leadsWithAiResult").default(0).notNull(),
+  avgLeadScore: decimal("avgLeadScore", { precision: 5, scale: 2 }).default("0"),
+  leadQualityScore: decimal("leadQualityScore", { precision: 5, scale: 2 }).default("0"), // 0-25
+
+  // ─ Dimensão 2: Taxa de Agendamento (25 pontos) ─────────────────────────
+  // Calculado automaticamente
+  leadsScheduled: int("leadsScheduled").default(0).notNull(),
+  schedulingRate: decimal("schedulingRate", { precision: 5, scale: 2 }).default("0"), // %
+  schedulingScore: decimal("schedulingScore", { precision: 5, scale: 2 }).default("0"), // 0-25
+
+  // ─ Dimensão 3: Comparecimento Presencial (25 pontos) ───────────────────
+  // Informado pela clínica via check-in diário
+  appointmentsTotal: int("appointmentsTotal").default(0).notNull(),
+  appointmentsAttended: int("appointmentsAttended").default(0).notNull(),
+  appointmentsNoShow: int("appointmentsNoShow").default(0).notNull(),
+  attendanceRate: decimal("attendanceRate", { precision: 5, scale: 2 }).default("0"), // %
+  attendanceScore: decimal("attendanceScore", { precision: 5, scale: 2 }).default("0"), // 0-25
+
+  // ─ Dimensão 4: Velocidade de Resposta (15 pontos) ─────────────────────
+  // Calculado automaticamente com base nos eventos de jornada
+  avgResponseTimeMinutes: decimal("avgResponseTimeMinutes", { precision: 8, scale: 2 }).default("0"),
+  responseScore: decimal("responseScore", { precision: 5, scale: 2 }).default("0"), // 0-15
+
+  // ─ Dimensão 5: Engajamento Operacional (10 pontos) ────────────────────
+  // Calculado com base no check-in diário e uso da plataforma
+  checkinsThisMonth: int("checkinsThisMonth").default(0).notNull(),
+  platformUsageDays: int("platformUsageDays").default(0).notNull(),
+  operationalScore: decimal("operationalScore", { precision: 5, scale: 2 }).default("0"), // 0-10
+
+  // ─ Score Total e Classificação ──────────────────────────────────────────────────────────
+  totalScore: decimal("totalScore", { precision: 5, scale: 2 }).default("0").notNull(), // 0-100
+  grade: mysqlEnum("grade", ["S", "A", "B", "C", "D", "F"]).default("F").notNull(),
+  // S=90-100, A=80-89, B=70-79, C=60-69, D=50-59, F=<50
+  rankPosition: int("rankPosition"),  // posição no ranking da rede naquele dia
+
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClinicHealthScore = typeof clinicHealthScores.$inferSelect;
+export type InsertClinicHealthScore = typeof clinicHealthScores.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHECK-IN DIÁRIO DA CLÍNICA (entrevista operacional)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const clinicDailyCheckins = mysqlTable("clinic_daily_checkins", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  brandId: int("brandId"),
+  checkinDate: varchar("checkinDate", { length: 10 }).notNull(), // "YYYY-MM-DD"
+  submittedByUserId: int("submittedByUserId").notNull(),
+
+  // ─ Perguntas sobre Leads ────────────────────────────────────────────────────────────
+  leadsReceivedToday: int("leadsReceivedToday").default(0).notNull(),
+  leadsContactedToday: int("leadsContactedToday").default(0).notNull(),
+  leadsQualifiedToday: int("leadsQualifiedToday").default(0).notNull(), // leads que a clínica considerou qualificados
+  leadsNotQualified: int("leadsNotQualified").default(0).notNull(),
+
+  // ─ Perguntas sobre Agendamentos ───────────────────────────────────────────────────
+  appointmentsScheduledToday: int("appointmentsScheduledToday").default(0).notNull(),
+  appointmentsAttendedToday: int("appointmentsAttendedToday").default(0).notNull(),
+  appointmentsNoShowToday: int("appointmentsNoShowToday").default(0).notNull(),
+  appointmentsCancelledToday: int("appointmentsCancelledToday").default(0).notNull(),
+
+  // ─ Perguntas sobre Fotos e IA ─────────────────────────────────────────────────────
+  leadsWithPhotosToday: int("leadsWithPhotosToday").default(0).notNull(),
+  leadsWithAiResultToday: int("leadsWithAiResultToday").default(0).notNull(),
+
+  // ─ Perguntas Qualitativas (texto livre) ──────────────────────────────────────────
+  mainChallengesToday: text("mainChallengesToday"),    // "Qual o maior desafio de hoje?"
+  bestLeadToday: text("bestLeadToday"),                // "Qual foi o melhor lead de hoje?"
+  teamMoodScore: tinyint("teamMoodScore"),             // 1-5 (humor da equipe)
+  notes: text("notes"),                               // observações gerais
+
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClinicDailyCheckin = typeof clinicDailyCheckins.$inferSelect;
+export type InsertClinicDailyCheckin = typeof clinicDailyCheckins.$inferInsert;
+

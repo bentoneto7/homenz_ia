@@ -108,3 +108,18 @@
 - [ ] Dados ADM: performance de resposta por clínica assinante (para nós sabermos quem age rápido)
 - [ ] Registrar eventos automáticos em todos os pontos do funil
 - [ ] Sequência de follow-up com mensagens pré-redigidas por etapa
+
+## Clinic Health Ranking — Rede Homenz
+- [x] Schema: tabela `brands` (redes franqueadoras — ex: Homenz)
+- [x] Schema: campo `brandId` nas clínicas (franquia vinculada à rede)
+- [x] Schema: tabela `clinic_health_scores` (score diário por dimensão)
+- [x] Schema: tabela `clinic_daily_checkins` (entrevista diária da clínica)
+- [x] Schema: campo `trialEndsAt` + `trialActive` nas clínicas (15 dias grátis)
+- [x] Backend: procedures health.getMyScore, submitCheckin, todayCheckin, checkinHistory
+- [x] Backend: procedure brand.networkRanking (ranking da rede por período)
+- [x] Backend: cálculo automático do health score em 5 dimensões (lead quality, scheduling, attendance, response, operational)
+- [x] Página /painel/checkin: check-in diário guiado em 5 etapas (leads, fotos, agendamentos, insights, humor)
+- [x] Página /painel/health: health score visual com nota A-S, 5 barras de dimensão e KPIs
+- [x] Página /painel/ranking: ranking da rede Homenz com pódio, tabela e taxas de conversão
+- [x] Menu do painel atualizado com Health Score, Check-in Diário e Ranking da Rede
+- [x] Seed: rede Homenz e franquia de Uberaba no banco (brandId=1)
