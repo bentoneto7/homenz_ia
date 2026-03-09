@@ -51,10 +51,10 @@ function PhoneBeforeAfter() {
   return (
     <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
       {/* Phone 3D mockup */}
-      <div className="flex-1 flex justify-center">
+      <div className="flex-1 flex justify-center py-8">
         <div
           className="relative w-[280px] sm:w-[320px] cursor-ew-resize select-none"
-          style={{ perspective: "1200px" }}
+          style={{ perspective: "1200px", paddingBottom: "2rem" }}
           onMouseMove={handleMouseMove}
           onMouseDown={() => setIsDragging(true)}
           onMouseUp={() => setIsDragging(false)}
@@ -968,37 +968,91 @@ export default function HomenzLanding() {
             ].map((p) => (
               <div key={p.name} className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden flex flex-col">
                 {/* Before/After visual */}
-                <div className="grid grid-cols-2 h-44 relative">
-                  {/* Before */}
+                <div className="grid grid-cols-2 h-52 relative">
+                  {/* Before — calvície */}
                   <div className="bg-gradient-to-br from-[#1a0a0a] to-[#2a1010] flex flex-col items-center justify-center p-4 relative">
-                    <div className="absolute top-2 left-2 bg-red-500/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10">
                       {p.beforeLabel}
                     </div>
-                    <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
-                      <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-30" fill="none">
-                        <ellipse cx="20" cy="14" rx="10" ry="9" fill="#888" />
-                        <path d="M8 36c0-7 5-12 12-12s12 5 12 12" fill="#888" />
-                      </svg>
-                    </div>
-                    <p className="text-[10px] text-white/40 text-center leading-tight">{p.beforeDesc}</p>
+                    {/* Ilustração calvície */}
+                    <svg viewBox="0 0 80 90" className="w-20 h-24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {/* Pescoço */}
+                      <rect x="30" y="62" width="20" height="18" rx="4" fill="#c8956c" />
+                      {/* Cabeça */}
+                      <ellipse cx="40" cy="42" rx="26" ry="28" fill="#d4a574" />
+                      {/* Topo calvo — brilho */}
+                      <ellipse cx="40" cy="24" rx="18" ry="12" fill="#e8c49a" opacity="0.6" />
+                      <ellipse cx="40" cy="22" rx="10" ry="6" fill="#f0d0a8" opacity="0.5" />
+                      {/* Entradas recuadas — fios escassos nas laterais */}
+                      <path d="M16 36 Q14 28 18 22 Q20 18 24 20" stroke="#5a3a1a" strokeWidth="1.2" fill="none" opacity="0.5" />
+                      <path d="M64 36 Q66 28 62 22 Q60 18 56 20" stroke="#5a3a1a" strokeWidth="1.2" fill="none" opacity="0.5" />
+                      {/* Fios laterais escassos */}
+                      <path d="M15 38 Q12 32 16 26" stroke="#4a2e10" strokeWidth="1" fill="none" opacity="0.6" />
+                      <path d="M17 40 Q14 34 17 28" stroke="#4a2e10" strokeWidth="1" fill="none" opacity="0.5" />
+                      <path d="M65 38 Q68 32 64 26" stroke="#4a2e10" strokeWidth="1" fill="none" opacity="0.6" />
+                      <path d="M63 40 Q66 34 63 28" stroke="#4a2e10" strokeWidth="1" fill="none" opacity="0.5" />
+                      {/* Orelhas */}
+                      <ellipse cx="14" cy="44" rx="4" ry="6" fill="#c8956c" />
+                      <ellipse cx="66" cy="44" rx="4" ry="6" fill="#c8956c" />
+                      {/* Olhos */}
+                      <ellipse cx="32" cy="44" rx="4" ry="3" fill="white" />
+                      <ellipse cx="48" cy="44" rx="4" ry="3" fill="white" />
+                      <ellipse cx="32" cy="44" rx="2" ry="2" fill="#3a2010" />
+                      <ellipse cx="48" cy="44" rx="2" ry="2" fill="#3a2010" />
+                      {/* Sobrancelhas preocupadas */}
+                      <path d="M28 40 Q32 38 36 40" stroke="#3a2010" strokeWidth="1.5" fill="none" />
+                      <path d="M44 40 Q48 38 52 40" stroke="#3a2010" strokeWidth="1.5" fill="none" />
+                      {/* Nariz */}
+                      <path d="M38 48 Q40 52 42 48" stroke="#a06040" strokeWidth="1" fill="none" />
+                      {/* Boca triste */}
+                      <path d="M34 56 Q40 53 46 56" stroke="#8a5030" strokeWidth="1.5" fill="none" />
+                    </svg>
+                    <p className="text-[10px] text-white/40 text-center leading-tight mt-1">{p.beforeDesc}</p>
                   </div>
                   {/* Divider arrow */}
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#0d1425] border border-white/20 flex items-center justify-center">
-                    <span className="text-white/60 text-xs font-bold">→</span>
+                  <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#0d1425] border border-white/20 flex items-center justify-center shadow-lg">
+                    <span className="text-[#00c4cc] text-sm font-black">→</span>
                   </div>
-                  {/* After */}
-                  <div className="bg-gradient-to-br from-[#0a1a0f] to-[#0d2518] flex flex-col items-center justify-center p-4 relative">
-                    <div className="absolute top-2 right-2 bg-[#00c4cc]/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                  {/* After — cabelo recuperado */}
+                  <div className="bg-gradient-to-br from-[#003d40]/60 to-[#004d4d]/40 flex flex-col items-center justify-center p-4 relative">
+                    <div className="absolute top-2 right-2 bg-[#00c4cc] text-[#003d40] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10">
                       {p.afterLabel}
                     </div>
-                    <div className="w-16 h-16 rounded-full bg-white/5 border border-[#00c4cc]/30 flex items-center justify-center mb-2">
-                      <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-70" fill="none">
-                        <ellipse cx="20" cy="14" rx="10" ry="9" fill="#00c4cc" />
-                        <path d="M8 36c0-7 5-12 12-12s12 5 12 12" fill="#00c4cc" />
-                        <path d="M13 10 Q17 5 20 10 Q23 5 27 10" stroke="#fff" strokeWidth="1.5" fill="none" />
-                      </svg>
-                    </div>
-                    <p className="text-[10px] text-white/60 text-center leading-tight">{p.afterDesc}</p>
+                    {/* Ilustração cabelo recuperado */}
+                    <svg viewBox="0 0 80 90" className="w-20 h-24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {/* Pescoço */}
+                      <rect x="30" y="62" width="20" height="18" rx="4" fill="#c8956c" />
+                      {/* Cabeça */}
+                      <ellipse cx="40" cy="42" rx="26" ry="28" fill="#d4a574" />
+                      {/* Cabelo denso — topo */}
+                      <path d="M14 38 Q12 20 20 12 Q28 4 40 6 Q52 4 60 12 Q68 20 66 38" fill="#2a1a0a" />
+                      {/* Cabelo — volume e textura */}
+                      <path d="M14 38 Q10 28 14 18 Q18 10 26 8" stroke="#1a0e04" strokeWidth="2" fill="none" />
+                      <path d="M66 38 Q70 28 66 18 Q62 10 54 8" stroke="#1a0e04" strokeWidth="2" fill="none" />
+                      {/* Fios no topo — densidade */}
+                      <path d="M24 12 Q28 6 32 10" stroke="#3a2810" strokeWidth="1.5" fill="none" />
+                      <path d="M32 8 Q36 4 40 8" stroke="#3a2810" strokeWidth="1.5" fill="none" />
+                      <path d="M40 8 Q44 4 48 8" stroke="#3a2810" strokeWidth="1.5" fill="none" />
+                      <path d="M48 10 Q52 6 56 12" stroke="#3a2810" strokeWidth="1.5" fill="none" />
+                      {/* Orelhas */}
+                      <ellipse cx="14" cy="44" rx="4" ry="6" fill="#c8956c" />
+                      <ellipse cx="66" cy="44" rx="4" ry="6" fill="#c8956c" />
+                      {/* Olhos felizes */}
+                      <ellipse cx="32" cy="44" rx="4" ry="3" fill="white" />
+                      <ellipse cx="48" cy="44" rx="4" ry="3" fill="white" />
+                      <ellipse cx="32" cy="44" rx="2" ry="2" fill="#3a2010" />
+                      <ellipse cx="48" cy="44" rx="2" ry="2" fill="#3a2010" />
+                      {/* Sobrancelhas relaxadas */}
+                      <path d="M28 40 Q32 37 36 39" stroke="#3a2010" strokeWidth="1.5" fill="none" />
+                      <path d="M44 39 Q48 37 52 40" stroke="#3a2010" strokeWidth="1.5" fill="none" />
+                      {/* Nariz */}
+                      <path d="M38 48 Q40 52 42 48" stroke="#a06040" strokeWidth="1" fill="none" />
+                      {/* Sorriso */}
+                      <path d="M34 54 Q40 59 46 54" stroke="#8a5030" strokeWidth="1.5" fill="none" />
+                      {/* Brilho no cabelo */}
+                      <path d="M28 14 Q32 10 36 14" stroke="#6a4a20" strokeWidth="1" fill="none" opacity="0.6" />
+                    </svg>
+                    <p className="text-[10px] text-[#00c4cc]/80 text-center leading-tight mt-1">{p.afterDesc}</p>
                   </div>
                 </div>
 
@@ -1037,7 +1091,7 @@ export default function HomenzLanding() {
       </section>
 
       {/* ─── 3D BEFORE/AFTER — Mockup Celular + Clínica ─── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#060b18] overflow-hidden">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#060b18]">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-20">

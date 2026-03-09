@@ -183,6 +183,11 @@
 ## Bug: Chat mostrando opções antes de terminar de digitar
 - [x] Corrigir FunnelChat: opções de resposta só devem aparecer após o bot terminar de "digitar" a última mensagem da sequência (usa lastBotMessage.options ao invés de currentQuestion)
 
+## Correções Visuais Landing Page
+- [x] Cards antes/depois: substituir ícones genéricos por ilustrações SVG de cabeças (calva antes, cabelo depois)
+- [x] Cards antes/depois: seguir layout de referência (2 avatares lado a lado, seta, protocolo, depoimento)
+- [x] Mockup 3D do celular: corrigir corte/overflow na seção de como funciona
+
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
 - [ ] Notificação automática: 🌡️ Lead esfriando (>30min sem avançar)
