@@ -70,3 +70,6 @@
 - [x] Polir FunnelResult: apresentação impactante antes/depois, leadScore visual
 - [x] Polir FunnelSchedule: calendário intuitivo com horários disponíveis
 - [x] Polir FunnelConfirmation: página de sucesso com urgência e próximos passos
+
+## Bugs
+- [x] leadId chegando como NaN na inserção de notificação ao criar lead

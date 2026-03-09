@@ -152,7 +152,7 @@ export const appRouter = router({
           },
         });
 
-        const clinicId = Number((inserted as any).insertId);
+        const clinicId = Number((inserted as any)[0]?.insertId ?? (inserted as any).insertId);
 
         // Adicionar owner como membro
         await db.insert(clinicUsers).values({
@@ -313,7 +313,7 @@ export const appRouter = router({
         await insertNotification({
           clinicId: clinic.id,
           targetType: "clinic",
-          leadId: Number((inserted as any).insertId),
+          leadId: Number((inserted as any)[0]?.insertId ?? (inserted as any).insertId),
           title: "Novo lead capturado!",
           content: `${input.name} (${input.phone}) iniciou o diagnóstico.${input.utmSource ? ` Origem: ${input.utmSource}` : ""}`,
           type: "new_lead",
@@ -569,7 +569,7 @@ export const appRouter = router({
             clinicId: lead.clinicId,
             processingStatus: "processing",
           });
-          resultId = Number((ins as any).insertId);
+          resultId = Number((ins as any)[0]?.insertId ?? (ins as any).insertId);
         }
 
         await updateLeadFunnelStep(lead.id, "ai_processing");
@@ -783,7 +783,7 @@ export const appRouter = router({
           reminderSent: false,
         });
 
-        const appointmentId = Number((ins as any).insertId);
+        const appointmentId = Number((ins as any)[0]?.insertId ?? (ins as any).insertId);
 
         await updateLeadFunnelStep(lead.id, "scheduled");
 
