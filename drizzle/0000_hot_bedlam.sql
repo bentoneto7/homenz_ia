@@ -1,0 +1,223 @@
+CREATE TABLE `ai_results` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`leadId` int NOT NULL,
+	`clinicId` int NOT NULL,
+	`analysisText` text,
+	`baldnessLevel` varchar(50),
+	`baldnessScale` enum('norwood','ludwig'),
+	`affectedAreas` json,
+	`densityEstimate` varchar(100),
+	`beforeImageUrl` text,
+	`afterImageUrl` text,
+	`after360Urls` json,
+	`recommendedTreatment` text,
+	`estimatedSessions` int,
+	`leadScore` int,
+	`leadScoreBreakdown` json,
+	`processingStatus` enum('pending','processing','done','error') NOT NULL DEFAULT 'pending',
+	`errorMessage` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `ai_results_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `appointments` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`leadId` int NOT NULL,
+	`scheduledAt` timestamp NOT NULL,
+	`durationMinutes` int NOT NULL DEFAULT 60,
+	`consultationType` enum('evaluation','procedure','followup') NOT NULL DEFAULT 'evaluation',
+	`googleEventId` varchar(255),
+	`googleEventLink` text,
+	`calComBookingId` varchar(255),
+	`calComBookingUrl` text,
+	`status` enum('pending','confirmed','cancelled','completed','no_show') NOT NULL DEFAULT 'pending',
+	`attendantNotes` text,
+	`cancellationReason` text,
+	`confirmationSent` boolean NOT NULL DEFAULT false,
+	`reminderSent` boolean NOT NULL DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `appointments_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `clinic_users` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`userId` int NOT NULL,
+	`role` enum('owner','manager','attendant') NOT NULL DEFAULT 'attendant',
+	`active` boolean NOT NULL DEFAULT true,
+	`invitedAt` timestamp NOT NULL DEFAULT (now()),
+	`acceptedAt` timestamp,
+	CONSTRAINT `clinic_users_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `clinics` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`slug` varchar(100) NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`cnpj` varchar(18),
+	`ownerName` varchar(255) NOT NULL,
+	`ownerUserId` int NOT NULL,
+	`email` varchar(320) NOT NULL,
+	`phone` varchar(20) NOT NULL,
+	`whatsapp` varchar(20) NOT NULL,
+	`address` text,
+	`city` varchar(100) NOT NULL,
+	`state` varchar(2) NOT NULL,
+	`zipCode` varchar(9),
+	`logoUrl` text,
+	`coverUrl` text,
+	`bio` text,
+	`services` json,
+	`workingHours` json,
+	`googleCalendarId` varchar(255),
+	`googleCalendarToken` text,
+	`calComApiKey` varchar(255),
+	`calComEventTypeId` varchar(100),
+	`notifyWhatsapp` varchar(20),
+	`notifyEmail` varchar(320),
+	`plan` enum('free','pro','enterprise') NOT NULL DEFAULT 'free',
+	`active` boolean NOT NULL DEFAULT true,
+	`currentMonthLeads` int NOT NULL DEFAULT 0,
+	`currentMonthAiAnalyses` int NOT NULL DEFAULT 0,
+	`countersResetAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `clinics_id` PRIMARY KEY(`id`),
+	CONSTRAINT `clinics_slug_unique` UNIQUE(`slug`)
+);
+--> statement-breakpoint
+CREATE TABLE `lead_photos` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`leadId` int NOT NULL,
+	`clinicId` int NOT NULL,
+	`photoType` enum('front','top','left','right') NOT NULL,
+	`s3Key` varchar(512) NOT NULL,
+	`s3Url` text NOT NULL,
+	`keypoints` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `lead_photos_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `leads` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`phone` varchar(20) NOT NULL,
+	`email` varchar(320),
+	`region` varchar(255),
+	`utmSource` varchar(100),
+	`utmMedium` varchar(100),
+	`utmCampaign` varchar(255),
+	`utmContent` varchar(255),
+	`utmTerm` varchar(255),
+	`referrer` text,
+	`gender` enum('male','female','other'),
+	`age` int,
+	`hairProblem` text,
+	`hairLossType` enum('frontal','vertex','total','diffuse','temporal','other'),
+	`hairLossTime` varchar(100),
+	`previousTreatments` text,
+	`expectations` text,
+	`howDidYouHear` varchar(255),
+	`chatAnswers` json,
+	`funnelStep` enum('landing','form_started','form_done','chat_started','chat_done','photos_started','photos_done','ai_processing','ai_done','schedule_started','scheduled','confirmed','completed','cancelled') NOT NULL DEFAULT 'landing',
+	`abandonedAt` timestamp,
+	`lastActivityAt` timestamp NOT NULL DEFAULT (now()),
+	`leadScore` int,
+	`leadScoreBreakdown` json,
+	`priority` enum('low','medium','high','urgent') DEFAULT 'medium',
+	`sessionToken` varchar(128),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `leads_id` PRIMARY KEY(`id`),
+	CONSTRAINT `leads_sessionToken_unique` UNIQUE(`sessionToken`)
+);
+--> statement-breakpoint
+CREATE TABLE `notifications` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`targetType` enum('clinic','lead') NOT NULL,
+	`leadId` int,
+	`title` varchar(255) NOT NULL,
+	`content` text NOT NULL,
+	`type` enum('new_lead','chat_completed','photos_uploaded','ai_ready','appointment_new','appointment_confirmed','appointment_cancelled','appointment_reminder','treatment_followup','nps_request') NOT NULL,
+	`channel` enum('platform','whatsapp','email','sms') NOT NULL DEFAULT 'platform',
+	`templateId` varchar(100),
+	`read` boolean NOT NULL DEFAULT false,
+	`delivered` boolean NOT NULL DEFAULT false,
+	`deliveredAt` timestamp,
+	`deliveryError` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `notifications_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `nps_responses` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`leadId` int NOT NULL,
+	`appointmentId` int,
+	`score` tinyint NOT NULL,
+	`category` enum('detractor','passive','promoter') NOT NULL,
+	`comment` text,
+	`allowTestimonial` boolean NOT NULL DEFAULT false,
+	`sentAt` timestamp NOT NULL,
+	`respondedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `nps_responses_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `plan_limits` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`plan` enum('free','pro','enterprise') NOT NULL,
+	`leadsPerMonth` int NOT NULL,
+	`aiAnalysesPerMonth` int NOT NULL,
+	`teamMembers` int NOT NULL,
+	`whatsappNotifications` boolean NOT NULL DEFAULT false,
+	`googleCalendar` boolean NOT NULL DEFAULT false,
+	`calComIntegration` boolean NOT NULL DEFAULT false,
+	`customBranding` boolean NOT NULL DEFAULT false,
+	`npsEnabled` boolean NOT NULL DEFAULT false,
+	`treatmentHistory` boolean NOT NULL DEFAULT false,
+	`exportData` boolean NOT NULL DEFAULT false,
+	`apiAccess` boolean NOT NULL DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `plan_limits_id` PRIMARY KEY(`id`),
+	CONSTRAINT `plan_limits_plan_unique` UNIQUE(`plan`)
+);
+--> statement-breakpoint
+CREATE TABLE `treatments` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`clinicId` int NOT NULL,
+	`leadId` int NOT NULL,
+	`appointmentId` int,
+	`treatmentType` varchar(255) NOT NULL,
+	`sessionNumber` int NOT NULL DEFAULT 1,
+	`areasTargeted` json,
+	`productsUsed` json,
+	`technician` varchar(255),
+	`notes` text,
+	`beforePhotoUrl` text,
+	`afterPhotoUrl` text,
+	`satisfactionRating` tinyint,
+	`nextSessionRecommendedAt` timestamp,
+	`performedAt` timestamp NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `treatments_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `users` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`openId` varchar(64) NOT NULL,
+	`name` text,
+	`email` varchar(320),
+	`loginMethod` varchar(64),
+	`role` enum('user','admin') NOT NULL DEFAULT 'user',
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`lastSignedIn` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `users_id` PRIMARY KEY(`id`),
+	CONSTRAINT `users_openId_unique` UNIQUE(`openId`)
+);
