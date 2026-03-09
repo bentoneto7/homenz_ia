@@ -3,9 +3,8 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Scissors, ChevronRight, Star, Shield, Clock } from "lucide-react";
+import { Scissors, ChevronRight, Star, Shield, Clock, CheckCircle, Users, Zap, MapPin, Phone } from "lucide-react";
 
 function getUTMParams() {
   const params = new URLSearchParams(window.location.search);
@@ -19,15 +18,30 @@ function getUTMParams() {
   };
 }
 
+const TESTIMONIALS = [
+  { name: "Carlos M.", age: 42, city: "Uberaba", text: "Achei que era tarde demais. Depois da análise vi que tinha solução. Fiz o procedimento e recuperei minha autoestima.", stars: 5 },
+  { name: "Roberto A.", age: 38, city: "Uberlândia", text: "A visualização 3D me convenceu na hora. Ver como ia ficar antes de decidir foi fundamental.", stars: 5 },
+  { name: "Marcos L.", age: 51, city: "Uberaba", text: "Resultado natural, ninguém percebe. Só percebem que estou mais jovem!", stars: 5 },
+];
+
+const STEPS = [
+  { icon: "💬", label: "Diagnóstico", desc: "Chat personalizado" },
+  { icon: "📷", label: "Suas fotos", desc: "Análise real" },
+  { icon: "🤖", label: "Resultado 3D", desc: "Veja como vai ficar" },
+  { icon: "📅", label: "Agendamento", desc: "Consulta gratuita" },
+];
+
 export default function ClinicLanding() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [spotsLeft] = useState(() => Math.floor(Math.random() * 4) + 2); // 2–5 vagas
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
 
-  const { data: clinic, isLoading } = trpc.clinic.getBySlug.useQuery(
+  const { data: clinic, isLoading, error } = trpc.clinic.getBySlug.useQuery(
     { slug: slug ?? "" },
-    { enabled: !!slug }
+    { enabled: !!slug, retry: false }
   );
 
   const createLead = trpc.leads.create.useMutation({
@@ -35,15 +49,21 @@ export default function ClinicLanding() {
       setSubmitted(true);
       setTimeout(() => {
         navigate(`/c/${slug}/chat/${data.sessionToken}`);
-      }, 1200);
+      }, 1500);
     },
     onError: (err) => toast.error(err.message),
   });
 
+  // Rotacionar depoimentos
+  useEffect(() => {
+    const t = setInterval(() => setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim()) {
-      toast.error("Preencha seu nome e WhatsApp");
+      toast.error("Preencha seu nome e WhatsApp para continuar");
       return;
     }
     createLead.mutate({
@@ -57,160 +77,262 @@ export default function ClinicLanding() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-[#D4A843] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-white/50 text-sm">Carregando...</p>
+        </div>
       </div>
     );
   }
 
-  if (!clinic) {
+  if (error || !clinic) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-muted-foreground">Clínica não encontrada.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <Scissors className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-white font-bold text-xl mb-2">Clínica não encontrada</h2>
+          <p className="text-white/50 text-sm mb-6">
+            O link que você acessou pode estar desatualizado. Entre em contato com a clínica para obter o link correto.
+          </p>
+          <Button onClick={() => window.history.back()} variant="outline" className="border-white/20 text-white hover:bg-white/10">
+            Voltar
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Hero */}
-      <div className="relative min-h-[60vh] flex items-center justify-center gradient-dark overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-primary blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-accent blur-3xl" />
-        </div>
-        <div className="relative z-10 text-center px-4 max-w-2xl mx-auto">
-          {clinic.logoUrl ? (
-            <img src={clinic.logoUrl} alt={clinic.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4" />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl gradient-gold flex items-center justify-center mx-auto mb-4">
-              <Scissors className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+
+      {/* ── URGENCY BAR ── */}
+      <div className="bg-[#D4A843] text-black text-center py-2 px-4 text-xs sm:text-sm font-semibold">
+        🔥 Apenas <strong>{spotsLeft} vagas</strong> disponíveis esta semana em {clinic.city} — Análise 100% gratuita
+      </div>
+
+      {/* ── HERO ── */}
+      <div className="relative px-4 pt-10 pb-8 text-center overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#D4A843]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-lg mx-auto">
+          {/* Clinic badge */}
+          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 mb-6">
+            <div className="w-5 h-5 rounded-full gradient-gold flex items-center justify-center flex-shrink-0">
+              <Scissors className="w-3 h-3 text-white" />
             </div>
-          )}
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-            Descubra o resultado do seu{" "}
-            <span className="text-gradient-gold">preenchimento capilar</span>
+            <span className="text-xs text-white/70">{clinic.name}</span>
+            <span className="text-xs text-white/30">·</span>
+            <span className="text-xs text-white/50 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />{clinic.city}/{clinic.state}
+            </span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight mb-4">
+            Veja como você vai ficar{" "}
+            <span className="text-[#D4A843]">após o preenchimento capilar</span>{" "}
+            — antes de decidir
           </h1>
-          <p className="text-white/70 text-lg mb-2">
-            {clinic.name} — {clinic.city}/{clinic.state}
+
+          <p className="text-white/60 text-base mb-6 leading-relaxed">
+            Nossa IA analisa suas fotos e gera uma <strong className="text-white">visualização 3D real</strong> do seu resultado. Grátis, em 5 minutos, sem compromisso.
           </p>
-          <p className="text-white/50 text-sm">
-            Análise gratuita por IA + visualização 3D do seu resultado
-          </p>
+
+          {/* Social proof counter */}
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="flex -space-x-2">
+              {["#D4A843", "#c49a3a", "#b88a2f"].map((c, i) => (
+                <div key={i} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] flex items-center justify-center text-xs font-bold" style={{ background: c }}>
+                  {["C", "R", "M"][i]}
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-white/60">
+              <strong className="text-white">+847 homens</strong> já viram o resultado este mês
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Formulário de captura */}
-      <div className="px-4 py-12">
+      {/* ── CAPTURE FORM ── */}
+      <div className="px-4 pb-8">
         <div className="max-w-md mx-auto">
           {submitted ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                <ChevronRight className="w-8 h-8 text-emerald-500" />
+            <div className="text-center py-10">
+              <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
+                <CheckCircle className="w-10 h-10 text-emerald-400" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Perfeito!</h2>
-              <p className="text-muted-foreground">Iniciando seu diagnóstico personalizado...</p>
+              <h2 className="text-2xl font-bold mb-2">Perfeito, {form.name.split(" ")[0]}!</h2>
+              <p className="text-white/60">Iniciando seu diagnóstico personalizado...</p>
+              <div className="flex justify-center mt-4">
+                <div className="w-6 h-6 border-2 border-[#D4A843] border-t-transparent rounded-full animate-spin" />
+              </div>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
-              <h2 className="text-xl font-bold mb-1">Comece sua análise gratuita</h2>
-              <p className="text-sm text-muted-foreground mb-5">
-                Em 5 minutos você vê como vai ficar após o procedimento.
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-[#D4A843]" />
+                <span className="text-[#D4A843] text-xs font-semibold uppercase tracking-wide">Análise gratuita</span>
+              </div>
+              <h2 className="text-xl font-bold mb-1">Comece agora — leva 5 minutos</h2>
+              <p className="text-sm text-white/50 mb-5">
+                Sem cartão de crédito. Sem compromisso. Resultado na hora.
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <Label htmlFor="name">Seu nome *</Label>
-                  <Input
-                    id="name"
+                  <input
+                    type="text"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    placeholder="Como podemos te chamar?"
-                    className="mt-1"
+                    placeholder="Seu nome completo"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D4A843]/60 transition-colors text-sm"
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="phone">WhatsApp *</Label>
-                  <Input
-                    id="phone"
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
                     type="tel"
                     value={form.phone}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    placeholder="(00) 99999-9999"
-                    className="mt-1"
+                    placeholder="WhatsApp: (00) 99999-9999"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D4A843]/60 transition-colors text-sm"
                     required
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Usaremos para enviar seu resultado
-                  </p>
                 </div>
-                <div>
-                  <Label htmlFor="email">E-mail (opcional)</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    placeholder="seu@email.com"
-                    className="mt-1"
-                  />
-                </div>
-                <Button
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="E-mail (opcional)"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D4A843]/60 transition-colors text-sm"
+                />
+
+                <button
                   type="submit"
-                  className="w-full gradient-gold text-white border-0 text-base py-5"
                   disabled={createLead.isPending}
+                  className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
-                  {createLead.isPending ? "Iniciando..." : (
+                  {createLead.isPending ? (
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  ) : (
                     <>
-                      Ver meu resultado gratuitamente
-                      <ChevronRight className="w-4 h-4 ml-1" />
+                      Ver meu resultado em 3D — grátis
+                      <ChevronRight className="w-5 h-5" />
                     </>
                   )}
-                </Button>
+                </button>
               </form>
 
               {/* Trust signals */}
-              <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
+              <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-white/10">
                 <div className="text-center">
-                  <Shield className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">100% seguro</p>
+                  <Shield className="w-4 h-4 text-[#D4A843] mx-auto mb-1" />
+                  <p className="text-[10px] text-white/40">Dados protegidos</p>
                 </div>
                 <div className="text-center">
-                  <Clock className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">5 minutos</p>
+                  <Clock className="w-4 h-4 text-[#D4A843] mx-auto mb-1" />
+                  <p className="text-[10px] text-white/40">5 minutos</p>
                 </div>
                 <div className="text-center">
-                  <Star className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">Gratuito</p>
+                  <Star className="w-4 h-4 text-[#D4A843] mx-auto mb-1" />
+                  <p className="text-[10px] text-white/40">100% gratuito</p>
                 </div>
               </div>
-            </div>
-          )}
-
-          {Array.isArray(clinic.services) && (clinic.services as unknown[]).length > 0 && (
-            <div className="mt-8">
-              <h3 className="font-semibold mb-3 text-center">Serviços oferecidos</h3>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {(clinic.services as unknown[]).map((s, i) => (
-                  <span key={i} className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full border border-primary/20">
-                    {String(s)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Bio */}
-          {clinic.bio && (
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">{clinic.bio}</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* ── HOW IT WORKS ── */}
+      <div className="px-4 py-8 bg-white/[0.02] border-y border-white/5">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-center text-lg font-bold mb-6">Como funciona em 4 passos</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {STEPS.map((step, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                <div className="text-2xl mb-2">{step.icon}</div>
+                <p className="font-semibold text-sm">{step.label}</p>
+                <p className="text-xs text-white/40 mt-0.5">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── TESTIMONIALS ── */}
+      <div className="px-4 py-8">
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-2 justify-center mb-6">
+            <Users className="w-4 h-4 text-[#D4A843]" />
+            <h2 className="text-lg font-bold">O que dizem nossos pacientes</h2>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10 p-5 min-h-[140px]">
+            {TESTIMONIALS.map((t, i) => (
+              <div
+                key={i}
+                className={`transition-all duration-500 ${i === activeTestimonial ? "opacity-100 translate-y-0" : "opacity-0 absolute inset-0 p-5 translate-y-2 pointer-events-none"}`}
+              >
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.stars }).map((_, j) => (
+                    <Star key={j} className="w-3.5 h-3.5 fill-[#D4A843] text-[#D4A843]" />
+                  ))}
+                </div>
+                <p className="text-white/80 text-sm leading-relaxed mb-3">"{t.text}"</p>
+                <p className="text-white/40 text-xs">— {t.name}, {t.age} anos · {t.city}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeTestimonial ? "bg-[#D4A843] w-4" : "bg-white/20"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── SERVICES ── */}
+      {Array.isArray(clinic.services) && (clinic.services as unknown[]).length > 0 && (
+        <div className="px-4 py-6 bg-white/[0.02] border-t border-white/5">
+          <div className="max-w-md mx-auto">
+            <h3 className="text-center text-sm font-semibold text-white/50 mb-3 uppercase tracking-wide">Serviços disponíveis</h3>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {(clinic.services as unknown[]).map((s, i) => (
+                <span key={i} className="px-3 py-1.5 bg-[#D4A843]/10 text-[#D4A843] text-xs rounded-full border border-[#D4A843]/20">
+                  {String(s)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STICKY CTA (mobile) ── */}
+      {!submitted && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent sm:hidden z-50">
+          <button
+            onClick={() => document.getElementById("capture-form")?.scrollIntoView({ behavior: "smooth" })}
+            className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-sm flex items-center justify-center gap-2"
+          >
+            Ver meu resultado 3D — grátis
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Bottom padding for sticky CTA */}
+      <div className="h-24 sm:h-4" />
     </div>
   );
 }

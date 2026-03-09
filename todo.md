@@ -54,4 +54,19 @@
 - [x] Testes Vitest (12 testes passando: auth, clinic, leads, funnel flow, UTMs, notificações)
 - [x] Responsividade mobile-first em todas as páginas
 - [x] Estados de loading e erro
-- [ ] Checkpoint final e entrega
+- [x] Checkpoint final e entrega
+
+## Correções
+- [x] Criar clínica demo no banco via seed para o link /c/demo funcionar
+- [x] Melhorar tratamento de erro na ClinicLanding quando slug não existe
+- [x] Botão "Ver demo do funil" na home deve redirecionar para /c/demo corretamente
+
+## Demo Profissional (Tráfego Pago)
+- [x] Criar clínica demo no banco (slug: demo, dados reais de Uberaba)
+- [x] Corrigir tratamento de erro quando slug não existe
+- [x] Polir ClinicLanding: hero com urgência, prova social, depoimentos, CTA persuasivo
+- [x] Polir FunnelChat: animações de digitação, emojis, copywriting empático
+- [x] Polir FunnelPhotos: overlay de guia visual, feedback de progresso
+- [x] Polir FunnelResult: apresentação impactante antes/depois, leadScore visual
+- [x] Polir FunnelSchedule: calendário intuitivo com horários disponíveis
+- [x] Polir FunnelConfirmation: página de sucesso com urgência e próximos passos

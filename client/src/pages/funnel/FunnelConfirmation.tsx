@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Check, Calendar, Phone, MessageCircle } from "lucide-react";
+import { CheckCircle2, Calendar, Clock, MapPin, MessageCircle, Star, ChevronRight } from "lucide-react";
 
 export default function FunnelConfirmation() {
   const { slug, token } = useParams<{ slug: string; token: string }>();
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { data: appointment } = trpc.appointments.getByToken.useQuery(
     { sessionToken: token ?? "" },
@@ -16,98 +17,153 @@ export default function FunnelConfirmation() {
     { enabled: !!slug }
   );
 
+  useEffect(() => {
+    setShowConfetti(true);
+    const t = setTimeout(() => setShowConfetti(false), 3000);
+    return () => clearTimeout(t);
+  }, []);
+
   const scheduledDate = appointment?.scheduledAt ? new Date(appointment.scheduledAt) : null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full text-center">
-        {/* Success icon */}
-        <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-          <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center">
-            <Check className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-start px-4 py-10">
+      {/* Confetti particles */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 rounded-sm animate-bounce"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `-${Math.random() * 20}px`,
+                backgroundColor: ["#D4A843", "#10b981", "#ffffff", "#f59e0b"][i % 4],
+                animationDelay: `${Math.random() * 1}s`,
+                animationDuration: `${1 + Math.random() * 2}s`,
+                transform: `rotate(${Math.random() * 360}deg)`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="max-w-md w-full">
+        {/* Success hero */}
+        <div className="text-center mb-8">
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+            <div className="relative w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                <CheckCircle2 className="w-8 h-8 text-white" />
+              </div>
+            </div>
           </div>
+
+          <h1 className="text-3xl font-black mb-2">
+            Consulta agendada! 🎉
+          </h1>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Sua consulta foi confirmada com sucesso.<br />
+            Aguardamos você para transformar seu visual!
+          </p>
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">Consulta agendada!</h1>
-        <p className="text-muted-foreground mb-8">
-          Sua consulta foi confirmada com sucesso. Aguardamos você!
-        </p>
-
-        {/* Appointment details */}
+        {/* Appointment card */}
         {scheduledDate && (
-          <div className="bg-card border border-border rounded-2xl p-5 mb-6 text-left">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4">
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+              <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-black" />
               </div>
               <div>
-                <p className="font-semibold">{clinic?.name ?? "Clínica"}</p>
-                <p className="text-xs text-muted-foreground">{clinic?.city}/{clinic?.state}</p>
+                <p className="font-bold">{clinic?.name ?? "Clínica Capilar"}</p>
+                <p className="text-xs text-white/40 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {clinic?.city ?? "Uberaba"}/{clinic?.state ?? "MG"}
+                </p>
               </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Data:</span>
-                <span className="font-medium">
-                  {scheduledDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+              <div className="ml-auto">
+                <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full font-semibold">
+                  Pendente
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Horário:</span>
-                <span className="font-medium">
-                  {scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tipo:</span>
-                <span className="font-medium">Consulta de avaliação</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <span className="text-amber-500 font-medium">Aguardando confirmação</span>
-              </div>
             </div>
-          </div>
-        )}
 
-        {/* Contact */}
-        {clinic?.whatsapp && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-6">
-            <p className="text-sm font-medium text-emerald-600 mb-1">Dúvidas? Fale conosco!</p>
-            <p className="text-xs text-muted-foreground mb-3">
-              Nossa equipe está disponível para responder qualquer pergunta.
-            </p>
-            <a
-              href={`https://wa.me/55${clinic.whatsapp.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Falar no WhatsApp
-              </Button>
-            </a>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-white/40">Data</p>
+                  <p className="text-sm font-semibold capitalize">
+                    {scheduledDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-white/40">Horário</p>
+                  <p className="text-sm font-semibold">
+                    {scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Next steps */}
-        <div className="bg-card border border-border rounded-2xl p-4 text-left">
-          <p className="font-semibold text-sm mb-3">Próximos passos:</p>
-          <div className="space-y-2">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4">
+          <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-3">Próximos passos</p>
+          <div className="space-y-3">
             {[
-              "Você receberá uma confirmação da clínica em breve",
-              "Chegue com 10 minutos de antecedência",
-              "Traga documento de identidade",
-              "A consulta é gratuita e sem compromisso",
-            ].map((step, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-bold">
-                  {i + 1}
+              { num: "1", text: "A clínica confirmará seu agendamento em breve" },
+              { num: "2", text: "Chegue com 10 minutos de antecedência" },
+              { num: "3", text: "Traga documento de identidade" },
+              { num: "4", text: "A consulta é 100% gratuita e sem compromisso" },
+            ].map((step) => (
+              <div key={step.num} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full gradient-gold text-black flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
+                  {step.num}
                 </div>
-                {step}
+                <span className="text-sm text-white/60">{step.text}</span>
               </div>
             ))}
           </div>
+        </div>
+
+        {/* WhatsApp CTA */}
+        {clinic?.whatsapp && (
+          <a
+            href={`https://wa.me/55${clinic.whatsapp.replace(/\D/g, "")}?text=Olá! Acabei de agendar uma consulta pelo site. Meu agendamento é para ${scheduledDate?.toLocaleDateString("pt-BR")} às ${scheduledDate?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-4 hover:bg-emerald-500/15 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-400">Falar no WhatsApp</p>
+                <p className="text-xs text-white/40">Tire dúvidas com nossa equipe</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-emerald-400" />
+          </a>
+        )}
+
+        {/* Rating prompt */}
+        <div className="bg-white/3 border border-white/5 rounded-2xl p-4 text-center">
+          <p className="text-sm font-semibold mb-2">Como foi sua experiência até aqui?</p>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} className="group">
+                <Star className="w-7 h-7 text-white/20 group-hover:text-[#D4A843] group-hover:fill-[#D4A843] transition-colors" />
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-white/30 mt-2">Sua avaliação nos ajuda a melhorar</p>
         </div>
       </div>
     </div>

@@ -1,9 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Camera, RotateCcw, Check, ChevronRight, Info } from "lucide-react";
+import { Camera, RotateCcw, Check, ChevronRight, Lock, Sparkles, AlertCircle } from "lucide-react";
 
 type PhotoType = "front" | "top" | "left" | "right";
 
@@ -13,34 +12,39 @@ const PHOTO_STEPS: {
   instruction: string;
   icon: string;
   guide: string;
+  tip: string;
 }[] = [
   {
     type: "front",
     label: "Frente",
-    instruction: "Olhe diretamente para a câmera, mantenha o rosto centralizado",
+    instruction: "Olhe diretamente para a câmera com o rosto centralizado",
     icon: "👤",
-    guide: "Posicione o topo da cabeça no círculo superior",
+    guide: "Centralize seu rosto no círculo",
+    tip: "Boa iluminação frontal ajuda muito",
   },
   {
     type: "top",
     label: "Topo",
-    instruction: "Incline a cabeça para baixo, mostre o topo do couro cabeludo",
+    instruction: "Incline a cabeça para baixo mostrando o topo do couro cabeludo",
     icon: "⬆️",
-    guide: "Centralize o topo da cabeça no círculo",
+    guide: "Mostre o topo da cabeça centralizado",
+    tip: "Peça ajuda a alguém para fotografar de cima",
   },
   {
     type: "left",
     label: "Lado Esquerdo",
-    instruction: "Vire o rosto para a direita, mostrando o lado esquerdo da cabeça",
+    instruction: "Vire o rosto para a direita mostrando o lado esquerdo",
     icon: "◀️",
     guide: "Mantenha a orelha visível no centro",
+    tip: "Perfil completo — da testa até a nuca",
   },
   {
     type: "right",
     label: "Lado Direito",
-    instruction: "Vire o rosto para a esquerda, mostrando o lado direito da cabeça",
+    instruction: "Vire o rosto para a esquerda mostrando o lado direito",
     icon: "▶️",
     guide: "Mantenha a orelha visível no centro",
+    tip: "Perfil completo — da testa até a nuca",
   },
 ];
 
@@ -54,22 +58,23 @@ export default function FunnelPhotos() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const uploadPhoto = trpc.photos.upload.useMutation();
   const updateStep = trpc.leads.updateStep.useMutation();
   const triggerAI = trpc.ai.processPhotos.useMutation({
-    onSuccess: () => {
-      navigate(`/c/${slug}/resultado/${token}`);
-    },
+    onSuccess: () => navigate(`/c/${slug}/resultado/${token}`),
     onError: (err: unknown) => toast.error(err instanceof Error ? err.message : "Erro ao processar"),
   });
 
   const currentStep = PHOTO_STEPS[currentPhotoIndex];
-  const allCaptured = Object.values(capturedPhotos).every(Boolean);
+  const capturedCount = Object.values(capturedPhotos).filter(Boolean).length;
+  const allCaptured = capturedCount === 4;
 
   const openCamera = async () => {
+    setCameraError(false);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -85,7 +90,8 @@ export default function FunnelPhotos() {
       if (currentPhotoIndex === 0) {
         updateStep.mutate({ sessionToken: token ?? "", funnelStep: "photos_started" });
       }
-    } catch (err) {
+    } catch {
+      setCameraError(true);
       toast.error("Não foi possível acessar a câmera. Verifique as permissões.");
     }
   };
@@ -108,55 +114,51 @@ export default function FunnelPhotos() {
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
     closeCamera();
 
-    // Upload
     setUploading(true);
     try {
-      const blob = await (await fetch(dataUrl)).blob();
-      const formData = new FormData();
-      formData.append("photo", blob, `${currentStep.type}.jpg`);
-      formData.append("sessionToken", token ?? "");
-      formData.append("photoType", currentStep.type);
-
       await uploadPhoto.mutateAsync({
-          sessionToken: token ?? "",
-          photoType: currentStep.type,
-          base64: dataUrl,
-        });
-
+        sessionToken: token ?? "",
+        photoType: currentStep.type,
+        base64: dataUrl,
+      });
       setCapturedPhotos((prev) => ({ ...prev, [currentStep.type]: dataUrl }));
-      toast.success(`Foto ${currentStep.label} capturada!`);
-
+      toast.success(`✅ Foto ${currentStep.label} capturada!`);
       if (currentPhotoIndex < PHOTO_STEPS.length - 1) {
         setCurrentPhotoIndex((i) => i + 1);
       }
-    } catch (err) {
+    } catch {
       toast.error("Erro ao salvar foto. Tente novamente.");
     } finally {
       setUploading(false);
     }
-  }, [currentStep, currentPhotoIndex, token]);
+  }, [currentStep, currentPhotoIndex, token, uploadPhoto]);
 
   const handleFinalize = () => {
     triggerAI.mutate({ sessionToken: token ?? "" });
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 px-4 py-3">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="font-semibold">Fotos para análise</h1>
-            <span className="text-sm text-muted-foreground">
-              {Object.values(capturedPhotos).filter(Boolean).length}/4 fotos
-            </span>
+            <div>
+              <h1 className="font-bold text-sm">Captura de Fotos</h1>
+              <p className="text-xs text-white/40">Para análise capilar com IA</p>
+            </div>
+            <span className="text-sm font-bold text-[#D4A843]">{capturedCount}/4</span>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {PHOTO_STEPS.map((s, i) => (
               <div
                 key={s.type}
-                className={`h-1.5 flex-1 rounded-full transition-all ${
-                  capturedPhotos[s.type] ? "bg-emerald-500" : i === currentPhotoIndex ? "gradient-gold" : "bg-muted"
+                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                  capturedPhotos[s.type]
+                    ? "bg-emerald-500"
+                    : i === currentPhotoIndex
+                    ? "bg-[#D4A843]"
+                    : "bg-white/10"
                 }`}
               />
             ))}
@@ -167,8 +169,8 @@ export default function FunnelPhotos() {
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Camera view */}
         {isCameraOpen ? (
-          <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4]">
+          <div className="animate-in fade-in duration-300">
+            <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] shadow-2xl">
               <video
                 ref={videoRef}
                 autoPlay
@@ -176,78 +178,97 @@ export default function FunnelPhotos() {
                 muted
                 className="w-full h-full object-cover scale-x-[-1]"
               />
-              {/* Overlay guide */}
+
+              {/* Dark vignette */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
+
+              {/* Oval guide overlay */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-48 h-48 rounded-full border-2 border-primary/70 border-dashed" />
+                <div className="w-52 h-64 rounded-full border-2 border-[#D4A843]/80 border-dashed shadow-[0_0_20px_rgba(212,168,67,0.3)]" />
               </div>
-              {/* Points overlay */}
+
+              {/* Keypoints overlay */}
               <div className="absolute inset-0 pointer-events-none">
                 {[
-                  { x: "50%", y: "15%", label: "Topo" },
-                  { x: "50%", y: "85%", label: "Queixo" },
-                  { x: "15%", y: "50%", label: "Esq" },
-                  { x: "85%", y: "50%", label: "Dir" },
+                  { x: "50%", y: "12%", label: "Topo" },
+                  { x: "50%", y: "88%", label: "Queixo" },
+                  { x: "12%", y: "50%", label: "Esq" },
+                  { x: "88%", y: "50%", label: "Dir" },
                 ].map((pt) => (
                   <div
                     key={pt.label}
                     className="absolute flex flex-col items-center"
                     style={{ left: pt.x, top: pt.y, transform: "translate(-50%, -50%)" }}
                   >
-                    <div className="w-3 h-3 rounded-full bg-primary pulse-gold" />
-                    <span className="text-[10px] text-primary font-medium mt-0.5 bg-background/70 px-1 rounded">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#D4A843] shadow-[0_0_8px_rgba(212,168,67,0.8)] animate-pulse" />
+                    <span className="text-[9px] text-[#D4A843] font-bold mt-0.5 bg-black/60 px-1 rounded">
                       {pt.label}
                     </span>
                   </div>
                 ))}
               </div>
-              {/* Instruction overlay */}
+
+              {/* Top instruction */}
+              <div className="absolute top-3 left-0 right-0 text-center px-4">
+                <div className="bg-black/70 backdrop-blur rounded-full px-4 py-1.5 inline-block">
+                  <p className="text-xs font-medium text-white">{currentStep.icon} {currentStep.label}</p>
+                </div>
+              </div>
+
+              {/* Bottom guide */}
               <div className="absolute bottom-4 left-0 right-0 text-center px-4">
-                <div className="bg-background/80 backdrop-blur rounded-xl px-4 py-2 inline-block">
-                  <p className="text-xs font-medium">{currentStep.guide}</p>
+                <div className="bg-black/70 backdrop-blur rounded-xl px-4 py-2 inline-block">
+                  <p className="text-xs font-medium text-white">{currentStep.guide}</p>
+                  <p className="text-[10px] text-white/60 mt-0.5">{currentStep.tip}</p>
                 </div>
               </div>
             </div>
             <canvas ref={canvasRef} className="hidden" />
 
             <div className="flex gap-3 mt-4">
-              <Button variant="outline" onClick={closeCamera} className="flex-1">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Cancelar
-              </Button>
-              <Button
-                onClick={capturePhoto}
-                className="flex-1 gradient-gold text-white border-0"
-                disabled={uploading}
+              <button
+                onClick={closeCamera}
+                className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-xl py-3.5 text-sm text-white hover:bg-white/10 transition-colors"
               >
-                {uploading ? "Salvando..." : (
+                <RotateCcw className="w-4 h-4" />
+                Cancelar
+              </button>
+              <button
+                onClick={capturePhoto}
+                disabled={uploading}
+                className="flex-1 flex items-center justify-center gap-2 gradient-gold text-black font-bold rounded-xl py-3.5 text-sm disabled:opacity-60 transition-opacity"
+              >
+                {uploading ? (
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                ) : (
                   <>
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capturar
+                    <Camera className="w-4 h-4" />
+                    Capturar foto
                   </>
                 )}
-              </Button>
+              </button>
             </div>
           </div>
         ) : (
           <>
             {/* Photo grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-5">
               {PHOTO_STEPS.map((step, i) => (
                 <div
                   key={step.type}
-                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                    capturedPhotos[step.type]
-                      ? "border-emerald-500"
-                      : i === currentPhotoIndex
-                      ? "border-primary border-dashed"
-                      : "border-border"
-                  }`}
                   onClick={() => {
                     if (!capturedPhotos[step.type]) {
                       setCurrentPhotoIndex(i);
                       openCamera();
                     }
                   }}
+                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                    capturedPhotos[step.type]
+                      ? "border-emerald-500"
+                      : i === currentPhotoIndex
+                      ? "border-[#D4A843] border-dashed shadow-[0_0_12px_rgba(212,168,67,0.2)]"
+                      : "border-white/10"
+                  }`}
                 >
                   {capturedPhotos[step.type] ? (
                     <>
@@ -256,19 +277,19 @@ export default function FunnelPhotos() {
                         alt={step.label}
                         className="w-full h-full object-cover scale-x-[-1]"
                       />
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
                         <Check className="w-3 h-3 text-white" />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5">
-                        <p className="text-xs text-white font-medium">{step.label}</p>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
+                        <p className="text-xs text-white font-semibold">{step.label}</p>
                       </div>
                     </>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-muted/30 gap-2">
-                      <span className="text-2xl">{step.icon}</span>
-                      <p className="text-xs font-medium text-center px-2">{step.label}</p>
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#D4A843]/5" : "bg-white/3"}`}>
+                      <span className="text-3xl">{step.icon}</span>
+                      <p className="text-xs font-medium text-center px-2 text-white/70">{step.label}</p>
                       {i === currentPhotoIndex && (
-                        <p className="text-[10px] text-primary">Toque para fotografar</p>
+                        <span className="text-[10px] text-[#D4A843] font-semibold animate-pulse">Toque para fotografar</span>
                       )}
                     </div>
                   )}
@@ -276,48 +297,65 @@ export default function FunnelPhotos() {
               ))}
             </div>
 
+            {/* Camera error */}
+            {cameraError && (
+              <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-4">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-400">Câmera não disponível</p>
+                  <p className="text-xs text-white/50 mt-0.5">Permita o acesso à câmera nas configurações do navegador e tente novamente.</p>
+                </div>
+              </div>
+            )}
+
             {/* Current step instruction */}
             {!allCaptured && (
-              <div className="bg-card border border-border rounded-xl p-4 mb-4">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm mb-1">
-                      {currentStep.icon} Foto {currentPhotoIndex + 1}: {currentStep.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{currentStep.instruction}</p>
-                  </div>
-                </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
+                <p className="text-xs text-white/40 mb-1 uppercase tracking-wide font-semibold">Próxima foto</p>
+                <p className="font-semibold text-sm mb-1">
+                  {currentStep.icon} Foto {currentPhotoIndex + 1} de 4: {currentStep.label}
+                </p>
+                <p className="text-xs text-white/50">{currentStep.instruction}</p>
               </div>
             )}
 
             {/* Action button */}
             {allCaptured ? (
-              <Button
+              <button
                 onClick={handleFinalize}
-                className="w-full gradient-gold text-white border-0 py-5 text-base"
                 disabled={triggerAI.isPending}
+                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
               >
-                {triggerAI.isPending ? "Processando..." : (
+                {triggerAI.isPending ? (
                   <>
-                    Gerar minha análise com IA
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    Processando com IA...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Gerar minha análise 3D com IA
+                    <ChevronRight className="w-5 h-5" />
                   </>
                 )}
-              </Button>
+              </button>
             ) : (
-              <Button
+              <button
                 onClick={openCamera}
-                className="w-full gradient-gold text-white border-0 py-5 text-base"
+                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
               >
-                <Camera className="w-5 h-5 mr-2" />
+                <Camera className="w-5 h-5" />
                 Fotografar: {currentStep.label}
-              </Button>
+              </button>
             )}
 
-            <p className="text-xs text-muted-foreground text-center mt-3">
-              Suas fotos são criptografadas e usadas apenas para análise capilar
-            </p>
+            {/* Privacy note */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <Lock className="w-3.5 h-3.5 text-white/30" />
+              <p className="text-xs text-white/30">
+                Suas fotos são criptografadas e usadas apenas para análise capilar
+              </p>
+            </div>
           </>
         )}
       </div>

@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE clinics SET\n  name = 'Instituto Capilar Uberaba',\n  ownerName = 'Dr. Rafael Mendes',\n  email = 'contato@institutocapilaruberaba.com.br',\n  phone = '34991234567',\n  whatsapp = '34991234567',\n  address = 'Av. Leopoldino de Oliveira, 4200 - Sala 301',\n  zipCode = '38400-000',\n  bio = 'Somos especialistas em preenchimento capilar e micropigmentação em Uberaba há mais de 8 anos. Utilizamos as técnicas mais avançadas do mercado para devolver sua autoestima com resultados naturais e duradouros.',\n  services = '[\"Preenchimento Capilar\", \"Micropigmentação Capilar\", \"Tratamento Capilar\", \"Consulta de Diagnóstico Gratuita\"]',\n  plan = 'pro',\n  updatedAt = NOW()\nWHERE slug = 'demo';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute UPDATE clinics SET\n  name = 'Instituto Capilar Uberaba',\n  ownerName = 'Dr. Rafael Mendes',\n  email = 'contato@institutocapilaruberaba.com.br',\n  phone = '34991234567',\n  whatsapp = '34991234567',\n  address = 'Av. Leopoldino de Oliveira, 4200 - Sala 301',\n  zipCode = '38400-000',\n  bio = 'Somos especialistas em preenchimento capilar e micropigmentação em Uberaba há mais de 8 anos. Utilizamos as técnicas mais avançadas do mercado para devolver sua autoestima com resultados naturais e duradouros.',\n  services = '[\"Preenchimento Capilar\", \"Micropigmentação Capilar\", \"Tratamento Capilar\", \"Consulta de Diagnóstico Gratuita\"]',\n  plan = 'pro',\n  updatedAt = NOW()\nWHERE slug = 'demo';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 362
+}

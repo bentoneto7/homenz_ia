@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO clinics (slug, name, ownerName, ownerUserId, email, phone, whatsapp, city, state, bio, plan, active, currentMonthLeads, currentMonthAiAnalyses, countersResetAt, createdAt, updatedAt)\nVALUES (\n  'demo',\n  'Clínica Capilar Demo',\n  'Equipe CapilarIA',\n  1,\n  'demo@capilar.ia',\n  '34999999999',\n  '34999999999',\n  'Uberaba',\n  'MG',\n  'Esta é uma clínica de demonstração para você testar o funil completo de captação de leads com IA. Experimente o chat, envie fotos e veja a análise 3D do preenchimento capilar!',\n  'pro',\n  1,\n  0,\n  0,\n  NOW(),\n  NOW(),\n  NOW()\n) ON DUPLICATE KEY UPDATE name = name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute INSERT INTO clinics (slug, name, ownerName, ownerUserId, email, phone, whatsapp, city, state, bio, plan, active, currentMonthLeads, currentMonthAiAnalyses, countersResetAt, createdAt, updatedAt)\nVALUES (\n  'demo',\n  'Clínica Capilar Demo',\n  'Equipe CapilarIA',\n  1,\n  'demo@capilar.ia',\n  '34999999999',\n  '34999999999',\n  'Uberaba',\n  'MG',\n  'Esta é uma clínica de demonstração para você testar o funil completo de captação de leads com IA. Experimente o chat, envie fotos e veja a análise 3D do preenchimento capilar!',\n  'pro',\n  1,\n  0,\n  0,\n  NOW(),\n  NOW(),\n  NOW()\n) ON DUPLICATE KEY UPDATE name = name;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 410
+}
