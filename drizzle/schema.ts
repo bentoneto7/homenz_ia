@@ -21,7 +21,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin", "franchisee", "seller"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "franchisee", "seller", "owner"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -667,4 +667,41 @@ export const leadAssignments = mysqlTable("lead_assignments", {
 
 export type LeadAssignment = typeof leadAssignments.$inferSelect;
 export type InsertLeadAssignment = typeof leadAssignments.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONVITES DE ACESSO POR NÍVEL (Criador convida Admin/Franqueado/Vendedor)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const accessInvites = mysqlTable("access_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  // Quem gerou o convite
+  createdByUserId: int("createdByUserId").notNull(), // FK → users.id (owner)
+  // Nível de acesso que será concedido
+  role: mysqlEnum("role", ["admin", "franchisee", "seller"]).notNull(),
+  // Descrição opcional (ex: "Franqueado Uberaba", "Vendedor João")
+  label: varchar("label", { length: 255 }),
+  // Token único do link
+  token: varchar("token", { length: 128 }).notNull().unique(),
+  // Uso único ou múltiplo
+  maxUses: int("maxUses").default(1).notNull(), // 1 = uso único, -1 = ilimitado
+  useCount: int("useCount").default(0).notNull(),
+  // Expiração
+  expiresAt: timestamp("expiresAt"),
+  // Status
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AccessInvite = typeof accessInvites.$inferSelect;
+export type InsertAccessInvite = typeof accessInvites.$inferInsert;
+
+// Registro de quem usou cada convite
+export const accessInviteUses = mysqlTable("access_invite_uses", {
+  id: int("id").autoincrement().primaryKey(),
+  inviteId: int("inviteId").notNull(),
+  userId: int("userId").notNull(),
+  usedAt: timestamp("usedAt").defaultNow().notNull(),
+});
+
+export type AccessInviteUse = typeof accessInviteUses.$inferSelect;
 

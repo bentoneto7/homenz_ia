@@ -14,7 +14,7 @@ import {
 import {
   clinics, clinicUsers, leads, leadPhotos,
   aiResults, appointments, notifications, npsResponses,
-  planLimits, treatments,
+  planLimits, treatments, users, accessInvites, accessInviteUses,
 } from "../drizzle/schema";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
@@ -1823,6 +1823,129 @@ export const appRouter = router({
         const { clinics } = await import("../drizzle/schema");
         await db.update(clinics).set({ brandId: input.brandId }).where(eq(clinics.id, input.clinicId));
         return { success: true };
+      }),
+  }),
+
+  // ── PAINEL DO CRIADOR (OWNER) ────────────────────────────────────────────────────────────────────────────
+  creator: router({
+    // Verificar se o usuário logado é owner
+    isOwner: protectedProcedure.query(({ ctx }) => {
+      return ctx.user.role === "owner";
+    }),
+
+    // Gerar link de convite por nível
+    createInvite: protectedProcedure
+      .input(z.object({
+        role: z.enum(["admin", "franchisee", "seller"]),
+        label: z.string().optional(),
+        maxUses: z.number().default(1),
+        expiresInHours: z.number().default(72),
+        origin: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "owner") throw new TRPCError({ code: "FORBIDDEN" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const token = nanoid(32);
+        const expiresAt = new Date(Date.now() + input.expiresInHours * 60 * 60 * 1000);
+        await db.insert(accessInvites).values({
+          createdByUserId: ctx.user.id,
+          role: input.role,
+          label: input.label,
+          token,
+          maxUses: input.maxUses,
+          expiresAt,
+        });
+        const inviteUrl = `${input.origin}/join?token=${token}`;
+        return { token, inviteUrl, expiresAt };
+      }),
+
+    // Listar todos os convites gerados
+    listInvites: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "owner") throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      return db.select().from(accessInvites).orderBy(desc(accessInvites.createdAt));
+    }),
+
+    // Revogar convite
+    revokeInvite: protectedProcedure
+      .input(z.object({ inviteId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "owner") throw new TRPCError({ code: "FORBIDDEN" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(accessInvites).set({ active: false }).where(eq(accessInvites.id, input.inviteId));
+        return { success: true };
+      }),
+
+    // Listar todos os usuários por role
+    listUsers: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "owner") throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      return db.select().from(users).orderBy(desc(users.createdAt));
+    }),
+
+    // Alterar role de um usuário
+    setUserRole: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        role: z.enum(["user", "admin", "franchisee", "seller", "owner"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "owner") throw new TRPCError({ code: "FORBIDDEN" });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await db.update(users).set({ role: input.role }).where(eq(users.id, input.userId));
+        return { success: true };
+      }),
+
+    // Promover o próprio usuário a owner (apenas se não houver nenhum owner ainda)
+    claimOwner: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      // Verificar se já existe um owner
+      const existingOwners = await db.select().from(users).where(eq(users.role, "owner"));
+      if (existingOwners.length > 0) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Já existe um owner cadastrado" });
+      }
+      await db.update(users).set({ role: "owner" }).where(eq(users.id, ctx.user.id));
+      return { success: true };
+    }),
+  }),
+
+  // ── ACEITAR CONVITE DE ACESSO ────────────────────────────────────────────────────────────────────────────
+  invite: router({
+    // Verificar token de convite (público)
+    check: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const [invite] = await db.select().from(accessInvites).where(eq(accessInvites.token, input.token));
+        if (!invite || !invite.active) throw new TRPCError({ code: "NOT_FOUND", message: "Convite inválido ou expirado" });
+        if (invite.expiresAt && invite.expiresAt < new Date()) throw new TRPCError({ code: "NOT_FOUND", message: "Convite expirado" });
+        if (invite.maxUses !== -1 && invite.useCount >= invite.maxUses) throw new TRPCError({ code: "NOT_FOUND", message: "Convite já utilizado" });
+        return { role: invite.role, label: invite.label };
+      }),
+
+    // Aceitar convite (usuário logado)
+    accept: protectedProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const [invite] = await db.select().from(accessInvites).where(eq(accessInvites.token, input.token));
+        if (!invite || !invite.active) throw new TRPCError({ code: "NOT_FOUND", message: "Convite inválido" });
+        if (invite.expiresAt && invite.expiresAt < new Date()) throw new TRPCError({ code: "NOT_FOUND", message: "Convite expirado" });
+        if (invite.maxUses !== -1 && invite.useCount >= invite.maxUses) throw new TRPCError({ code: "NOT_FOUND", message: "Convite já utilizado" });
+        // Aplicar o role ao usuário
+        await db.update(users).set({ role: invite.role }).where(eq(users.id, ctx.user.id));
+        // Registrar uso
+        await db.insert(accessInviteUses).values({ inviteId: invite.id, userId: ctx.user.id });
+        await db.update(accessInvites).set({ useCount: invite.useCount + 1 }).where(eq(accessInvites.id, invite.id));
+        return { success: true, role: invite.role };
       }),
   }),
 });

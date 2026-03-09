@@ -29,6 +29,8 @@ import AdminNetworkRanking from "./pages/admin/NetworkRanking";
 import FranchiseeDashboard from "./pages/franchisee/FranchiseeDashboard";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
+import CreatorPanel from "./pages/creator/CreatorPanel";
+import JoinInvite from "./pages/JoinInvite";
 
 function Router() {
   return (
@@ -81,6 +83,12 @@ function Router() {
       <Route path="/rede/leads" component={NetworkAdminDashboard} />
       <Route path="/rede/analytics" component={NetworkAdminDashboard} />
       <Route path="/rede/configuracoes" component={NetworkAdminDashboard} />
+
+      {/* Painel do Criador (Superadmin) */}
+      <Route path="/creator" component={CreatorPanel} />
+
+      {/* Aceitar convite de acesso */}
+      <Route path="/join" component={JoinInvite} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

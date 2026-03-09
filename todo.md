@@ -183,6 +183,20 @@
 ## Bug: Chat mostrando opções antes de terminar de digitar
 - [x] Corrigir FunnelChat: opções de resposta só devem aparecer após o bot terminar de "digitar" a última mensagem da sequência (usa lastBotMessage.options ao invés de currentQuestion)
 
+## Painel do Criador (Superadmin)
+- [x] Schema: tabela access_invites com token, role, expiresAt, usedAt
+- [x] Role 'owner' no enum de roles do usuário
+- [x] Procedure: gerar link de convite por nível (admin/franchisee/seller) — creator.createInvite
+- [x] Procedure: aceitar convite por token e definir role — invite.accept
+- [x] Procedure: listar todos os usuários por role — creator.listUsers
+- [x] Procedure: alterar role de um usuário — creator.setUserRole
+- [x] Página /creator com claim de owner e painel completo
+- [x] Drag-and-drop para reordenar e simular visualização de cada nível
+- [x] Geração e cópia de links de convite por nível com modal
+- [x] Lista de convites com status e botão de revogar
+- [x] Lista de usuários com role atual e select para alterar
+- [x] Rota /join?token=xxx — página de aceite de convite
+
 ## Correções Visuais Landing Page
 - [x] Cards antes/depois: substituir ícones genéricos por ilustrações SVG de cabeças (calva antes, cabelo depois)
 - [x] Cards antes/depois: seguir layout de referência (2 avatares lado a lado, seta, protocolo, depoimento)
