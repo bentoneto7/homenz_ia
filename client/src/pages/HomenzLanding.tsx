@@ -18,12 +18,15 @@ import {
 } from "lucide-react";
 
 const PHOTOS = {
-  hero: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/photo5_1b9a9c83.jpg",
-  presenting: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/photo9_d4c9e535.jpg",
-  podcast: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/photo3_2dded628.jpg",
-  office: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/photo8_9aca48b6.jpg",
-  event: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/photo10_3b957c58.jpg",
-  lifestyle: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/lifestyle3_e2b3efbc.jpg",
+  // Fotos editadas com tratamento visual Homenz (contraste, vignette, tint azul)
+  hero: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/hero_bg_5f0dc1d5.jpg",
+  presenting: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/presenting_portrait_727b77f9.jpg",
+  podcast: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/podcast_landscape_70883558.jpg",
+  office: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/office_bg_282f2a0a.jpg",
+  event: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/event_landscape_58110d29.jpg",
+  presenting2: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/presenting2_portrait_c9167a3b.jpg",
+  lifestyleRunning: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/lifestyle_running_sq_aa5bc95e.jpg",
+  lifestyleTennis: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/lifestyle_tennis_sq_32e2fef4.jpg",
 };
 
 function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
@@ -162,7 +165,7 @@ export default function HomenzLanding() {
           <img
             src={PHOTOS.hero}
             alt="Homenz"
-            className="w-full h-full object-cover object-center opacity-20"
+            className="w-full h-full object-cover object-center opacity-60"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-transparent to-transparent" />
@@ -243,10 +246,10 @@ export default function HomenzLanding() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: 200, suffix: "+", label: "Unidades na rede", sub: "em todo o Brasil" },
-              { value: 200000, suffix: "+", label: "Homens atendidos", sub: "pela rede Homenz" },
-              { value: 100000, suffix: "+", label: "Procedimentos capilares", sub: "realizados" },
-              { value: 15, suffix: " dias", label: "Trial gratuito", sub: "para sua unidade" },
+              { value: 78, suffix: "+", label: "Unidades na rede", sub: "em todo o Brasil" },
+              { value: 78400, suffix: "+", label: "Homens atendidos", sub: "pela rede Homenz" },
+              { value: 39200, suffix: "+", label: "Procedimentos realizados", sub: "nas unidades da rede" },
+              { value: 15, suffix: " dias", label: "Trial gratuito", sub: "sem cartão de crédito" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl sm:text-4xl font-black text-white mb-1">
@@ -298,7 +301,7 @@ export default function HomenzLanding() {
             <div className="relative">
               <img
                 src={PHOTOS.presenting}
-                alt="Luiz Fernando Homenz"
+                alt="Luiz Fernando Homenz apresentando"
                 className="rounded-2xl w-full object-cover aspect-[4/5] shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 bg-[#1a56db] rounded-2xl p-5 shadow-2xl max-w-xs">
@@ -501,7 +504,7 @@ export default function HomenzLanding() {
             <div className="relative">
               <img
                 src={PHOTOS.podcast}
-                alt="Homenz na mídia"
+                alt="Homenz no Unocast"
                 className="rounded-2xl w-full object-cover aspect-video shadow-2xl"
               />
               <div className="absolute -top-4 -right-4 bg-[#0d1425] border border-white/10 rounded-2xl p-4 shadow-2xl">
@@ -512,8 +515,20 @@ export default function HomenzLanding() {
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 </div>
-                <div className="text-xs font-bold text-white">4.9 Google Reviews</div>
-                <div className="text-xs text-white/40">rede Homenz</div>
+                <div className="text-xs font-bold text-white">Unocast — Podcast</div>
+                <div className="text-xs text-white/40">Luiz Fernando Homenz</div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <img
+                  src={PHOTOS.lifestyleRunning}
+                  alt="Estilo de vida Homenz"
+                  className="rounded-xl w-full object-cover aspect-square shadow-lg"
+                />
+                <img
+                  src={PHOTOS.lifestyleTennis}
+                  alt="Estilo de vida Homenz"
+                  className="rounded-xl w-full object-cover aspect-square shadow-lg"
+                />
               </div>
             </div>
           </div>
@@ -548,6 +563,15 @@ export default function HomenzLanding() {
                 <div className="text-xs text-white/40">{d.desc}</div>
               </div>
             ))}
+          </div>
+
+          {/* Foto do evento Homenz */}
+          <div className="mb-8 rounded-2xl overflow-hidden">
+            <img
+              src={PHOTOS.event}
+              alt="Evento Homenz"
+              className="w-full object-cover h-48 sm:h-64"
+            />
           </div>
 
           {/* Mock ranking */}
@@ -605,57 +629,61 @@ export default function HomenzLanding() {
               Planos
             </div>
             <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              SIMPLES E TRANSPARENTE.
+              15 DIAS GRÁTIS.
               <br />
-              <span className="text-[#00c4cc]">SEM SURPRESAS.</span>
+              <span className="text-[#00c4cc]">SEM CARTÃO. SEM RISCO.</span>
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
               {
-                name: "Starter",
-                price: "R$ 297",
+                name: "Unidade",
+                price: "R$ 897",
                 period: "/mês",
-                desc: "Para unidades que estão começando com tráfego pago.",
+                desc: "Para unidades que querem transformar tráfego pago em consultas agendadas.",
                 features: [
-                  "Até 200 leads/mês",
                   "Funil completo com IA",
+                  "Chat qualificador de leads",
+                  "Análise capilar + visualização 3D",
                   "Agendamento integrado",
                   "Rastreamento de temperatura",
-                  "Dashboard básico",
+                  "Dashboard da unidade",
+                  "Captura automática de UTMs",
+                  "15 dias grátis",
                 ],
-                cta: "Começar grátis",
+                cta: "Ativar 15 dias grátis",
                 highlight: false,
               },
               {
-                name: "Pro",
-                price: "R$ 597",
+                name: "Unidade Pro",
+                price: "R$ 1.497",
                 period: "/mês",
-                desc: "Para unidades que querem maximizar conversão.",
+                desc: "Para unidades que querem máxima performance e visibilidade na rede.",
                 features: [
-                  "Leads ilimitados",
-                  "Tudo do Starter",
-                  "Ranking da rede",
-                  "Check-in diário",
+                  "Tudo do plano Unidade",
+                  "Ranking da rede Homenz",
                   "Health score S/A/B/C/D/F",
-                  "Playbook de recuperação",
-                  "Analytics avançado",
+                  "Check-in diário da equipe",
+                  "Playbook automático de recuperação",
+                  "Analytics avançado e relatórios",
+                  "Suporte prioritário",
+                  "15 dias grátis",
                 ],
-                cta: "Começar grátis",
+                cta: "Ativar 15 dias grátis",
                 highlight: true,
               },
               {
                 name: "Rede",
                 price: "Sob consulta",
                 period: "",
-                desc: "Para franqueadores que querem gerenciar toda a rede.",
+                desc: "Para franqueadores que querem gerenciar e rankear toda a rede Homenz.",
                 features: [
-                  "Todas as unidades",
-                  "Tudo do Pro",
-                  "Painel da rede completo",
+                  "Todas as unidades da rede",
+                  "Tudo do plano Pro",
+                  "Painel consolidado da rede",
                   "Ranking em tempo real",
-                  "Relatórios consolidados",
+                  "Relatórios por unidade e rede",
                   "Suporte dedicado",
                   "Onboarding personalizado",
                 ],
@@ -708,7 +736,7 @@ export default function HomenzLanding() {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-white/40">
-              Todos os planos incluem 15 dias de trial gratuito. Sem cartão de crédito.
+              Todos os planos incluem <span className="text-[#00c4cc] font-semibold">15 dias grátis</span>. Sem cartão de crédito. Cancele quando quiser.
             </p>
           </div>
         </div>
@@ -720,7 +748,7 @@ export default function HomenzLanding() {
           <img
             src={PHOTOS.office}
             alt="Homenz"
-            className="w-full h-full object-cover opacity-10"
+            className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-[#0a0f1e]/90 to-[#0a0f1e]" />
         </div>

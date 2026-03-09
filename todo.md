@@ -141,6 +141,11 @@
 - [x] Footer com links de navegação
 - [x] Rota / aponta para HomenzLanding (rota /plataforma para Home antiga)
 - [x] Renomear sistema de CapilarIA para Homenz IA em toda a landing page
+- [x] Editar fotos com tratamento visual (overlay azul Homenz, contraste, crop profissional)
+- [x] Posicionar fotos editadas nas seções corretas da landing page
+- [x] Refazer copywriting do chat/funil com branding e tom de voz da Homenz
+- [x] Atualizar preços: plano 1 = R$ 897, plano 2 = R$ 1.497, 15 dias grátis
+- [x] Mover seção de planos para após a demo (ao fim da página)
 
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
