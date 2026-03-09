@@ -83,3 +83,28 @@
 - [x] Painel admin: página de configuração de disponibilidade (/painel/disponibilidade)
 - [x] Menu do painel admin atualizado com link para Disponibilidade
 - [x] Disponibilidade padrão inserida para clínica demo (seg-sex 09-18h, sáb 09-13h)
+
+## Jornada do Cliente e Dados Administrativos
+- [ ] Schema: tabela lead_events (timeline de eventos por lead)
+- [ ] Schema: enum de status do lead (novo, chat_iniciado, fotos_enviadas, ia_processada, agendado, confirmado, compareceu, nao_compareceu, cancelado, perdido)
+- [ ] Backend: procedures de lead_events (registrar evento, listar por lead)
+- [ ] Backend: procedure de analytics por clínica (funil de conversão por etapa)
+- [ ] Painel admin: página de jornada individual do lead com timeline visual
+- [ ] Painel admin: dashboard analítico com funil de conversão (quantos entram x saem em cada etapa)
+- [ ] Painel admin: filtros de leads por status (quentes, abandonados, agendados, perdidos)
+- [ ] Botão WhatsApp de recuperação com mensagem pré-redigida personalizada
+- [ ] Sequência de follow-up: marcar leads como "a recuperar" após X horas sem avançar
+- [ ] Relatório administrativo por clínica assinante (dados consolidados)
+
+## Sistema de Temperatura e Jornada do Lead
+- [ ] Corrigir erro TypeScript z.record no routers.ts
+- [ ] Lógica de temperatura: 🔥 Quente (0-30min) → 🌡️ Morno (30min-2h) → ❄️ Frio (2h-24h) → 💀 Perdido (+24h)
+- [ ] Timer visual desde a entrada do lead (tempo decorrido em tempo real)
+- [ ] Playbook de ações por etapa: o que o funcionário deve fazer em cada momento
+- [ ] Indicador de urgência com fogo/gelo animado na lista de leads
+- [ ] Página de jornada individual: timeline visual com temperatura e ações recomendadas
+- [ ] Página de recuperação: lista de leads por temperatura com botão WhatsApp personalizado
+- [ ] Dashboard analytics: funil de conversão + tempo médio de resposta por clínica
+- [ ] Dados ADM: performance de resposta por clínica assinante (para nós sabermos quem age rápido)
+- [ ] Registrar eventos automáticos em todos os pontos do funil
+- [ ] Sequência de follow-up com mensagens pré-redigidas por etapa

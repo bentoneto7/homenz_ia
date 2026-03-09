@@ -19,6 +19,9 @@ import AdminAppointments from "./pages/admin/Appointments";
 import AdminNotifications from "./pages/admin/Notifications";
 import AdminSettings from "./pages/admin/Settings";
 import AdminAvailability from "./pages/admin/Availability";
+import AdminLeadJourney from "./pages/admin/LeadJourney";
+import AdminRecovery from "./pages/admin/Recovery";
+import AdminAnalytics from "./pages/admin/Analytics";
 
 function Router() {
   return (
@@ -43,6 +46,9 @@ function Router() {
       <Route path="/painel/notificacoes" component={AdminNotifications} />
       <Route path="/painel/configuracoes" component={AdminSettings} />
       <Route path="/painel/disponibilidade" component={AdminAvailability} />
+      <Route path="/painel/leads/:id/jornada" component={AdminLeadJourney} />
+      <Route path="/painel/recuperacao" component={AdminRecovery} />
+      <Route path="/painel/analytics" component={AdminAnalytics} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

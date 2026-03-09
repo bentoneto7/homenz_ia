@@ -398,3 +398,74 @@ export const clinicBlockedDates = mysqlTable("clinic_blocked_dates", {
 });
 
 export type ClinicBlockedDate = typeof clinicBlockedDates.$inferSelect;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JORNADA DO LEAD (timeline de eventos)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const leadEvents = mysqlTable("lead_events", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  leadId: int("leadId").notNull(),
+  // Tipo de evento
+  eventType: mysqlEnum("eventType", [
+    "lead_created",          // chegou na landing e preencheu o form
+    "chat_started",          // entrou no chat
+    "chat_completed",        // concluiu o chat
+    "chat_abandoned",        // abandonou o chat
+    "photos_started",        // iniciou captura de fotos
+    "photos_completed",      // enviou todas as fotos
+    "photos_abandoned",      // abandonou na etapa de fotos
+    "ai_processing_started", // IA começou a processar
+    "ai_result_ready",       // resultado 3D gerado
+    "schedule_opened",       // abriu tela de agendamento
+    "appointment_created",   // agendamento criado
+    "appointment_confirmed", // clínica confirmou
+    "appointment_cancelled", // cancelado (lead ou clínica)
+    "appointment_completed", // consulta realizada
+    "appointment_no_show",   // não compareceu
+    "followup_sent",         // mensagem de recuperação enviada
+    "whatsapp_contacted",    // clínica contatou via WhatsApp
+    "nps_sent",              // NPS enviado
+    "nps_responded",         // NPS respondido
+    "status_changed",        // mudança manual de status
+  ]).notNull(),
+  // Dados do evento
+  description: text("description"),
+  metadata: json("metadata"),           // dados extras do evento
+  // Quem gerou o evento
+  triggeredBy: mysqlEnum("triggeredBy", ["system", "lead", "clinic"]).default("system").notNull(),
+  triggeredByUserId: int("triggeredByUserId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LeadEvent = typeof leadEvents.$inferSelect;
+export type InsertLeadEvent = typeof leadEvents.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FOLLOW-UPS DE RECUPERAÇÃO
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const leadFollowups = mysqlTable("lead_followups", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  leadId: int("leadId").notNull(),
+  // Sequência de follow-up
+  sequenceStep: tinyint("sequenceStep").notNull(),  // 0=imediato, 1=24h, 2=72h, 3=7d
+  channel: mysqlEnum("channel", ["whatsapp", "platform"]).default("whatsapp").notNull(),
+  // Agendamento
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  // Status
+  status: mysqlEnum("status", ["pending", "sent", "delivered", "failed", "cancelled"]).default("pending").notNull(),
+  sentAt: timestamp("sentAt"),
+  cancelledAt: timestamp("cancelledAt"),
+  cancelReason: varchar("cancelReason", { length: 255 }),
+  // Mensagem enviada
+  messageText: text("messageText"),
+  // Quem enviou (se manual)
+  sentByUserId: int("sentByUserId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LeadFollowup = typeof leadFollowups.$inferSelect;
+export type InsertLeadFollowup = typeof leadFollowups.$inferInsert;

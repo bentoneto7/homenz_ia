@@ -62,6 +62,32 @@ async function insertNotification(data: {
   });
 }
 
+// ── Helper de eventos de jornada ────────────────────────────────────────────
+async function insertLeadEvent(data: {
+  clinicId: number;
+  leadId: number;
+  eventType: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  triggeredBy?: "system" | "lead" | "clinic";
+}) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const { leadEvents } = await import("../drizzle/schema");
+    await db.insert(leadEvents).values({
+      clinicId: data.clinicId,
+      leadId: data.leadId,
+      eventType: data.eventType as any,
+      description: data.description,
+      metadata: data.metadata ?? null,
+      triggeredBy: data.triggeredBy ?? "system",
+    });
+  } catch (e) {
+    // Não quebrar o fluxo principal se o evento falhar
+    console.warn("[leadEvent] Failed to insert:", e);
+  }
+}
 // ── Router ───────────────────────────────────────────────────────────────────
 
 export const appRouter = router({
@@ -319,11 +345,24 @@ export const appRouter = router({
           type: "new_lead",
         });
 
-        await notifyOwner({
+         await notifyOwner({
           title: `Novo lead — ${clinic.name}`,
           content: `${input.name} (${input.phone}) via ${input.utmCampaign ?? "orgânico"}.`,
         });
-
+        const leadId = Number((inserted as any)[0]?.insertId ?? (inserted as any).insertId);
+        // Registrar evento de jornada
+        await insertLeadEvent({
+          clinicId: clinic.id,
+          leadId,
+          eventType: "lead_created",
+          description: `Lead ${input.name} capturado via formulário`,
+          metadata: {
+            utmSource: input.utmSource,
+            utmCampaign: input.utmCampaign,
+            phone: input.phone,
+          },
+          triggeredBy: "lead",
+        });
         return { sessionToken, clinicSlug: clinic.slug };
       }),
 
@@ -376,7 +415,7 @@ export const appRouter = router({
           })
           .where(eq(leads.id, lead.id));
 
-        await insertNotification({
+         await insertNotification({
           clinicId: lead.clinicId,
           targetType: "clinic",
           leadId: lead.id,
@@ -384,11 +423,17 @@ export const appRouter = router({
           content: `${lead.name} completou o diagnóstico conversacional.`,
           type: "chat_completed",
         });
-
+        await insertLeadEvent({
+          clinicId: lead.clinicId,
+          leadId: lead.id,
+          eventType: "chat_completed",
+          description: `${lead.name} completou o chat de diagnóstico`,
+          metadata: { hairProblem: input.hairProblem, hairLossType: input.hairLossType },
+          triggeredBy: "lead",
+        });
         return { success: true };
       }),
-
-    // Atualizar funnelStep
+    // Atualizar funnelStepp
     updateStep: publicProcedure
       .input(
         z.object({
@@ -491,7 +536,7 @@ export const appRouter = router({
           await updateLeadFunnelStep(lead.id, "photos_done");
         }
 
-        if (photos.length === 1) {
+         if (photos.length === 1) {
           await insertNotification({
             clinicId: lead.clinicId,
             targetType: "clinic",
@@ -500,8 +545,24 @@ export const appRouter = router({
             content: `${lead.name} enviou fotos para análise.`,
             type: "photos_uploaded",
           });
+          await insertLeadEvent({
+            clinicId: lead.clinicId,
+            leadId: lead.id,
+            eventType: "photos_started",
+            description: `${lead.name} iniciou o envio de fotos`,
+            triggeredBy: "lead",
+          });
         }
-
+        if (photos.length >= 2) {
+          await insertLeadEvent({
+            clinicId: lead.clinicId,
+            leadId: lead.id,
+            eventType: "photos_completed",
+            description: `${lead.name} completou o envio de ${photos.length} fotos`,
+            metadata: { totalPhotos: photos.length },
+            triggeredBy: "lead",
+          });
+        }
         return { url, totalPhotos: photos.length };
       }),
 
@@ -716,8 +777,15 @@ export const appRouter = router({
             title: `Análise pronta — ${lead.name}`,
             content: `Score: ${analysis.leadScore}/100 | ${analysis.baldnessLevel} | ${analysis.priority}`,
           });
-
-          return { resultId, status: "done" };
+          await insertLeadEvent({
+            clinicId: lead.clinicId,
+            leadId: lead.id,
+            eventType: "ai_result_ready",
+            description: `Análise 3D concluída — Score ${analysis.leadScore}/100, nível ${analysis.baldnessLevel}`,
+            metadata: { leadScore: analysis.leadScore, priority: analysis.priority, baldnessLevel: analysis.baldnessLevel },
+            triggeredBy: "system",
+          });
+          return { resultId, status: "done" };;
         } catch (err) {
           await db.update(aiResults).set({
             processingStatus: "error",
@@ -816,8 +884,15 @@ export const appRouter = router({
           title: "Novo agendamento!",
           content: `${lead.name} (${lead.phone}) — ${dateStr} às ${timeStr}`,
         });
-
-        return { appointmentId };
+        await insertLeadEvent({
+          clinicId: lead.clinicId,
+          leadId: lead.id,
+          eventType: "appointment_scheduled",
+          description: `Consulta agendada para ${dateStr} às ${timeStr}`,
+          metadata: { appointmentId, scheduledAt: scheduledDate.toISOString() },
+          triggeredBy: "lead",
+        });
+        return { appointmentId };;
       }),
 
     getByToken: publicProcedure
@@ -1177,6 +1252,255 @@ export const appRouter = router({
         .orderBy(desc(npsResponses.createdAt))
         .limit(100);
     }),
+  }),
+
+  // ── JORNADA DO LEAD (timeline de eventos) ─────────────────────────────────────────
+  journey: router({
+    // Listar todos os eventos de um lead
+    getTimeline: clinicProcedure
+      .input(z.object({ leadId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { leadEvents } = await import("../drizzle/schema");
+        return db.select().from(leadEvents)
+          .where(and(
+            eq(leadEvents.leadId, input.leadId),
+            eq(leadEvents.clinicId, ctx.clinic.id),
+          ))
+          .orderBy(leadEvents.createdAt);
+      }),
+
+    // Registrar evento manualmente (ex: contato via WhatsApp)
+    addEvent: clinicProcedure
+      .input(z.object({
+        leadId: z.number(),
+        eventType: z.enum([
+          "lead_created", "chat_started", "chat_completed", "chat_abandoned",
+          "photos_started", "photos_completed", "photos_abandoned",
+          "ai_processing_started", "ai_result_ready", "schedule_opened",
+          "appointment_created", "appointment_confirmed", "appointment_cancelled",
+          "appointment_completed", "appointment_no_show", "followup_sent",
+          "whatsapp_contacted", "nps_sent", "nps_responded", "status_changed",
+        ]),
+        description: z.string().optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { leadEvents } = await import("../drizzle/schema");
+        // Verificar que o lead pertence à clínica
+        const lead = await db.select().from(leads)
+          .where(and(eq(leads.id, input.leadId), eq(leads.clinicId, ctx.clinic.id)))
+          .limit(1);
+        if (!lead[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Lead não encontrado" });
+        await db.insert(leadEvents).values({
+          clinicId: ctx.clinic.id,
+          leadId: input.leadId,
+          eventType: input.eventType,
+          description: input.description,
+          metadata: input.metadata ?? null,
+          triggeredBy: "clinic",
+          triggeredByUserId: ctx.user.id,
+        });
+        // Se foi contato WhatsApp, atualizar lastActivityAt do lead
+        if (input.eventType === "whatsapp_contacted") {
+          await db.update(leads).set({ lastActivityAt: new Date() })
+            .where(eq(leads.id, input.leadId));
+        }
+        return { success: true };
+      }),
+
+    // Analytics do funil por clínica
+    funnelAnalytics: clinicProcedure
+      .input(z.object({
+        startDate: z.number().optional(), // timestamp ms
+        endDate: z.number().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const startDate = input.startDate ? new Date(input.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = input.endDate ? new Date(input.endDate) : new Date();
+
+        // Total de leads no período
+        const totalLeads = await db.select({ count: sql<number>`count(*)` })
+          .from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.createdAt} >= ${startDate}`,
+            sql`${leads.createdAt} <= ${endDate}`,
+          ));
+
+        // Leads por etapa do funil
+        const byStep = await db.select({
+          funnelStep: leads.funnelStep,
+          count: sql<number>`count(*)`,
+        })
+          .from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.createdAt} >= ${startDate}`,
+            sql`${leads.createdAt} <= ${endDate}`,
+          ))
+          .groupBy(leads.funnelStep);
+
+        // Agendamentos no período
+        const apptStats = await db.select({
+          status: appointments.status,
+          count: sql<number>`count(*)`,
+        })
+          .from(appointments)
+          .where(and(
+            eq(appointments.clinicId, ctx.clinic.id),
+            sql`${appointments.createdAt} >= ${startDate}`,
+            sql`${appointments.createdAt} <= ${endDate}`,
+          ))
+          .groupBy(appointments.status);
+
+        // Leads por UTM source
+        const bySource = await db.select({
+          utmSource: leads.utmSource,
+          count: sql<number>`count(*)`,
+        })
+          .from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.createdAt} >= ${startDate}`,
+            sql`${leads.createdAt} <= ${endDate}`,
+          ))
+          .groupBy(leads.utmSource)
+          .orderBy(desc(sql<number>`count(*)`));
+
+        // Leads por prioridade
+        const byPriority = await db.select({
+          priority: leads.priority,
+          count: sql<number>`count(*)`,
+        })
+          .from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.createdAt} >= ${startDate}`,
+            sql`${leads.createdAt} <= ${endDate}`,
+          ))
+          .groupBy(leads.priority);
+
+        // Taxa de conversão: leads que chegaram em scheduled / total
+        const scheduled = byStep.find(s => s.funnelStep === "scheduled")?.count ?? 0;
+        const total = totalLeads[0]?.count ?? 0;
+        const conversionRate = total > 0 ? Math.round((Number(scheduled) / Number(total)) * 100) : 0;
+
+        // Leads abandonados (sem atividade há mais de 2 horas)
+        const abandonedLeads = await db.select({ count: sql<number>`count(*)` })
+          .from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.lastActivityAt} < ${new Date(Date.now() - 2 * 60 * 60 * 1000)}`,
+            sql`${leads.funnelStep} NOT IN ('scheduled', 'confirmed', 'completed', 'cancelled')`,
+          ));
+
+        return {
+          period: { startDate: startDate.toISOString(), endDate: endDate.toISOString() },
+          totalLeads: Number(total),
+          conversionRate,
+          abandonedCount: Number(abandonedLeads[0]?.count ?? 0),
+          byStep: byStep.map(s => ({ step: s.funnelStep, count: Number(s.count) })),
+          bySource: bySource.map(s => ({ source: s.utmSource ?? "direto", count: Number(s.count) })),
+          byPriority: byPriority.map(p => ({ priority: p.priority, count: Number(p.count) })),
+          appointments: {
+            total: apptStats.reduce((acc, a) => acc + Number(a.count), 0),
+            confirmed: Number(apptStats.find(a => a.status === "confirmed")?.count ?? 0),
+            completed: Number(apptStats.find(a => a.status === "completed")?.count ?? 0),
+            cancelled: Number(apptStats.find(a => a.status === "cancelled")?.count ?? 0),
+            noShow: Number(apptStats.find(a => a.status === "no_show")?.count ?? 0),
+          },
+        };
+      }),
+
+    // Leads que precisam de recuperação (abandonados no funil)
+    getRecoveryLeads: clinicProcedure
+      .input(z.object({
+        hoursInactive: z.number().default(2),
+        limit: z.number().default(50),
+      }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const cutoff = new Date(Date.now() - input.hoursInactive * 60 * 60 * 1000);
+        return db.select().from(leads)
+          .where(and(
+            eq(leads.clinicId, ctx.clinic.id),
+            sql`${leads.lastActivityAt} < ${cutoff}`,
+            sql`${leads.funnelStep} NOT IN ('scheduled', 'confirmed', 'completed', 'cancelled')`,
+          ))
+          .orderBy(desc(leads.leadScore), desc(leads.lastActivityAt))
+          .limit(input.limit);
+      }),
+  }),
+
+  // ── FOLLOW-UPS DE RECUPERAÇÃO ───────────────────────────────────────────────
+  followups: router({
+    // Agendar sequência de follow-up para um lead
+    schedule: clinicProcedure
+      .input(z.object({ leadId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { leadFollowups } = await import("../drizzle/schema");
+        const now = Date.now();
+        // Sequência: imediato, 24h, 72h, 7 dias
+        const steps = [
+          { step: 0, delayMs: 0 },
+          { step: 1, delayMs: 24 * 60 * 60 * 1000 },
+          { step: 2, delayMs: 72 * 60 * 60 * 1000 },
+          { step: 3, delayMs: 7 * 24 * 60 * 60 * 1000 },
+        ];
+        for (const s of steps) {
+          await db.insert(leadFollowups).values({
+            clinicId: ctx.clinic.id,
+            leadId: input.leadId,
+            sequenceStep: s.step,
+            channel: "whatsapp",
+            scheduledAt: new Date(now + s.delayMs),
+            status: "pending",
+          });
+        }
+        return { success: true, stepsScheduled: steps.length };
+      }),
+
+    // Cancelar follow-ups pendentes (quando lead agenda)
+    cancelPending: clinicProcedure
+      .input(z.object({ leadId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { leadFollowups } = await import("../drizzle/schema");
+        await db.update(leadFollowups)
+          .set({ status: "cancelled", cancelledAt: new Date(), cancelReason: "lead_converted" })
+          .where(and(
+            eq(leadFollowups.leadId, input.leadId),
+            eq(leadFollowups.clinicId, ctx.clinic.id),
+            eq(leadFollowups.status, "pending"),
+          ));
+        return { success: true };
+      }),
+
+    // Listar follow-ups de um lead
+    listByLead: clinicProcedure
+      .input(z.object({ leadId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { leadFollowups } = await import("../drizzle/schema");
+        return db.select().from(leadFollowups)
+          .where(and(
+            eq(leadFollowups.leadId, input.leadId),
+            eq(leadFollowups.clinicId, ctx.clinic.id),
+          ))
+          .orderBy(leadFollowups.scheduledAt);
+      }),
   }),
 });
 
