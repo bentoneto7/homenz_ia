@@ -535,6 +535,166 @@ export default function HomenzLanding() {
         </div>
       </section>
 
+      {/* Testimonials / Before-After Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0a0f1e]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 text-[#60a5fa] text-xs font-semibold uppercase tracking-widest mb-6">
+              Franqueadas que já usam
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-black mb-4">
+              O QUE MUDA NA SUA UNIDADE
+              <br />
+              <span className="text-[#00c4cc]">DEPOIS DO HOMENZ IA</span>
+            </h2>
+            <p className="text-lg text-white/50 max-w-2xl mx-auto">
+              Franqueadas que ativaram o sistema relatam transformação direta nos números de agendamento, qualidade dos leads e controle da operação.
+            </p>
+          </div>
+
+          {/* Before/After comparison cards */}
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              {
+                name: "Mariana Costa",
+                city: "Homenz Uberaba",
+                avatar: "MC",
+                avatarColor: "bg-[#1a56db]",
+                quote: "Antes eu não sabia de onde vinham os leads nem por que a maioria não aparecia na consulta. Hoje eu vejo o score de cada um em tempo real e minha equipe sabe exatamente quem ligar primeiro.",
+                before: {
+                  agendamentos: "18/mês",
+                  scoreLeads: "Sem controle",
+                  comparecimento: "41%",
+                  label: "Antes do Homenz IA",
+                },
+                after: {
+                  agendamentos: "47/mês",
+                  scoreLeads: "Score 0–100 por lead",
+                  comparecimento: "79%",
+                  label: "Depois do Homenz IA",
+                },
+              },
+              {
+                name: "Fernanda Alves",
+                city: "Homenz Uberlândia",
+                avatar: "FA",
+                avatarColor: "bg-[#00c4cc]",
+                quote: "O ranking da rede me fez encarar a realidade. Estava em D. Em 60 dias com o sistema, subi pra A. Minha equipe virou um time de alta performance porque os dados estavam na frente delas.",
+                before: {
+                  agendamentos: "22/mês",
+                  scoreLeads: "Planilha manual",
+                  comparecimento: "48%",
+                  label: "Antes do Homenz IA",
+                },
+                after: {
+                  agendamentos: "61/mês",
+                  scoreLeads: "Leads pré-qualificados",
+                  comparecimento: "84%",
+                  label: "Depois do Homenz IA",
+                },
+              },
+              {
+                name: "Juliana Mendes",
+                city: "Homenz Belo Horizonte",
+                avatar: "JM",
+                avatarColor: "bg-yellow-500",
+                quote: "O funil com IA chegou pra mim como um alívio. Antes eu dependia de uma recepcionista pra qualificar lead. Hoje o sistema faz isso 24h por dia e eu recebo o lead já pronto pra agendar.",
+                before: {
+                  agendamentos: "31/mês",
+                  scoreLeads: "Depende da equipe",
+                  comparecimento: "52%",
+                  label: "Antes do Homenz IA",
+                },
+                after: {
+                  agendamentos: "78/mês",
+                  scoreLeads: "IA qualifica 24/7",
+                  comparecimento: "88%",
+                  label: "Depois do Homenz IA",
+                },
+              },
+            ].map((t) => (
+              <div key={t.name} className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden flex flex-col">
+                {/* Quote */}
+                <div className="p-6 flex-1">
+                  <div className="flex items-center gap-2 mb-4">
+                    {[0,1,2,3,4].map((i) => (
+                      <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-white/70 leading-relaxed italic mb-6">“{t.quote}”</p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full ${t.avatarColor} flex items-center justify-center text-white font-black text-sm flex-shrink-0`}>
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{t.name}</div>
+                      <div className="text-xs text-white/40">{t.city}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Before / After metrics */}
+                <div className="grid grid-cols-2 border-t border-white/8">
+                  {/* Before */}
+                  <div className="p-4 border-r border-white/8">
+                    <div className="text-[10px] font-bold text-red-400/80 uppercase tracking-widest mb-3">{t.before.label}</div>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="text-xs text-white/40">Agendamentos</div>
+                        <div className="text-base font-black text-red-400">{t.before.agendamentos}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-white/40">Score de leads</div>
+                        <div className="text-xs font-semibold text-red-400/80">{t.before.scoreLeads}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-white/40">Comparecimento</div>
+                        <div className="text-base font-black text-red-400">{t.before.comparecimento}</div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* After */}
+                  <div className="p-4 bg-[#1a56db]/5">
+                    <div className="text-[10px] font-bold text-[#00c4cc] uppercase tracking-widest mb-3">{t.after.label}</div>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="text-xs text-white/40">Agendamentos</div>
+                        <div className="text-base font-black text-[#00c4cc]">{t.after.agendamentos}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-white/40">Score de leads</div>
+                        <div className="text-xs font-semibold text-[#00c4cc]">{t.after.scoreLeads}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-white/40">Comparecimento</div>
+                        <div className="text-base font-black text-[#00c4cc]">{t.after.comparecimento}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary bar */}
+          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-white/8 rounded-2xl p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+              {[
+                { metric: "+163%", label: "Média de aumento em agendamentos", color: "text-[#00c4cc]" },
+                { metric: "Score 0–100", label: "Cada lead classificado pela IA", color: "text-[#60a5fa]" },
+                { metric: "+36pts", label: "Melhora média no ranking da rede", color: "text-yellow-400" },
+                { metric: "82%", label: "Taxa média de comparecimento", color: "text-[#00c4cc]" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div className={`text-3xl font-black mb-1 ${s.color}`}>{s.metric}</div>
+                  <div className="text-xs text-white/50 leading-tight">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Ranking Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
