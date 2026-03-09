@@ -26,6 +26,9 @@ import AdminAnalytics from "./pages/admin/Analytics";
 import AdminHealthScore from "./pages/admin/HealthScore";
 import AdminDailyCheckin from "./pages/admin/DailyCheckin";
 import AdminNetworkRanking from "./pages/admin/NetworkRanking";
+import FranchiseeDashboard from "./pages/franchisee/FranchiseeDashboard";
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
 
 function Router() {
   return (
@@ -57,6 +60,27 @@ function Router() {
       <Route path="/painel/health" component={AdminHealthScore} />
       <Route path="/painel/checkin" component={AdminDailyCheckin} />
       <Route path="/painel/ranking" component={AdminNetworkRanking} />
+
+      {/* Painel do Franqueado */}
+      <Route path="/franqueado" component={FranchiseeDashboard} />
+      <Route path="/franqueado/leads" component={FranchiseeDashboard} />
+      <Route path="/franqueado/vendedores" component={FranchiseeDashboard} />
+      <Route path="/franqueado/agendamentos" component={FranchiseeDashboard} />
+      <Route path="/franqueado/analytics" component={FranchiseeDashboard} />
+      <Route path="/franqueado/configuracoes" component={FranchiseeDashboard} />
+
+      {/* Painel do Vendedor */}
+      <Route path="/vendedor" component={SellerDashboard} />
+      <Route path="/vendedor/agendamentos" component={SellerDashboard} />
+      <Route path="/vendedor/desempenho" component={SellerDashboard} />
+
+      {/* Painel Admin da Rede */}
+      <Route path="/rede" component={NetworkAdminDashboard} />
+      <Route path="/rede/franquias" component={NetworkAdminDashboard} />
+      <Route path="/rede/vendedores" component={NetworkAdminDashboard} />
+      <Route path="/rede/leads" component={NetworkAdminDashboard} />
+      <Route path="/rede/analytics" component={NetworkAdminDashboard} />
+      <Route path="/rede/configuracoes" component={NetworkAdminDashboard} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

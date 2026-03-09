@@ -79,39 +79,45 @@ export default function HomenzLanding() {
   const features = [
     {
       icon: <Brain className="w-6 h-6" />,
-      title: "Funil com IA",
-      desc: "Chat conversacional que qualifica o lead automaticamente. Análise capilar por inteligência artificial com visualização 3D do resultado esperado — antes mesmo da consulta.",
-      highlight: "Leads chegam pré-qualificados para a consulta",
+      title: "Mais respostas de interessados",
+      desc: "Funil com IA que qualifica o lead automaticamente via chat. O sistema identifica quem está realmente interessado e filtra quem só está curiosando — sua equipe só fala com quem tem potencial real de fechar.",
+      highlight: "Leads chegam pré-qualificados, prontos para agendar",
+      pillar: "01",
     },
     {
       icon: <TrendingUp className="w-6 h-6" />,
-      title: "Temperatura do Lead",
-      desc: "Sistema de rastreamento que monitora cada lead em tempo real: 🔥 quente, 🌡️ morno ou ❄️ frio. Playbook automático de ações para sua equipe saber exatamente o que fazer.",
-      highlight: "Nunca mais perca um lead por falta de follow-up",
+      title: "Mais agendamentos na clínica",
+      desc: "Sistema de temperatura do lead em tempo real: 🔥 quente, 🌡️ morno ou ❄️ frio. Playbook automático diz exatamente quando ligar, o que falar e quem priorizar. Agenda integrada com confirmação automática.",
+      highlight: "Agenda cheia, equipe com foco, zero lead perdido",
+      pillar: "02",
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
-      title: "Ranking da Rede",
-      desc: "Painel de saúde de cada unidade com nota S/A/B/C/D/F em 5 dimensões. Ranking em tempo real de todas as franquias da rede — gamificação que acelera resultados.",
-      highlight: "Identifique as melhores práticas da rede",
+      title: "Mais faturamento",
+      desc: "Cada lead que passa pelo funil já sabe qual protocolo é o ideal para ele. Chega na consulta com expectativa alinhada, pronto para fechar. Sua equipe vende mais porque o sistema já fez a preparação.",
+      highlight: "Consultas com maior ticket médio e taxa de conversão",
+      pillar: "03",
     },
     {
       icon: <Target className="w-6 h-6" />,
-      title: "Rastreamento UTM",
-      desc: "Captura automática de UTMs de todos os anúncios pagos. Saiba exatamente qual campanha, anúncio e público gera mais leads qualificados e agendamentos.",
-      highlight: "Otimize seu investimento em tráfego pago",
+      title: "Bônus: Ranking de qualidade de tráfego",
+      desc: "Score automático 0-100 de cada lead com base no perfil, engajamento e intenção. Saiba exatamente qual campanha, anúncio e público gera os leads mais qualificados — e onde está desperdiçando verba.",
+      highlight: "Otimize seu investimento em tráfego pago com dados reais",
+      pillar: "★",
     },
     {
-      icon: <Clock className="w-6 h-6" />,
-      title: "Agendamento Próprio",
-      desc: "Sistema de agendamento 100% integrado, sem dependência de ferramentas externas. Configure disponibilidade, bloqueie datas e gerencie slots em tempo real.",
-      highlight: "Zero dependência de ferramentas externas",
+      icon: <Users className="w-6 h-6" />,
+      title: "Bônus: Ranking de performance dos vendedores",
+      desc: "Acompanhe em tempo real o tempo de resposta de cada vendedor, quantos leads abordou, quantos agendou e qual a taxa de conversão. Saiba quem está performando e quem precisa de suporte.",
+      highlight: "Gestão de equipe baseada em dados, não em feeling",
+      pillar: "★",
     },
     {
       icon: <Award className="w-6 h-6" />,
-      title: "Check-in Diário",
-      desc: "Formulário guiado para a equipe reportar qualidade dos leads, comparecimento em consultas e humor do time. Dados que alimentam o score de saúde da unidade.",
-      highlight: "Gestão baseada em dados reais do dia a dia",
+      title: "Bônus: Ranking de interação do lead no funil",
+      desc: "Veja o caminho completo de cada lead: quantas etapas completou, onde parou, quanto tempo ficou em cada fase. Identifique gargalos no funil e melhore a conversão com dados precisos.",
+      highlight: "Visibilidade total da jornada do lead até o agendamento",
+      pillar: "★",
     },
   ];
 
@@ -399,10 +405,13 @@ export default function HomenzLanding() {
               Funcionalidades
             </div>
             <h2 className="text-4xl sm:text-5xl font-black mb-4">
-              TUDO QUE SUA UNIDADE
+              3 RESULTADOS DIRETOS.
               <br />
-              <span className="text-[#1a56db]">PRECISA PARA CRESCER</span>
+              <span className="text-[#1a56db]">MAIS 3 BÔNUS EXCLUSIVOS.</span>
             </h2>
+            <p className="text-lg text-white/50 max-w-2xl mx-auto mt-4">
+              O Homenz IA foi construído para entregar três resultados concretos para a sua unidade — e ainda te dá visibilidade total sobre o que está funcionando e o que não está.
+            </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
@@ -427,7 +436,10 @@ export default function HomenzLanding() {
                       {feature.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-white mb-1">{feature.title}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${feature.pillar === "★" ? "bg-yellow-500/20 text-yellow-400" : "bg-[#1a56db]/30 text-[#60a5fa]"}`}>{feature.pillar}</span>
+                        <div className="font-bold text-white">{feature.title}</div>
+                      </div>
                       {activeFeature === i && (
                         <div className="text-sm text-white/60 leading-relaxed mt-2">{feature.desc}</div>
                       )}
@@ -676,93 +688,125 @@ export default function HomenzLanding() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-5 max-w-6xl mx-auto">
             {[
+              {
+                name: "Grátis",
+                price: "R$ 0",
+                period: "/sempre",
+                desc: "Para começar a testar o sistema sem risco.",
+                badge: null,
+                features: [
+                  "1 vendedor na equipe",
+                  "30 leads por mês",
+                  "Funil com IA básico",
+                  "Chat qualificador",
+                  "Dashboard da unidade",
+                  "Score de leads",
+                ],
+                limit: "1 vendedor · 30 leads/mês",
+                cta: "Começar grátis",
+                highlight: false,
+                ctaAction: "cadastro",
+              },
               {
                 name: "Unidade",
                 price: "R$ 897",
                 period: "/mês",
                 desc: "Para unidades que querem transformar tráfego pago em consultas agendadas.",
+                badge: "15 dias grátis",
                 features: [
+                  "Até 5 vendedores",
+                  "Leads ilimitados",
                   "Funil completo com IA",
-                  "Chat qualificador de leads",
-                  "Análise capilar + visualização 3D",
+                  "Análise capilar + 3D",
                   "Agendamento integrado",
                   "Rastreamento de temperatura",
-                  "Dashboard da unidade",
+                  "Ranking de vendedores",
                   "Captura automática de UTMs",
-                  "15 dias grátis",
                 ],
+                limit: "5 vendedores · leads ilimitados",
                 cta: "Ativar 15 dias grátis",
                 highlight: false,
+                ctaAction: "cadastro",
               },
               {
                 name: "Unidade Pro",
                 price: "R$ 1.497",
                 period: "/mês",
                 desc: "Para unidades que querem máxima performance e visibilidade na rede.",
+                badge: "Mais popular",
                 features: [
+                  "Vendedores ilimitados",
+                  "Leads ilimitados",
                   "Tudo do plano Unidade",
-                  "Ranking da rede Homenz",
+                  "Ranking de qualidade de tráfego",
+                  "Ranking de interação do lead",
                   "Health score S/A/B/C/D/F",
-                  "Check-in diário da equipe",
-                  "Playbook automático de recuperação",
-                  "Analytics avançado e relatórios",
+                  "Playbook automático",
+                  "Analytics avançado",
                   "Suporte prioritário",
-                  "15 dias grátis",
                 ],
+                limit: "Vendedores ilimitados · leads ilimitados",
                 cta: "Ativar 15 dias grátis",
                 highlight: true,
+                ctaAction: "cadastro",
               },
               {
                 name: "Rede",
                 price: "Sob consulta",
                 period: "",
                 desc: "Para franqueadores que querem gerenciar e rankear toda a rede Homenz.",
+                badge: null,
                 features: [
                   "Todas as unidades da rede",
                   "Tudo do plano Pro",
-                  "Painel consolidado da rede",
-                  "Ranking em tempo real",
+                  "Painel Admin consolidado",
+                  "Ranking da rede em tempo real",
                   "Relatórios por unidade e rede",
                   "Suporte dedicado",
                   "Onboarding personalizado",
                 ],
+                limit: "Rede completa",
                 cta: "Falar com a equipe",
                 highlight: false,
+                ctaAction: "demo",
               },
             ].map((plan) => (
               <div
                 key={plan.name}
-                className={`relative rounded-3xl p-8 ${
+                className={`relative rounded-3xl p-7 flex flex-col ${
                   plan.highlight
                     ? "bg-[#1a56db] border border-[#1a56db]"
                     : "bg-white/3 border border-white/8"
                 }`}
               >
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#00c4cc] text-[#0a0f1e] text-xs font-black uppercase tracking-widest">
-                    Mais popular
+                {plan.badge && (
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap ${plan.highlight ? "bg-[#00c4cc] text-[#0a0f1e]" : "bg-white/10 text-white/70"}`}>
+                    {plan.badge}
                   </div>
                 )}
-                <div className="mb-6">
-                  <div className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-2">{plan.name}</div>
+                <div className="mb-5">
+                  <div className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-2">{plan.name}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-white">{plan.price}</span>
-                    <span className="text-white/50">{plan.period}</span>
+                    <span className="text-3xl font-black text-white">{plan.price}</span>
+                    <span className="text-white/50 text-sm">{plan.period}</span>
                   </div>
-                  <div className="text-sm text-white/50 mt-2">{plan.desc}</div>
+                  <div className="text-xs text-white/50 mt-2">{plan.desc}</div>
+                  <div className={`mt-3 text-[10px] font-bold px-2 py-1 rounded-lg inline-block ${plan.highlight ? "bg-white/20 text-white" : "bg-white/5 text-white/50"}`}>
+                    {plan.limit}
+                  </div>
                 </div>
-                <div className="space-y-3 mb-8">
+                <div className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-2">
-                      <CheckCircle className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-white" : "text-[#00c4cc]"}`} />
-                      <span className="text-sm text-white/80">{feature}</span>
+                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-white" : "text-[#00c4cc]"}`} />
+                      <span className="text-xs text-white/80">{feature}</span>
                     </div>
                   ))}
                 </div>
                 <button
-                  onClick={() => navigate("/cadastro")}
+                  onClick={() => navigate(plan.ctaAction === "demo" ? "/c/demo" : "/cadastro")}
                   className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${
                     plan.highlight
                       ? "bg-white text-[#1a56db] hover:bg-white/90"

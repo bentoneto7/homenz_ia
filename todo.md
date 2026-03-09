@@ -151,6 +151,23 @@
 - [x] Remover seção de depoimentos de franqueadas
 - [x] Criar seção de antes/depois de clientes reais (homens que fizeram o procedimento)
 
+## Sistema Interno — 3 Níveis de Acesso
+- [x] Atualizar landing page: comunicar os 3 pilares (respostas, agendamentos, faturamento) + bônus rankings
+- [x] Atualizar planos na landing: plano gratuito = 1 vendedor + 30 leads; planos pagos com mais vendedores e leads ilimitados
+- [x] Schema DB: tabelas seller_invites, seller_metrics, lead_assignments
+- [x] Roles no sistema: admin (vê tudo), franchisee (vê sua unidade + vendedores), seller (vê apenas seus leads)
+- [x] Limite de plano: gratuito = 1 vendedor + 30 leads por franquia
+- [x] Dashboard Franqueado: métricas de leads (quantidade, qualidade, score), agendamentos, faturamento estimado
+- [x] Dashboard Franqueado: ranking de vendedores (tempo de resposta, leads abordados, conversão)
+- [x] Dashboard Franqueado: qualidade do tráfego (score médio) + funil de conversão + tempo de resposta
+- [x] Dashboard Franqueado: convidar vendedor por e-mail (modal com limite por plano)
+- [x] Dashboard Vendedor: lista de leads com score, temperatura (quente/morno/frio) e status
+- [x] Dashboard Vendedor: timeline gamificada do lead (etapas visuais, progressão, ações)
+- [x] Dashboard Vendedor: métricas pessoais + barra de performance gamificada + ranking
+- [x] Dashboard Admin da Rede: visão geral de todas as franquias, ranking, top vendedores, qualidade de tráfego
+- [x] Tema claro (light) para os dashboards internos (não cansar a visão do time)
+- [x] Rotas registradas: /franqueado, /vendedor, /rede
+
 ## Alertas Automáticos de Temperatura de Lead
 - [ ] Job periódico (a cada 15min) que varre leads ativos e detecta mudança de temperatura
 - [ ] Notificação automática: 🌡️ Lead esfriando (>30min sem avançar)

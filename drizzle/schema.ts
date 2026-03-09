@@ -21,7 +21,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "franchisee", "seller"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -593,4 +593,78 @@ export const clinicDailyCheckins = mysqlTable("clinic_daily_checkins", {
 
 export type ClinicDailyCheckin = typeof clinicDailyCheckins.$inferSelect;
 export type InsertClinicDailyCheckin = typeof clinicDailyCheckins.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONVITES DE VENDEDORES (Franqueado convida vendedor)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const sellerInvites = mysqlTable("seller_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),         // FK → clinics.id
+  invitedByUserId: int("invitedByUserId").notNull(), // FK → users.id (franqueado)
+  email: varchar("email", { length: 320 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  token: varchar("token", { length: 128 }).notNull().unique(), // token do link de convite
+  status: mysqlEnum("status", ["pending", "accepted", "expired", "revoked"]).default("pending").notNull(),
+  acceptedByUserId: int("acceptedByUserId"),   // FK → users.id (vendedor que aceitou)
+  expiresAt: timestamp("expiresAt").notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SellerInvite = typeof sellerInvites.$inferSelect;
+export type InsertSellerInvite = typeof sellerInvites.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MÉTRICAS DE VENDEDOR (calculadas diariamente)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const sellerMetrics = mysqlTable("seller_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  sellerUserId: int("sellerUserId").notNull(),  // FK → users.id
+  metricDate: varchar("metricDate", { length: 10 }).notNull(), // "YYYY-MM-DD"
+  // Leads
+  leadsAssigned: int("leadsAssigned").default(0).notNull(),    // leads atribuídos ao vendedor
+  leadsContacted: int("leadsContacted").default(0).notNull(),  // leads que o vendedor abordou
+  leadsScheduled: int("leadsScheduled").default(0).notNull(),  // leads que agendaram
+  leadsConverted: int("leadsConverted").default(0).notNull(),  // leads que compareceram
+  // Tempo de resposta
+  avgResponseTimeMinutes: decimal("avgResponseTimeMinutes", { precision: 8, scale: 2 }).default("0"),
+  fastestResponseMinutes: decimal("fastestResponseMinutes", { precision: 8, scale: 2 }),
+  // Taxas
+  contactRate: decimal("contactRate", { precision: 5, scale: 2 }).default("0"),    // %
+  schedulingRate: decimal("schedulingRate", { precision: 5, scale: 2 }).default("0"), // %
+  conversionRate: decimal("conversionRate", { precision: 5, scale: 2 }).default("0"), // %
+  // Score gamificado
+  performanceScore: int("performanceScore").default(0).notNull(), // 0-100
+  rankPosition: int("rankPosition"),  // posição no ranking da clínica naquele dia
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SellerMetric = typeof sellerMetrics.$inferSelect;
+export type InsertSellerMetric = typeof sellerMetrics.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATRIBUIÇÃO DE LEADS A VENDEDORES
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const leadAssignments = mysqlTable("lead_assignments", {
+  id: int("id").autoincrement().primaryKey(),
+  clinicId: int("clinicId").notNull(),
+  leadId: int("leadId").notNull(),
+  sellerUserId: int("sellerUserId").notNull(),  // FK → users.id
+  assignedByUserId: int("assignedByUserId"),    // FK → users.id (franqueado ou sistema)
+  status: mysqlEnum("status", ["active", "completed", "transferred"]).default("active").notNull(),
+  // Tempo de resposta do vendedor
+  firstContactAt: timestamp("firstContactAt"),
+  responseTimeMinutes: decimal("responseTimeMinutes", { precision: 8, scale: 2 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LeadAssignment = typeof leadAssignments.$inferSelect;
+export type InsertLeadAssignment = typeof leadAssignments.$inferInsert;
 
