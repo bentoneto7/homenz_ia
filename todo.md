@@ -212,3 +212,37 @@
 - [ ] Campo lastAlertSentAt e lastAlertTemperature na tabela de leads
 - [ ] Badge de alertas não lidos no menu do painel
 - [ ] Testes do job de monitoramento
+
+## Fotos Contextuais nas Seções
+- [ ] Seção "A Rede Homenz Já Provou": substituir fotos de lifestyle (corrida/tênis) por fotos de clínica/atendimento/equipe
+- [ ] Seção Hero: verificar se a foto de fundo está contextualmente correta
+- [ ] Seção Problema: verificar foto do fundador
+- [ ] Seção CTA Final: verificar foto de fundo
+- [ ] Mapear todas as seções e garantir coerência visual com o conteúdo
+
+## Correções Antes/Depois + Auditoria
+- [ ] Remover slider interativo da seção antes/depois 3D — usar layout estático lado a lado
+- [ ] Melhorar SVGs de calvície: antes com cabeça calva clara, depois com cabelo denso recuperado
+- [ ] Trocar fotos de lifestyle (corrida/tênis) na seção "A Rede Homenz Já Provou" por fotos de evento/palco/equipe
+- [ ] Auditoria completa do sistema: mapear o que funciona, o que está mock e o que precisa de atenção
+- [ ] Adicionar disclaimer de melhorias ao final da landing page
+
+## Integração Supabase — Sistema de 3 Níveis (Março 2026)
+
+- [x] Instalar @supabase/supabase-js no projeto
+- [x] Criar server/supabase.ts com cliente admin e funções de DB
+- [x] Criar server/routers/homenz.ts com procedures de autenticação e dados
+- [x] Adicionar homenzRouter ao appRouter em server/routers.ts
+- [x] Criar hook useHomenzAuth.ts no frontend
+- [x] Criar componente HomenzLayout.tsx (layout dark compartilhado)
+- [x] Criar página HomenzLogin.tsx (login unificado para os 3 níveis)
+- [x] Adicionar rota /login no App.tsx
+- [x] Criar migration SQL e executar no Supabase via CLI
+- [x] Tabelas criadas: profiles, franchises, leads, lead_events, seller_metrics, appointments, access_invites, user_sessions
+- [x] Dados de demo inseridos: 5 profiles, 3 franchises, 7 leads, 3 seller_metrics
+- [x] Criar NetworkDashboardSupabase.tsx (painel Dono da Rede integrado ao Supabase)
+- [x] Criar FranchiseeDashboard.tsx (painel Franqueado integrado ao Supabase)
+- [x] Criar SellerDashboardSupabase.tsx (painel Vendedor integrado ao Supabase)
+- [x] Adicionar header Authorization com token JWT no tRPC client (main.tsx)
+- [ ] Testes Vitest para homenzRouter
+- [ ] Página /join integrada ao sistema Supabase (convites)

@@ -37,11 +37,18 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+const TOKEN_KEY = "homenz_token";
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
+      headers() {
+        const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+        if (!token) return {};
+        return { Authorization: `Bearer ${token}` };
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),

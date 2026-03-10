@@ -31,6 +31,7 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
 import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
+import HomenzLogin from "./pages/HomenzLogin";
 
 function Router() {
   return (
@@ -86,6 +87,9 @@ function Router() {
 
       {/* Painel do Criador (Superadmin) */}
       <Route path="/creator" component={CreatorPanel} />
+
+      {/* Login unificado Homenz */}
+      <Route path="/login" component={HomenzLogin} />
 
       {/* Aceitar convite de acesso */}
       <Route path="/join" component={JoinInvite} />

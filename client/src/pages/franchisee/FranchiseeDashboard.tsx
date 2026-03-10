@@ -1,505 +1,352 @@
 import { useState } from "react";
-import { useLocation, Link } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useHomenzAuth } from "@/hooks/useHomenzAuth";
+import HomenzLayout from "@/components/HomenzLayout";
 import {
-  Users, TrendingUp, Calendar, Star, Clock, BarChart3,
-  UserPlus, Mail, ChevronRight, Copy, ExternalLink,
-  Zap, Target, Award, ArrowUp, ArrowDown, Minus,
-  LogOut, Settings, Bell, Home, Activity,
+  Target, Calendar, Users, Award, TrendingUp,
+  Flame, Thermometer, Snowflake, Copy, Plus,
+  Loader2, UserPlus, Phone, MessageSquare,
+  ChevronRight, BarChart3,
 } from "lucide-react";
-
-// ── Mock data (substituir por tRPC quando backend estiver pronto) ────────────
-const MOCK_STATS = {
-  totalLeads: 147,
-  leadsThisMonth: 34,
-  leadsGrowth: 18,
-  avgLeadScore: 72,
-  scoreGrowth: 5,
-  scheduledThisMonth: 22,
-  schedulingRate: 65,
-  schedulingGrowth: 8,
-  revenueEstimate: 33000,
-  revenueGrowth: 12,
-};
-
-const MOCK_LEAD_QUALITY = [
-  { label: "Score 80-100 (Quente 🔥)", count: 12, pct: 35, color: "bg-emerald-500" },
-  { label: "Score 50-79 (Morno 🌡️)", count: 15, pct: 44, color: "bg-amber-400" },
-  { label: "Score 0-49 (Frio ❄️)", count: 7, pct: 21, color: "bg-slate-300" },
-];
-
-const MOCK_SELLERS = [
-  { id: 1, name: "Carlos Mendes", avatar: "CM", leadsAssigned: 18, leadsContacted: 16, scheduled: 11, conversionRate: 61, avgResponseMin: 8, score: 94, trend: "up" },
-  { id: 2, name: "Ana Lima", avatar: "AL", leadsAssigned: 14, leadsContacted: 12, scheduled: 8, conversionRate: 57, avgResponseMin: 12, score: 82, trend: "up" },
-  { id: 3, name: "Rafael Costa", avatar: "RC", leadsAssigned: 12, leadsContacted: 9, scheduled: 5, conversionRate: 42, avgResponseMin: 28, score: 61, trend: "down" },
-];
-
-const MOCK_LEADS = [
-  { id: 1, name: "João Ferreira", score: 88, step: "Agendado", stepColor: "text-emerald-600 bg-emerald-50", time: "há 2h", seller: "Carlos Mendes", phone: "(34) 99812-3456" },
-  { id: 2, name: "Pedro Alves", score: 74, step: "Chat concluído", stepColor: "text-blue-600 bg-blue-50", time: "há 4h", seller: "Ana Lima", phone: "(34) 99823-4567" },
-  { id: 3, name: "Marcos Souza", score: 91, step: "Aguardando resposta", stepColor: "text-amber-600 bg-amber-50", time: "há 6h", seller: "Carlos Mendes", phone: "(34) 99834-5678" },
-  { id: 4, name: "Lucas Rocha", score: 55, step: "Fotos enviadas", stepColor: "text-purple-600 bg-purple-50", time: "há 8h", seller: "Rafael Costa", phone: "(34) 99845-6789" },
-  { id: 5, name: "Bruno Martins", score: 38, step: "Lead frio ❄️", stepColor: "text-slate-600 bg-slate-50", time: "há 1d", seller: "Rafael Costa", phone: "(34) 99856-7890" },
-];
-
-const MOCK_FUNNEL = [
-  { step: "Leads recebidos", count: 34, pct: 100, color: "bg-blue-500" },
-  { step: "Chat iniciado", count: 28, pct: 82, color: "bg-indigo-500" },
-  { step: "Chat concluído", count: 22, pct: 65, color: "bg-violet-500" },
-  { step: "Fotos enviadas", count: 18, pct: 53, color: "bg-purple-500" },
-  { step: "IA processada", count: 16, pct: 47, color: "bg-fuchsia-500" },
-  { step: "Agendado", count: 11, pct: 32, color: "bg-emerald-500" },
-];
+import { toast } from "sonner";
 
 // ── Componentes ──────────────────────────────────────────────────────────────
 
-function MetricCard({ title, value, sub, icon, growth, color }: {
-  title: string; value: string | number; sub?: string;
-  icon: React.ReactNode; growth?: number; color: string;
+function StatCard({ label, value, sub, icon, color }: {
+  label: string; value: string | number; sub?: string;
+  icon: React.ReactNode; color: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-          {icon}
-        </div>
-        {growth !== undefined && (
-          <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${growth > 0 ? "text-emerald-700 bg-emerald-50" : growth < 0 ? "text-red-600 bg-red-50" : "text-slate-500 bg-slate-50"}`}>
-            {growth > 0 ? <ArrowUp className="w-3 h-3" /> : growth < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-            {Math.abs(growth)}%
-          </div>
-        )}
+    <div className="bg-white/5 border border-white/8 rounded-2xl p-5 hover:bg-white/8 transition-colors">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${color}`}>
+        {icon}
       </div>
-      <p className="text-2xl font-black text-slate-900">{value}</p>
-      <p className="text-sm text-slate-500 mt-0.5">{title}</p>
-      {sub && <p className="text-xs text-blue-600 font-medium mt-1">{sub}</p>}
+      <p className="text-2xl font-black text-white">{value}</p>
+      <p className="text-sm text-white/50 mt-0.5">{label}</p>
+      {sub && <p className="text-xs text-[#14b8a6] font-medium mt-1">{sub}</p>}
     </div>
   );
+}
+
+function TemperatureIcon({ temp }: { temp: string }) {
+  if (temp === "hot") return <Flame className="w-3.5 h-3.5 text-orange-400" />;
+  if (temp === "warm") return <Thermometer className="w-3.5 h-3.5 text-amber-400" />;
+  return <Snowflake className="w-3.5 h-3.5 text-blue-400" />;
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "bg-emerald-100 text-emerald-700" : score >= 60 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600";
-  return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>{score}</span>;
-}
-
-function InviteModal({ onClose, clinicSlug }: { onClose: () => void; clinicSlug: string }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-
-  const handleInvite = async () => {
-    if (!name.trim() || !email.trim()) { toast.error("Preencha nome e e-mail"); return; }
-    setSending(true);
-    await new Promise(r => setTimeout(r, 1200));
-    toast.success(`Convite enviado para ${email}!`);
-    setSending(false);
-    onClose();
-  };
-
+  const color = score >= 80 ? "text-emerald-400 bg-emerald-500/15" :
+    score >= 50 ? "text-amber-400 bg-amber-500/15" :
+    "text-blue-400 bg-blue-500/15";
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-            <UserPlus className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-black text-slate-900">Convidar Vendedor</h3>
-            <p className="text-xs text-slate-500">O vendedor receberá acesso apenas aos leads da sua unidade</p>
-          </div>
-        </div>
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Nome completo</label>
-            <input
-              value={name} onChange={e => setName(e.target.value)}
-              placeholder="Ex: Carlos Mendes"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-600 mb-1.5 block">E-mail</label>
-            <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="carlos@email.com"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Cancelar</Button>
-          <Button
-            className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleInvite} disabled={sending}
-          >
-            {sending ? "Enviando..." : "Enviar convite"}
-          </Button>
-        </div>
-        <p className="text-xs text-slate-400 text-center mt-4">
-          Plano Unidade: até 5 vendedores · Plano Pro: ilimitado
-        </p>
-      </div>
-    </div>
+    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>{score}</span>
   );
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ active }: { active: string }) {
-  const [, navigate] = useLocation();
-  const { logout } = useAuth();
+// ── Painel principal ─────────────────────────────────────────────────────────
 
-  const items = [
-    { id: "dashboard", label: "Visão Geral", icon: <Home className="w-4 h-4" />, path: "/franqueado" },
-    { id: "leads", label: "Leads", icon: <Users className="w-4 h-4" />, path: "/franqueado/leads" },
-    { id: "vendedores", label: "Vendedores", icon: <Award className="w-4 h-4" />, path: "/franqueado/vendedores" },
-    { id: "agendamentos", label: "Agendamentos", icon: <Calendar className="w-4 h-4" />, path: "/franqueado/agendamentos" },
-    { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-4 h-4" />, path: "/franqueado/analytics" },
-    { id: "configuracoes", label: "Configurações", icon: <Settings className="w-4 h-4" />, path: "/franqueado/configuracoes" },
-  ];
-
-  return (
-    <aside className="w-60 flex-shrink-0 bg-white border-r border-slate-100 flex flex-col h-screen sticky top-0">
-      {/* Logo */}
-      <div className="p-5 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <span className="text-sm font-black text-slate-900">HOMENZ</span>
-            <span className="text-sm font-black text-blue-600"> IA</span>
-          </div>
-        </div>
-        <div className="mt-2 text-xs text-slate-400 font-medium">Painel do Franqueado</div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {items.map(item => (
-          <button
-            key={item.id}
-            onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              active === item.id
-                ? "bg-blue-50 text-blue-700"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-            }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      <div className="p-3 border-t border-slate-100">
-        <button
-          onClick={() => logout()}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
-        >
-          <LogOut className="w-4 h-4" />
-          Sair
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-// ── Página principal ─────────────────────────────────────────────────────────
 export default function FranchiseeDashboard() {
-  const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  const [showInvite, setShowInvite] = useState(false);
-  const [activeTab, setActiveTab] = useState<"leads" | "vendedores" | "funil">("leads");
+  const { user, isFranchisee, isOwner, loading: authLoading } = useHomenzAuth();
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [activeTab, setActiveTab] = useState<"leads" | "sellers" | "funnel">("leads");
 
-  const { data: clinic } = trpc.clinic.mine.useQuery(undefined, { enabled: isAuthenticated });
+  const statsQuery = trpc.homenz.franchiseeStats.useQuery(undefined, {
+    enabled: isFranchisee || isOwner,
+    refetchInterval: 30000,
+  });
 
-  if (!isAuthenticated) {
+  const createInviteMutation = trpc.homenz.createSellerInvite.useMutation({
+    onSuccess: (data) => {
+      navigator.clipboard.writeText(data.inviteUrl).catch(() => {});
+      toast.success("Link de convite copiado!");
+      setShowInviteModal(false);
+      setInviteEmail("");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  if (!authLoading && !user) {
+    navigate("/login");
+    return null;
+  }
+
+  if (!authLoading && user && user.role === "seller") {
+    navigate("/vendedor");
+    return null;
+  }
+
+  if (authLoading || statsQuery.isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center max-w-sm px-4">
-          <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-6">
-            <Zap className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-black mb-3 text-slate-900">Painel do Franqueado</h1>
-          <p className="text-slate-500 mb-6">Faça login para acessar sua unidade Homenz.</p>
-          <a href={getLoginUrl()}>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full rounded-xl">Entrar</Button>
-          </a>
+      <HomenzLayout title="Dashboard Franqueado">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-[#14b8a6] animate-spin" />
         </div>
-      </div>
+      </HomenzLayout>
     );
   }
 
-  const funnelLink = clinic ? `${window.location.origin}/c/${clinic.slug}` : "";
+  const data = statsQuery.data;
+  if (!data) {
+    return (
+      <HomenzLayout title="Dashboard Franqueado">
+        <div className="flex items-center justify-center h-64 flex-col gap-3">
+          <p className="text-white/40">Nenhum dado disponível</p>
+          <p className="text-white/20 text-sm">Execute a migração SQL no Supabase</p>
+        </div>
+      </HomenzLayout>
+    );
+  }
+
+  const { franchise, leads, sellers, stats, funnel } = data;
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar active="dashboard" />
+    <HomenzLayout title={franchise?.name ?? "Dashboard Franqueado"}>
+      <div className="p-6 space-y-8 max-w-7xl mx-auto">
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="bg-white border-b border-slate-100 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-lg font-black text-slate-900">
-              Bom dia, {user?.name?.split(" ")[0] ?? "Franqueado"}! 👋
-            </h1>
-            <p className="text-xs text-slate-400">
-              {clinic?.name ?? "Carregando..."} · {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+            <h2 className="text-2xl font-black text-white">{franchise?.name ?? "Minha Franquia"}</h2>
+            <p className="text-white/50 text-sm mt-1">
+              {franchise?.city}, {franchise?.state} · {sellers.length} vendedores
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            {funnelLink && (
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30"
+          >
+            <UserPlus className="w-4 h-4" />
+            Convidar Vendedor
+          </button>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total de Leads" value={stats.totalLeads} sub="Este mês" icon={<Target className="w-5 h-5 text-white" />} color="bg-blue-500/20" />
+          <StatCard label="Agendamentos" value={stats.scheduledLeads} sub={`${stats.conversionRate}% conversão`} icon={<Calendar className="w-5 h-5 text-white" />} color="bg-emerald-500/20" />
+          <StatCard label="Score Médio" value={stats.avgScore} sub="0–100 pts" icon={<Award className="w-5 h-5 text-white" />} color="bg-amber-500/20" />
+          <StatCard label="Leads Quentes" value={stats.hotLeads} sub={`${stats.warmLeads} mornos, ${stats.coldLeads} frios`} icon={<Flame className="w-5 h-5 text-white" />} color="bg-orange-500/20" />
+        </div>
+
+        {/* Tabs */}
+        <div>
+          <div className="flex gap-1 mb-6 bg-white/5 p-1 rounded-xl w-fit">
+            {(["leads", "sellers", "funnel"] as const).map((tab) => (
               <button
-                onClick={() => { navigator.clipboard.writeText(funnelLink); toast.success("Link do funil copiado!"); }}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === tab ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+                }`}
               >
-                <Copy className="w-3.5 h-3.5" />
-                Copiar link do funil
+                {tab === "leads" ? "Leads Recentes" : tab === "sellers" ? "Vendedores" : "Funil"}
               </button>
-            )}
-            <button
-              onClick={() => setShowInvite(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Convidar vendedor
-            </button>
-          </div>
-        </div>
-
-        <div className="p-8 space-y-8">
-          {/* KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="Leads este mês"
-              value={MOCK_STATS.leadsThisMonth}
-              sub={`${MOCK_STATS.totalLeads} no total`}
-              icon={<Users className="w-5 h-5 text-blue-600" />}
-              growth={MOCK_STATS.leadsGrowth}
-              color="bg-blue-50"
-            />
-            <MetricCard
-              title="Score médio dos leads"
-              value={`${MOCK_STATS.avgLeadScore}/100`}
-              sub="Qualidade do tráfego"
-              icon={<Target className="w-5 h-5 text-violet-600" />}
-              growth={MOCK_STATS.scoreGrowth}
-              color="bg-violet-50"
-            />
-            <MetricCard
-              title="Agendamentos"
-              value={MOCK_STATS.scheduledThisMonth}
-              sub={`${MOCK_STATS.schedulingRate}% de conversão`}
-              icon={<Calendar className="w-5 h-5 text-emerald-600" />}
-              growth={MOCK_STATS.schedulingGrowth}
-              color="bg-emerald-50"
-            />
-            <MetricCard
-              title="Faturamento estimado"
-              value={`R$ ${MOCK_STATS.revenueEstimate.toLocaleString("pt-BR")}`}
-              sub="Baseado em agendamentos"
-              icon={<TrendingUp className="w-5 h-5 text-amber-600" />}
-              growth={MOCK_STATS.revenueGrowth}
-              color="bg-amber-50"
-            />
+            ))}
           </div>
 
-          {/* Qualidade do tráfego */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-black text-slate-900">Qualidade do Tráfego</h3>
-                <span className="text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">Score 0-100</span>
-              </div>
-              <div className="space-y-4">
-                {MOCK_LEAD_QUALITY.map(q => (
-                  <div key={q.label}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-medium text-slate-600">{q.label}</span>
-                      <span className="text-xs font-black text-slate-900">{q.count} leads</span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full ${q.color} rounded-full transition-all`} style={{ width: `${q.pct}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-slate-500">Score médio da unidade</span>
-                <span className="text-lg font-black text-blue-600">{MOCK_STATS.avgLeadScore}/100</span>
-              </div>
-            </div>
-
-            {/* Funil de conversão */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-black text-slate-900">Funil de Conversão</h3>
-                <span className="text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">Este mês</span>
-              </div>
-              <div className="space-y-2.5">
-                {MOCK_FUNNEL.map(f => (
-                  <div key={f.step} className="flex items-center gap-3">
-                    <div className="w-24 text-xs text-slate-500 text-right flex-shrink-0">{f.step}</div>
-                    <div className="flex-1 h-6 bg-slate-50 rounded-lg overflow-hidden relative">
-                      <div className={`h-full ${f.color} rounded-lg transition-all flex items-center justify-end pr-2`} style={{ width: `${f.pct}%` }}>
-                        <span className="text-[10px] font-bold text-white">{f.count}</span>
+          {/* Tab: Leads */}
+          {activeTab === "leads" && (
+            <div className="space-y-2">
+              {leads.length === 0 ? (
+                <div className="bg-white/5 border border-white/8 rounded-2xl p-8 text-center">
+                  <Target className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/40">Nenhum lead ainda</p>
+                </div>
+              ) : (
+                leads.map((lead) => (
+                  <div key={lead.id} className="bg-white/5 border border-white/8 rounded-2xl p-4 hover:bg-white/8 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#14b8a6]/30 to-[#3b82f6]/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">
+                          {lead.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                        </span>
                       </div>
-                    </div>
-                    <span className="text-xs font-semibold text-slate-400 w-8">{f.pct}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tempo de resposta */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-black text-slate-900">Tempo de Resposta</h3>
-                <Clock className="w-4 h-4 text-slate-400" />
-              </div>
-              <div className="space-y-4">
-                {MOCK_SELLERS.map((s, i) => (
-                  <div key={s.id} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500">
-                      {i + 1}
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-700">
-                      {s.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-slate-800 truncate">{s.name}</div>
-                      <div className={`text-[10px] font-medium ${s.avgResponseMin <= 10 ? "text-emerald-600" : s.avgResponseMin <= 20 ? "text-amber-600" : "text-red-500"}`}>
-                        {s.avgResponseMin <= 10 ? "⚡" : s.avgResponseMin <= 20 ? "🕐" : "⚠️"} {s.avgResponseMin} min em média
-                      </div>
-                    </div>
-                    <ScoreBadge score={s.score} />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 pt-4 border-t border-slate-100">
-                <p className="text-[10px] text-slate-400">⚡ &lt;10min · 🕐 10-20min · ⚠️ &gt;20min</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs: Leads recentes / Ranking vendedores */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-1 p-4 border-b border-slate-100">
-              {(["leads", "vendedores", "funil"] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === tab ? "bg-blue-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
-                >
-                  {tab === "leads" ? "Leads Recentes" : tab === "vendedores" ? "Ranking de Vendedores" : "Interação no Funil"}
-                </button>
-              ))}
-            </div>
-
-            {activeTab === "leads" && (
-              <div className="divide-y divide-slate-50">
-                {MOCK_LEADS.map(lead => (
-                  <div key={lead.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors cursor-pointer">
-                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-600">
-                      {lead.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-900">{lead.name}</span>
-                        <ScoreBadge score={lead.score} />
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${lead.stepColor}`}>{lead.step}</span>
-                        <span className="text-[10px] text-slate-400">{lead.time}</span>
-                      </div>
-                    </div>
-                    <div className="text-right hidden sm:block">
-                      <div className="text-xs text-slate-500">{lead.seller}</div>
-                      <div className="text-xs text-slate-400">{lead.phone}</div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 flex-shrink-0" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === "vendedores" && (
-              <div className="p-6">
-                <div className="space-y-4">
-                  {MOCK_SELLERS.map((seller, i) => (
-                    <div key={seller.id} className={`relative rounded-2xl p-5 border ${i === 0 ? "border-amber-200 bg-amber-50/50" : "border-slate-100 bg-slate-50/30"}`}>
-                      {i === 0 && (
-                        <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-full bg-amber-400 text-white text-[10px] font-black">
-                          🏆 Top Vendedor
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <p className="text-white font-semibold text-sm">{lead.name}</p>
+                          <ScoreBadge score={lead.lead_score} />
+                          <TemperatureIcon temp={lead.temperature} />
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 text-xs text-white/40 flex-wrap">
+                          <span>{lead.phone}</span>
+                          {lead.age && <span>· {lead.age} anos</span>}
+                          {lead.hair_problem && <span>· {lead.hair_problem}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs text-white/30 bg-white/5 px-2 py-1 rounded-lg capitalize">
+                          {lead.funnel_step?.replace(/_/g, " ")}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-white/20" />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Tab: Vendedores */}
+          {activeTab === "sellers" && (
+            <div className="space-y-3">
+              {sellers.length === 0 ? (
+                <div className="bg-white/5 border border-white/8 rounded-2xl p-8 text-center">
+                  <Users className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/40 mb-3">Nenhum vendedor cadastrado</p>
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30 mx-auto"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Convidar primeiro vendedor
+                  </button>
+                </div>
+              ) : (
+                sellers.map((seller, i) => {
+                  const m = seller.metrics;
+                  return (
+                    <div key={seller.id} className="bg-white/5 border border-white/8 rounded-2xl p-5 hover:bg-white/8 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="text-2xl font-black text-slate-200 w-8">#{i + 1}</div>
-                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-sm font-black text-blue-700">
-                          {seller.avatar}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900">{seller.name}</span>
-                            {seller.trend === "up" ? <ArrowUp className="w-3 h-3 text-emerald-500" /> : <ArrowDown className="w-3 h-3 text-red-500" />}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm ${
+                            i === 0 ? "bg-amber-500/20 text-amber-400" :
+                            i === 1 ? "bg-slate-400/20 text-slate-300" :
+                            "bg-white/10 text-white/50"
+                          }`}>{i + 1}</div>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#14b8a6] to-[#3b82f6] flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">
+                              {seller.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs text-slate-500">{seller.leadsContacted}/{seller.leadsAssigned} abordados</span>
-                            <span className="text-xs text-slate-500">{seller.scheduled} agendados</span>
-                            <span className="text-xs font-semibold text-blue-600">{seller.conversionRate}% conversão</span>
+                          <div className="min-w-0">
+                            <p className="text-white font-semibold text-sm truncate">{seller.name}</p>
+                            <p className="text-white/40 text-xs">{seller.leadsAssigned} leads atribuídos</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className={`text-2xl font-black ${seller.score >= 80 ? "text-emerald-600" : seller.score >= 60 ? "text-amber-600" : "text-red-500"}`}>
-                            {seller.score}
-                          </div>
-                          <div className="text-[10px] text-slate-400">pontos</div>
-                        </div>
-                      </div>
-                      {/* Progress bar */}
-                      <div className="mt-3 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${seller.score >= 80 ? "bg-emerald-500" : seller.score >= 60 ? "bg-amber-400" : "bg-red-400"}`}
-                          style={{ width: `${seller.score}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {activeTab === "funil" && (
-              <div className="p-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {MOCK_FUNNEL.map((f, i) => (
-                    <div key={f.step} className="bg-slate-50 rounded-2xl p-4 text-center">
-                      <div className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mx-auto mb-3`}>
-                        <span className="text-white font-black text-lg">{f.count}</span>
+                        {m && (
+                          <div className="hidden sm:flex items-center gap-6 text-center">
+                            <div>
+                              <p className="text-white font-black text-sm">{m.leads_scheduled}</p>
+                              <p className="text-white/30 text-xs">agendados</p>
+                            </div>
+                            <div>
+                              <p className="text-emerald-400 font-black text-sm">{m.conversion_rate}%</p>
+                              <p className="text-white/30 text-xs">conversão</p>
+                            </div>
+                            <div>
+                              <p className="text-amber-400 font-black text-sm">{m.avg_response_minutes}min</p>
+                              <p className="text-white/30 text-xs">resposta</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {m && (
+                            <div className="bg-[#14b8a6]/15 text-[#14b8a6] text-sm font-black px-3 py-1 rounded-full">
+                              {m.score}
+                            </div>
+                          )}
+                          <a
+                            href={`https://wa.me/${seller.phone?.replace(/\D/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/20 transition-all"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
-                      <div className="text-xs font-semibold text-slate-700">{f.step}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{f.pct}% do total</div>
-                      {i > 0 && (
-                        <div className="text-[10px] text-slate-400 mt-1">
-                          {Math.round((f.count / MOCK_FUNNEL[i - 1].count) * 100)}% do passo anterior
+
+                      {/* Barra de performance */}
+                      {m && (
+                        <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] rounded-full"
+                            style={{ width: `${Math.min(100, m.score)}%` }}
+                          />
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
+                  );
+                })
+              )}
+            </div>
+          )}
 
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} clinicSlug={clinic?.slug ?? ""} />}
-    </div>
+          {/* Tab: Funil */}
+          {activeTab === "funnel" && (
+            <div className="bg-white/5 border border-white/8 rounded-2xl p-6">
+              <h4 className="text-white font-bold mb-6">Funil de Conversão</h4>
+              <div className="space-y-3">
+                {funnel.map((step, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-white/70 text-sm">{step.step}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold text-sm">{step.count}</span>
+                        <span className="text-white/40 text-xs">({step.pct}%)</span>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${step.pct}%`,
+                          background: `hsl(${200 - i * 20}, 80%, 60%)`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Modal de convite */}
+        {showInviteModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#0d1425] border border-white/10 rounded-3xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold text-white mb-2">Convidar Vendedor</h3>
+              <p className="text-white/50 text-sm mb-6">
+                Gere um link de convite para adicionar um vendedor à sua equipe
+              </p>
+              <div className="mb-4">
+                <label className="text-white/60 text-sm font-medium block mb-1.5">
+                  Email do vendedor (opcional)
+                </label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="vendedor@email.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowInviteModal(false); setInviteEmail(""); }}
+                  className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => createInviteMutation.mutate({ email: inviteEmail || undefined, expiresInDays: 7 })}
+                  disabled={createInviteMutation.isPending}
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                >
+                  {createInviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+                  Gerar Link
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </HomenzLayout>
   );
 }

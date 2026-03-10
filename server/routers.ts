@@ -90,8 +90,11 @@ async function insertLeadEvent(data: {
 }
 // ── Router ───────────────────────────────────────────────────────────────────
 
+import { homenzRouter } from "./routers/homenz";
+
 export const appRouter = router({
   system: systemRouter,
+  homenz: homenzRouter,
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
