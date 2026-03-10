@@ -268,3 +268,11 @@
 - [x] Adicionar visão de saúde do time com alertas de performance
 - [x] Indicadores: tempo médio de 1ª resposta, taxa de follow-up, leads perdidos por inatividade
 - [x] Classificação de perfil por vendedor (Alta performance, Em desenvolvimento, Precisa de atenção)
+
+## Indicador de Temperatura de Lead (Março 2026)
+
+- - [x] Indicador visual animado de temperatura (chama→brasa→gelo) nos cards de lead do vendedor
+- [x] Métricas padrão de mercado: quente <30min, morno 30min-4h, frio >4h, morto >24h
+- [x] Animação pulsante na chama para leads quentes, efeito de gelo para frios
+- [x] Contador de tempo decorrido em tempo real no card
+- [x] Barra de degrê de temperatura visual por card
