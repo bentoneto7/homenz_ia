@@ -88,33 +88,30 @@ const CASES = [
     city: "Uberaba — MG",
     beforeLabel: "ANTES",
     afterLabel: "4 MESES DEPOIS",
-    beforeDesc: "Alopecia androgenética grau III, linha frontal recuada, topo com rarefação visível",
-    afterDesc: "Densidade recuperada, linha frontal estabilizada, cobertura uniforme no topo",
     tag: "Preenchimento Capilar + PRP",
     tagColor: "bg-[#004A9D] text-white",
     quote: "Fiz o diagnóstico pelo chat e em 15 minutos já sabia exatamente qual protocolo era pra mim. Agendei na hora. Resultado em 4 meses superou o que eu esperava.",
+    image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/before-after-1_55ef2687.png",
   },
   {
     name: "Rafael S., 44 anos",
     city: "Uberlândia — MG",
     beforeLabel: "ANTES",
     afterLabel: "6 MESES DEPOIS",
-    beforeDesc: "Queda difusa, couro cabeludo com inflamação, fios finos e sem volume",
-    afterDesc: "Queda controlada, fios mais grossos, volume visivelmente recuperado",
     tag: "Mesoterapia Capilar + Laser",
     tagColor: "bg-[#00C1B8] text-white",
     quote: "Eu estava desistindo de tratar porque não sabia por onde começar. O sistema me fez as perguntas certas e me encaminhou pro protocolo certo. Simples assim.",
+    image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/before-after-2_1fdad418.png",
   },
   {
     name: "Thiago R., 31 anos",
     city: "Belo Horizonte — MG",
     beforeLabel: "ANTES",
     afterLabel: "3 MESES DEPOIS",
-    beforeDesc: "Início de miniaturização, queda acima do normal, histórico familiar de calvície",
-    afterDesc: "Queda normalizada, miniaturização estabilizada, couro cabeludo saudável",
     tag: "Protocolo Preventivo",
     tagColor: "bg-[#F59E0B] text-white",
     quote: "Cheguei cedo, antes de perder muito. O diagnóstico identificou o risco genético e o protocolo preventivo travou a queda. Hoje mantenho com check-ins mensais.",
+    image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/before-after-3_4a0fbbcb.png",
   },
 ];
 
@@ -459,20 +456,17 @@ export default function HomenzLanding() {
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             {CASES.map((c) => (
               <div key={c.name} className="bg-white rounded-3xl overflow-hidden border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                {/* Antes/Depois visual */}
-                <div className="grid grid-cols-2 h-52">
-                  <div className="bg-[#FFF8F5] flex flex-col items-center justify-center p-3 border-r border-[#E2E8F0] relative">
-                    <span className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">{c.beforeLabel}</span>
-                    <HairLossSVG />
-                    <p className="text-[9px] text-[#7A5A4A] text-center leading-tight mt-1">{c.beforeDesc}</p>
-                  </div>
-                  <div className="bg-[#F0FDF9] flex flex-col items-center justify-center p-3 relative">
-                    <span className="absolute top-2 right-2 bg-[#00C1B8] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">{c.afterLabel}</span>
-                    <div className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white border border-[#E2E8F0] flex items-center justify-center shadow-sm">
-                      <span className="text-[#00C1B8] text-xs font-black">→</span>
-                    </div>
-                    <HairFullSVG />
-                    <p className="text-[9px] text-[#065f46] text-center leading-tight mt-1">{c.afterDesc}</p>
+                {/* Antes/Depois visual — foto real */}
+                <div className="relative h-52 overflow-hidden">
+                  <img
+                    src={c.image}
+                    alt={`Antes e depois ${c.name}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase shadow">{c.beforeLabel}</span>
+                  <span className="absolute top-2 right-2 bg-[#00C1B8] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase shadow">{c.afterLabel}</span>
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white border-2 border-[#E2E8F0] flex items-center justify-center shadow-md z-10">
+                    <span className="text-[#004A9D] text-sm font-black">→</span>
                   </div>
                 </div>
                 {/* Tag protocolo */}

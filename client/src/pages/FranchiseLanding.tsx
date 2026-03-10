@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/logo-homenz_a1532d0e.png";
+const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/homenz-plataforma-logo_0b0261db.png";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -295,9 +295,9 @@ export default function FranchiseLanding() {
 
   if (lpLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A2540" }}>
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <img src={LOGO_URL} alt="Homenz" className="h-12 mx-auto mb-6 opacity-80" />
+          <img src={LOGO_URL} alt="Homenz" className="h-12 mx-auto mb-6" />
           <div className="flex gap-2 justify-center">
             {[0,1,2].map(i => (
               <div key={i} className="w-2 h-2 rounded-full bg-[#00C1B8] typing-dot" style={{ animationDelay: `${i * 0.2}s` }} />
@@ -310,11 +310,11 @@ export default function FranchiseLanding() {
 
   if (lpError || !landingPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A2540" }}>
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center p-8">
           <img src={LOGO_URL} alt="Homenz" className="h-12 mx-auto mb-6" />
-          <h2 className="text-white text-xl font-bold mb-2">Página não encontrada</h2>
-          <p className="text-gray-400">Este link pode estar inativo ou incorreto.</p>
+          <h2 className="font-bold text-xl mb-2" style={{ color: "#004A9D" }}>Página não encontrada</h2>
+          <p className="text-[#5A667A]">Este link pode estar inativo ou incorreto.</p>
         </div>
       </div>
     );
@@ -324,27 +324,27 @@ export default function FranchiseLanding() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #0A2540 0%, #004A9D 100%)" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-white">
         <div className="max-w-md w-full text-center">
           <img src={LOGO_URL} alt="Homenz" className="h-12 mx-auto mb-8" />
           
           {/* Ícone de sucesso */}
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(0, 193, 184, 0.2)", border: "2px solid #00C1B8" }}>
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(0, 193, 184, 0.1)", border: "2px solid #00C1B8" }}>
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="#00C1B8" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
 
-          <h1 className="text-white text-2xl font-bold mb-3" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <h1 className="text-2xl font-bold mb-3" style={{ color: "#004A9D", fontFamily: "Montserrat, sans-serif" }}>
             Diagnóstico Agendado!
           </h1>
-          <p className="text-gray-300 mb-6 leading-relaxed">
-            Nossa equipe da <strong className="text-[#00C1B8]">Homenz {landingPage.city}</strong> vai entrar em contato em breve pelo WhatsApp para confirmar o melhor horário para o seu diagnóstico gratuito.
+          <p className="text-[#5A667A] mb-6 leading-relaxed">
+            Nossa equipe da <strong style={{ color: "#00C1B8" }}>Homenz {landingPage.city}</strong> vai entrar em contato em breve pelo WhatsApp para confirmar o melhor horário para o seu diagnóstico gratuito.
           </p>
 
           {/* Próximos passos */}
-          <div className="rounded-2xl p-5 text-left mb-6" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
-            <p className="text-[#00C1B8] font-semibold text-sm mb-3 uppercase tracking-wider">O que acontece agora</p>
+          <div className="rounded-2xl p-5 text-left mb-6 bg-[#EBF4FF] border border-[#C7DEFF]">
+            <p className="font-semibold text-sm mb-3 uppercase tracking-wider" style={{ color: "#004A9D" }}>O que acontece agora</p>
             {[
               "Nossa equipe analisa suas informações",
               "Você recebe contato pelo WhatsApp",
@@ -352,15 +352,15 @@ export default function FranchiseLanding() {
               "Você conhece o protocolo ideal para o seu caso",
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-3 mb-2 last:mb-0">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold text-[#0A2540]" style={{ background: "#00C1B8" }}>
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold text-white" style={{ background: "#00C1B8" }}>
                   {i + 1}
                 </div>
-                <p className="text-gray-300 text-sm">{step}</p>
+                <p className="text-[#5A667A] text-sm">{step}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-gray-500 text-xs">
+          <p className="text-[#A0AABB] text-xs">
             Homenz {landingPage.city} · {landingPage.state}
           </p>
         </div>
@@ -371,12 +371,12 @@ export default function FranchiseLanding() {
   // ─── Chat Principal ─────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0A2540" }}>
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.3)" }}>
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-[#E2E8F0] bg-white">
         <img src={LOGO_URL} alt="Homenz" className="h-8" />
         <div>
-          <p className="text-[#0A2540] font-semibold text-sm" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <p className="font-semibold text-sm" style={{ color: "#004A9D", fontFamily: "Montserrat, sans-serif" }}>
             Homenz {landingPage.city}
           </p>
           <div className="flex items-center gap-1.5">
@@ -385,14 +385,14 @@ export default function FranchiseLanding() {
           </div>
         </div>
         <div className="ml-auto">
-          <Badge className="text-xs" style={{ background: "rgba(0,193,184,0.15)", color: "#00C1B8", border: "1px solid rgba(0,193,184,0.3)" }}>
+          <Badge className="text-xs" style={{ background: "rgba(0,74,157,0.08)", color: "#004A9D", border: "1px solid rgba(0,74,157,0.2)" }}>
             Diagnóstico Gratuito
           </Badge>
         </div>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4" style={{ maxHeight: "calc(100vh - 160px)" }}>
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-[#F8FAFC]" style={{ maxHeight: "calc(100vh - 160px)" }}>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "bot" && (
@@ -405,13 +405,15 @@ export default function FranchiseLanding() {
                 className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   msg.role === "user"
                     ? "text-white rounded-tr-sm"
-                    : "text-gray-100 rounded-tl-sm"
+                    : "rounded-tl-sm"
                 }`}
                 style={{
                   background: msg.role === "user"
                     ? "linear-gradient(135deg, #004A9D, #0066CC)"
-                    : "rgba(255,255,255,0.08)",
-                  border: msg.role === "bot" ? "1px solid rgba(255,255,255,0.08)" : "none",
+                    : "#ffffff",
+                  color: msg.role === "bot" ? "#0A2540" : undefined,
+                  border: msg.role === "bot" ? "1px solid #E2E8F0" : "none",
+                  boxShadow: msg.role === "bot" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
                 }}
                 dangerouslySetInnerHTML={{ __html: formatText(msg.text) }}
               />
@@ -423,12 +425,8 @@ export default function FranchiseLanding() {
                     <button
                       key={opt}
                       onClick={() => handleOptionSelect(opt)}
-                      className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
-                      style={{
-                        background: "rgba(0, 193, 184, 0.1)",
-                        border: "1px solid rgba(0, 193, 184, 0.3)",
-                        color: "#00C1B8",
-                      }}
+                      className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:scale-[1.02] bg-white border border-[#C7DEFF] hover:border-[#004A9D] hover:bg-[#EBF4FF]"
+                      style={{ color: "#004A9D" }}
                     >
                       {opt}
                     </button>
@@ -454,9 +452,9 @@ export default function FranchiseLanding() {
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                         style={{
-                          background: "rgba(0, 193, 184, 0.15)",
-                          border: "2px dashed rgba(0, 193, 184, 0.4)",
-                          color: "#00C1B8",
+                          background: "rgba(0,74,157,0.05)",
+                          border: "2px dashed rgba(0,74,157,0.3)",
+                          color: "#004A9D",
                         }}
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -496,7 +494,7 @@ export default function FranchiseLanding() {
             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #004A9D, #00C1B8)" }}>
               <span className="text-white text-xs font-bold">H</span>
             </div>
-            <div className="rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 bg-white" style={{ border: "1px solid #E2E8F0", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
               {[0,1,2].map(i => (
                 <div key={i} className="w-2 h-2 rounded-full bg-gray-400 typing-dot" style={{ animationDelay: `${i * 0.2}s` }} />
               ))}
@@ -508,7 +506,7 @@ export default function FranchiseLanding() {
 
       {/* Input Area */}
       {showInput && (
-        <div className="px-4 py-4 border-t" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.3)" }}>
+        <div className="px-4 py-4 border-t border-[#E2E8F0] bg-white">
           <div className="flex gap-2">
             <Input
               value={inputValue}
@@ -520,22 +518,21 @@ export default function FranchiseLanding() {
                 "Seu WhatsApp com DDD..."
               }
               type={currentStepType === "input-age" ? "number" : currentStepType === "input-phone" ? "tel" : "text"}
-              className="flex-1 rounded-xl border-0 text-white placeholder:text-gray-500"
-              style={{ background: "rgba(255,255,255,0.08)" }}
+              className="flex-1 rounded-xl border border-[#E2E8F0] text-[#0A2540] placeholder:text-[#A0AABB] focus:border-[#00C1B8] bg-[#F8FAFC]"
               autoFocus
             />
             <Button
               onClick={handleTextInput}
               disabled={!inputValue.trim()}
               className="rounded-xl px-4 font-bold"
-              style={{ background: "#00C1B8", color: "#0A2540" }}
+              style={{ background: "#00C1B8", color: "white" }}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             </Button>
           </div>
-          <p className="text-gray-600 text-xs text-center mt-2">
+          <p className="text-[#A0AABB] text-xs text-center mt-2">
             Seus dados são protegidos e usados apenas para contato
           </p>
         </div>

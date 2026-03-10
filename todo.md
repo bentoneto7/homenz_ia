@@ -346,3 +346,11 @@
 - [x] Seção Como Funciona: 4 passos em cards brancos
 - [x] Funcionalidades: grid 2x3 com hover azul
 - [x] Antes/depois: fundo branco, SVGs clínicos, textos legíveis
+
+## Correção Visual Completa — Branding Consistente (Março 2026 — v6)
+
+- [x] FranchiseLanding (questionário do lead): fundo branco, chat claro, header branco, loading/erro brancos, success screen azul claro
+- [x] HomenzLogin: lado esquerdo fundo gradiente azul-claro (#EBF4FF → #DBEAFE), texto azul #004A9D, stats em cards brancos, logo Homenz Plataforma
+- [x] Antes/depois: fotos reais de pacientes (CDN) substituindo SVGs genéricos
+- [x] Regra anti-overlay global: zero gradiente escuro sobre fotos em todas as páginas
+- [x] Logo "HOMENZ PLATAFORMA" no login e painéis internos

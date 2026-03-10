@@ -106,40 +106,24 @@ export default function HomenzLogin() {
   return (
     <div className="min-h-screen bg-white flex">
       {/* ── Lado esquerdo: branding ── */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12 bg-[#004A9D]">
-        {/* Gradiente de fundo */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#003580] via-[#004A9D] to-[#0066CC]" />
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#00c4cc]/8 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#1a56db]/8 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-violet-600/5 rounded-full blur-3xl" />
-        </div>
-
-        {/* Grid decorativo */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-            backgroundSize: "40px 40px"
-          }}
-        />
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12" style={{ background: "linear-gradient(160deg, #EBF4FF 0%, #F0FAFA 60%, #ffffff 100%)" }}>
 
         {/* Conteúdo */}
-        <div className="relative z-10">
+        <div>
           {/* Logo */}
-          <div className="flex items-center gap-2 mb-16">
-            <span className="text-2xl font-black text-white tracking-tight">HOMENZ</span>
-            <span className="ml-2 text-[10px] font-bold text-[#5A667A] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#EBF4FF] border border-white/20">
-              Brasil
-            </span>
+          <div className="mb-14">
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dLWyLaks57xa8R6kgEV/homenz-plataforma-logo_0b0261db.png"
+              alt="Homenz Plataforma"
+              className="h-12"
+            />
           </div>
 
           {/* Headline */}
           <div className="mb-12">
-            <h1 className="text-5xl font-black text-white leading-tight mb-4">
+            <h1 className="text-5xl font-black leading-tight mb-4" style={{ color: "#004A9D", fontFamily: "Montserrat, sans-serif" }}>
               Sua clínica<br />
-              <span className="text-[#00C1B8]">
-                no controle.
-              </span>
+              <span style={{ color: "#00C1B8" }}>no controle.</span>
             </h1>
             <p className="text-[#5A667A] text-lg leading-relaxed max-w-sm">
               Leads qualificados, agendamentos automáticos e ranking da rede — tudo em um painel.
@@ -153,8 +137,8 @@ export default function HomenzLogin() {
               { value: "87%", label: "taxa de resposta" },
               { value: "4.9★", label: "satisfação" },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white/4 border border-[#E2E8F0] rounded-2xl p-4">
-                <p className="text-2xl font-black text-white mb-1">{stat.value}</p>
+              <div key={stat.label} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
+                <p className="text-2xl font-black mb-1" style={{ color: "#004A9D" }}>{stat.value}</p>
                 <p className="text-[#5A667A] text-xs">{stat.label}</p>
               </div>
             ))}
@@ -162,7 +146,7 @@ export default function HomenzLogin() {
         </div>
 
         {/* Níveis de acesso */}
-        <div className="relative z-10">
+        <div>
           <p className="text-[#A0AABB] text-xs font-semibold uppercase tracking-widest mb-3">
             Níveis de acesso
           </p>
@@ -170,10 +154,10 @@ export default function HomenzLogin() {
             {["Dono da Rede", "Franqueado", "Vendedor"].map((role, i) => (
               <div
                 key={role}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0] shadow-sm"
               >
                 <div className={`w-1.5 h-1.5 rounded-full ${
-                  i === 0 ? "bg-violet-400" : i === 1 ? "bg-blue-400" : "bg-teal-400"
+                  i === 0 ? "bg-violet-400" : i === 1 ? "bg-[#004A9D]" : "bg-[#00C1B8]"
                 }`} />
                 <span className="text-[#5A667A] text-xs">{role}</span>
               </div>
