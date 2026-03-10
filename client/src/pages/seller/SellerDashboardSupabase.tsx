@@ -403,9 +403,15 @@ export default function SellerDashboardSupabase() {
     });
   }, [addEventMutation]);
 
-  if (!authLoading && !user) { navigate("/login"); return null; }
-  if (!authLoading && user && user.role !== "seller") {
-    navigate(user.role === "owner" ? "/rede" : "/franqueado");
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/login");
+    } else if (!authLoading && user && user.role !== "seller") {
+      navigate(user.role === "owner" ? "/rede" : "/franqueado");
+    }
+  }, [authLoading, user, navigate]);
+
+  if (!authLoading && (!user || user.role !== "seller")) {
     return null;
   }
 

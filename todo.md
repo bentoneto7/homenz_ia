@@ -294,3 +294,7 @@
 
 - [x] Remover fotos de lifestyle (selfie ao ar livre e tênis) da seção "A Rede Homenz Já Provou"
 - [x] Substituir por cards de métricas visuais (+47% consultas agendadas / <8min resposta)
+
+## Bugs (Março 2026 — v2)
+
+- [x] Erro React: navigate() chamado durante render do FranchiseeDashboard (setState in render) — movido para useEffect em todos os 3 painéis

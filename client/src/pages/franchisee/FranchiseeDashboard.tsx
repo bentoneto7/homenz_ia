@@ -750,13 +750,19 @@ export default function FranchiseeDashboard() {
     onError: (err) => toast.error(err.message),
   });
 
-  if (!authLoading && !user) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/login");
+    }
+  }, [authLoading, user, navigate]);
 
-  if (!authLoading && user && user.role === "seller") {
-    navigate("/vendedor");
+  useEffect(() => {
+    if (!authLoading && user && user.role === "seller") {
+      navigate("/vendedor");
+    }
+  }, [authLoading, user, navigate]);
+
+  if (!authLoading && (!user || user.role === "seller")) {
     return null;
   }
 
