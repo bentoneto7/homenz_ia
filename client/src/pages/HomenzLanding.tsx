@@ -518,23 +518,17 @@ export default function HomenzLanding() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
-        {/* Background image with overlay */}
+        {/* Background image — sem overlay, foto limpa */}
         <div className="absolute inset-0 z-0">
           <img
             src={PHOTOS.hero}
             alt="Homenz"
-            className="w-full h-full object-cover object-center opacity-60"
+            className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0f1e] via-[#0a0f1e]/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-transparent to-transparent" />
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#1a56db]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/3 w-64 h-64 bg-[#00c4cc]/10 rounded-full blur-3xl" />
-
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="max-w-3xl">
+          <div className="max-w-2xl bg-[#0a0f1e]/95 backdrop-blur-sm rounded-2xl p-8 lg:p-12 border border-white/10">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/20 border border-[#1a56db]/30 text-[#60a5fa] text-xs font-semibold uppercase tracking-widest mb-8">
               <Zap className="w-3 h-3" />
@@ -590,7 +584,7 @@ export default function HomenzLanding() {
                 <span>Configuração em 5 minutos</span>
               </div>
             </div>
-          </div>
+          </div>{/* end card */}
         </div>
 
         {/* Scroll indicator */}
@@ -865,45 +859,52 @@ export default function HomenzLanding() {
               </div>
             </div>
 
-            <div className="relative">
-              <img
-                src={PHOTOS.podcast}
-                alt="Homenz no Unocast"
-                className="rounded-2xl w-full object-cover aspect-video shadow-2xl"
-              />
-              <div className="absolute -top-4 -right-4 bg-[#0d1425] border border-[#E2E8F0] rounded-2xl p-4 shadow-2xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                </div>
-                <div className="text-xs font-bold text-[#0A2540]">Unocast — Podcast</div>
-                <div className="text-xs text-[#5A667A]">Luiz Fernando Homenz</div>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-[#0d1425] border border-[#E2E8F0] p-5 flex flex-col justify-between shadow-lg aspect-square">
-                  <div className="w-10 h-10 rounded-full bg-[#00c4cc]/10 border border-[#00c4cc]/20 flex items-center justify-center text-xl">
-                    📅
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                {
+                  icon: "📅",
+                  value: "+47%",
+                  label: "Consultas agendadas",
+                  sub: "Média das unidades ativas na rede",
+                  valueColor: "text-[#00c4cc]",
+                  iconBg: "bg-[#00c4cc]/10 border-[#00c4cc]/20",
+                },
+                {
+                  icon: "⚡",
+                  value: "<8min",
+                  label: "Tempo de resposta",
+                  sub: "Top vendedores da rede Homenz",
+                  valueColor: "text-[#60a5fa]",
+                  iconBg: "bg-[#1a56db]/10 border-[#1a56db]/20",
+                },
+                {
+                  icon: "✅",
+                  value: "82%",
+                  label: "Taxa de comparecimento",
+                  sub: "Leads que passam pelo funil completo",
+                  valueColor: "text-[#22c55e]",
+                  iconBg: "bg-green-500/10 border-green-500/20",
+                },
+                {
+                  icon: "🧠",
+                  value: "3x",
+                  label: "Mais leads qualificados",
+                  sub: "Chat IA filtra antes de chegar à equipe",
+                  valueColor: "text-[#a78bfa]",
+                  iconBg: "bg-purple-500/10 border-purple-500/20",
+                },
+              ].map((m) => (
+                <div key={m.label} className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-5 flex flex-col justify-between shadow-sm">
+                  <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-xl mb-3 ${m.iconBg}`}>
+                    {m.icon}
                   </div>
                   <div>
-                    <div className="text-3xl font-black text-[#00c4cc] mb-1">+47%</div>
-                    <div className="text-sm font-bold text-[#0A2540]">Consultas agendadas</div>
-                    <div className="text-xs text-[#5A667A] mt-1">Média das unidades ativas na rede</div>
+                    <div className={`text-3xl font-black mb-1 ${m.valueColor}`}>{m.value}</div>
+                    <div className="text-sm font-bold text-[#0A2540]">{m.label}</div>
+                    <div className="text-xs text-[#5A667A] mt-1">{m.sub}</div>
                   </div>
                 </div>
-                <div className="rounded-xl bg-[#0d1425] border border-[#E2E8F0] p-5 flex flex-col justify-between shadow-lg aspect-square">
-                  <div className="w-10 h-10 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 flex items-center justify-center text-xl">
-                    ⚡
-                  </div>
-                  <div>
-                    <div className="text-3xl font-black text-[#60a5fa] mb-1">&lt;8min</div>
-                    <div className="text-sm font-bold text-[#0A2540]">Tempo de resposta</div>
-                    <div className="text-xs text-[#5A667A] mt-1">Top vendedores da rede Homenz</div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -927,13 +928,13 @@ export default function HomenzLanding() {
         </div>
       </section>
 
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0a0f1e]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 text-[#60a5fa] text-xs font-semibold uppercase tracking-widest mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 text-[#1a56db] text-xs font-semibold uppercase tracking-widest mb-6">
               Resultados reais dos pacientes
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black mb-4">
+            <h2 className="text-4xl sm:text-5xl font-black mb-4 text-[#0A2540]">
               ANTES E DEPOIS.
               <br />
               <span className="text-[#00c4cc]">ISSO É O QUE VOCÊ VENDE.</span>
@@ -983,11 +984,11 @@ export default function HomenzLanding() {
                 tagColor: "bg-yellow-500/20 text-yellow-400",
               },
             ].map((p) => (
-              <div key={p.name} className="bg-[#0d1425] border border-[#E2E8F0] rounded-3xl overflow-hidden flex flex-col">
+              <div key={p.name} className="bg-white border border-[#E2E8F0] rounded-3xl overflow-hidden flex flex-col shadow-sm">
                 {/* Before/After visual */}
                 <div className="grid grid-cols-2 h-52 relative">
                   {/* Before — calvície */}
-                  <div className="bg-gradient-to-br from-[#1a0a0a] to-[#2a1010] flex flex-col items-center justify-center p-4 relative">
+                  <div className="bg-[#FFF8F5] flex flex-col items-center justify-center p-4 relative border-r border-[#E2E8F0]">
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10">
                       {p.beforeLabel}
                     </div>
@@ -1027,11 +1028,11 @@ export default function HomenzLanding() {
                     <p className="text-[10px] text-[#5A667A] text-center leading-tight mt-1">{p.beforeDesc}</p>
                   </div>
                   {/* Divider arrow */}
-                  <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#0d1425] border border-white/20 flex items-center justify-center shadow-lg">
+                  <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-[#E2E8F0] flex items-center justify-center shadow-md">
                     <span className="text-[#00c4cc] text-sm font-black">→</span>
                   </div>
                   {/* After — cabelo recuperado */}
-                  <div className="bg-gradient-to-br from-[#003d40]/60 to-[#004d4d]/40 flex flex-col items-center justify-center p-4 relative">
+                  <div className="bg-[#F0FDF9] flex flex-col items-center justify-center p-4 relative">
                     <div className="absolute top-2 right-2 bg-[#00c4cc] text-[#003d40] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide z-10">
                       {p.afterLabel}
                     </div>
@@ -1069,7 +1070,7 @@ export default function HomenzLanding() {
                       {/* Brilho no cabelo */}
                       <path d="M28 14 Q32 10 36 14" stroke="#6a4a20" strokeWidth="1" fill="none" opacity="0.6" />
                     </svg>
-                    <p className="text-[10px] text-[#00c4cc]/80 text-center leading-tight mt-1">{p.afterDesc}</p>
+                    <p className="text-[10px] text-[#065f46] text-center leading-tight mt-1">{p.afterDesc}</p>
                   </div>
                 </div>
 
@@ -1082,7 +1083,7 @@ export default function HomenzLanding() {
 
                 {/* Quote */}
                 <div className="p-5 flex-1">
-                  <p className="text-sm text-white/70 leading-relaxed italic mb-4">"{p.quote}"</p>
+                  <p className="text-sm text-[#374151] leading-relaxed italic mb-4">"{p.quote}"</p>
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[0,1,2,3,4].map((i) => (
@@ -1090,8 +1091,8 @@ export default function HomenzLanding() {
                       ))}
                     </div>
                     <div>
-                      <span className="font-bold text-white text-xs">{p.name}</span>
-                      <span className="text-[#A0AABB] text-xs"> · {p.city}</span>
+                      <span className="font-bold text-[#0A2540] text-xs">{p.name}</span>
+                      <span className="text-[#5A667A] text-xs"> · {p.city}</span>
                     </div>
                   </div>
                 </div>
@@ -1100,8 +1101,8 @@ export default function HomenzLanding() {
           </div>
 
           {/* CTA bar */}
-          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-[#E2E8F0] rounded-2xl p-6 text-center">
-            <p className="text-[#5A667A] text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
+          <div className="bg-[#EBF4FF] border border-[#1a56db]/20 rounded-2xl p-6 text-center">
+            <p className="text-[#374151] text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
             <p className="font-bold text-[#0A2540]">Ele chega pronto. A sua clínica só precisa confirmar o agendamento.</p>
           </div>
         </div>
@@ -1194,18 +1195,20 @@ export default function HomenzLanding() {
                 name: "Unidade Pro",
                 price: "R$ 1.497",
                 period: "/mês",
-                desc: "Para unidades que querem máxima performance e visibilidade na rede.",
+                desc: "Para franqueados Homenz que querem transformar tráfego pago em agenda cheia — com IA, playbook e ranking da rede.",
                 badge: "Mais popular",
                 features: [
                   "Vendedores ilimitados",
                   "Leads ilimitados",
                   "Tudo do plano Unidade",
-                  "Ranking de qualidade de tráfego",
-                  "Ranking de interação do lead",
-                  "Health score S/A/B/C/D/F",
-                  "Playbook automático",
-                  "Analytics avançado",
-                  "Suporte prioritário",
+                  "IA de diagnóstico capilar 3D",
+                  "Score de lead 0-100 automático",
+                  "Temperatura do lead em tempo real (🔥→❄️)",
+                  "Playbook de ação por etapa",
+                  "Health score da unidade (S/A/B/C/D/F)",
+                  "Ranking da rede Homenz em tempo real",
+                  "Analytics: funil + tempo de resposta",
+                  "Suporte prioritário via WhatsApp",
                 ],
                 limit: "Vendedores ilimitados · leads ilimitados",
                 cta: "Ativar 15 dias grátis",
@@ -1242,26 +1245,26 @@ export default function HomenzLanding() {
                 }`}
               >
                 {plan.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap ${plan.highlight ? "bg-[#00c4cc] text-[#0a0f1e]" : "bg-[#EBF4FF] text-white/70"}`}>
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap ${plan.highlight ? "bg-[#00c4cc] text-[#0a0f1e]" : "bg-[#1a56db] text-white"}`}>
                     {plan.badge}
                   </div>
                 )}
                 <div className="mb-5">
-                  <div className="text-xs font-semibold text-[#5A667A] uppercase tracking-widest mb-2">{plan.name}</div>
+                  <div className={`text-xs font-semibold uppercase tracking-widest mb-2 ${plan.highlight ? "text-white/70" : "text-[#5A667A]"}`}>{plan.name}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-[#0A2540]">{plan.price}</span>
-                    <span className="text-[#5A667A] text-sm">{plan.period}</span>
+                    <span className={`text-3xl font-black ${plan.highlight ? "text-white" : "text-[#0A2540]"}`}>{plan.price}</span>
+                    <span className={`text-sm ${plan.highlight ? "text-white/70" : "text-[#5A667A]"}`}>{plan.period}</span>
                   </div>
-                  <div className="text-xs text-[#5A667A] mt-2">{plan.desc}</div>
-                  <div className={`mt-3 text-[10px] font-bold px-2 py-1 rounded-lg inline-block ${plan.highlight ? "bg-white/20 text-[#0A2540]" : "bg-white text-[#5A667A]"}`}>
+                  <div className={`text-xs mt-2 ${plan.highlight ? "text-white/80" : "text-[#5A667A]"}`}>{plan.desc}</div>
+                  <div className={`mt-3 text-[10px] font-bold px-2 py-1 rounded-lg inline-block ${plan.highlight ? "bg-white/20 text-white" : "bg-[#F8FAFC] border border-[#E2E8F0] text-[#5A667A]"}`}>
                     {plan.limit}
                   </div>
                 </div>
                 <div className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-2">
-                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-[#0A2540]" : "text-[#00c4cc]"}`} />
-                      <span className="text-xs text-white/80">{feature}</span>
+                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-[#00c4cc]" : "text-[#00c4cc]"}`} />
+                      <span className={`text-xs ${plan.highlight ? "text-white" : "text-[#374151]"}`}>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -1279,7 +1282,28 @@ export default function HomenzLanding() {
             ))}
           </div>
 
-          <div className="mt-8 text-center">
+          {/* Bloco de ROI */}
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-6 max-w-3xl mx-auto mt-10">
+            <h3 className="text-lg font-black text-[#0A2540] mb-2 text-center">O plano Pro se paga com 1 protocolo a mais por mês.</h3>
+            <p className="text-sm text-[#5A667A] text-center mb-5">
+              Um protocolo de preenchimento capilar custa em média R$ 2.500. Com o Homenz IA, sua equipe aborda o lead certo, na hora certa, com o playbook certo. Um agendamento a mais por mês já cobre o investimento.
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { icon: "💰", value: "R$ 2.500", label: "Ticket médio do protocolo" },
+                { icon: "⚡", value: "1 consulta", label: "A mais por mês" },
+                { icon: "✅", value: "ROI positivo", label: "Já no 1º mês" },
+              ].map((item) => (
+                <div key={item.label} className="text-center">
+                  <div className="text-2xl mb-1">{item.icon}</div>
+                  <div className="font-black text-[#0A2540] text-sm">{item.value}</div>
+                  <div className="text-xs text-[#5A667A]">{item.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
             <p className="text-sm text-[#5A667A]">
               Todos os planos incluem <span className="text-[#00c4cc] font-semibold">15 dias grátis</span>. Sem cartão de crédito. Cancele quando quiser.
             </p>
@@ -1288,16 +1312,8 @@ export default function HomenzLanding() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src={PHOTOS.office}
-            alt="Homenz"
-            className="w-full h-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-[#0a0f1e]/90 to-[#0a0f1e]" />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0a0f1e]">
+        <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1a56db]/20 border border-[#1a56db]/30 text-[#60a5fa] text-xs font-semibold uppercase tracking-widest mb-8">
             <Shield className="w-3 h-3" />
             15 dias grátis, sem compromisso
@@ -1326,7 +1342,7 @@ export default function HomenzLanding() {
               Ver demo primeiro
             </button>
           </div>
-        </div>
+        </div>{/* end max-w-3xl */}
       </section>
 
       {/* Footer */}

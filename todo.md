@@ -305,6 +305,17 @@
 - [x] Teste de fluxo completo de login/redirecionamento por role (3/3 logins validados)
 - [x] Logout funcional e visível em todos os 3 painéis (com toast + redirect para /login)
 
+## Refatoração Landing Page (Março 2026 — v4)
+
+- [x] Remover foto do podcast (Unocast) da seção de resultados
+- [x] Substituir por grid 2x2 de métricas visuais sem foto
+- [x] Regra global anti-overlay: hero com card opaco ao lado da foto (sem gradiente sobre imagem)
+- [x] Antes/depois capilares: fundo claro (branco), SVGs clínicos realistas, textos legíveis
+- [x] Plano Unidade Pro (R$1.497): features reescritas com valor percebido real
+- [x] Bloco de ROI abaixo dos planos (1 protocolo a mais = ROI positivo no 1º mês)
+- [x] Corrigir textos invisíveis nos cards de planos (text-white sobre fundo branco)
+- [x] CTA final: remover overlay sobre foto, usar fundo sólido
+
 ## Rebranding Unificado — Tema Claro Homenz (Março 2026)
 
 - [x] Capturar branding completo do site oficial Homenz (cores, tipografia, botões, componentes)
