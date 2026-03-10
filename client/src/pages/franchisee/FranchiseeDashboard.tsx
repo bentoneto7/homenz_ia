@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
@@ -466,11 +466,27 @@ function ScoreBadge({ score }: { score: number }) {
 // ── Painel principal ─────────────────────────────────────────────────────────
 
 export default function FranchiseeDashboard() {
-  const [, navigate] = useLocation();
+  const [locationPath, navigate] = useLocation();
   const { user, isFranchisee, isOwner, loading: authLoading } = useHomenzAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [activeTab, setActiveTab] = useState<"leads" | "sellers" | "funnel">("sellers");
+  // Sincronizar aba com a rota atual
+  const routeToTab: Record<string, "leads" | "sellers" | "funnel"> = {
+    "/franqueado": "sellers",
+    "/franqueado/vendedores": "sellers",
+    "/franqueado/leads": "leads",
+    "/franqueado/agendamentos": "leads",
+    "/franqueado/analytics": "funnel",
+    "/franqueado/configuracoes": "sellers",
+  };
+  // Aba ativa derivada da rota — reativa a mudanças de URL pelo menu lateral
+  const activeTabFromRoute = useMemo(
+    () => routeToTab[locationPath as string] ?? "sellers",
+    [locationPath]
+  );
+  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | null>(null);
+  const activeTab = manualTab ?? activeTabFromRoute;
+  const setActiveTab = (tab: "leads" | "sellers" | "funnel") => setManualTab(tab);
 
   const statsQuery = trpc.homenz.franchiseeStats.useQuery(undefined, {
     enabled: isFranchisee || isOwner,

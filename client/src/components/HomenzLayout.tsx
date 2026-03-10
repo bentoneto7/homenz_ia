@@ -4,7 +4,7 @@ import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import {
   LayoutDashboard, Users, TrendingUp, Calendar, Settings,
   LogOut, Menu, X, Bell, ChevronRight, Sparkles,
-  Building2, UserCheck, BarChart3, Target, Award,
+  Building2, BarChart3, Target, Award,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,30 +43,22 @@ const ROLE_LABELS: Record<string, { label: string; color: string; bg: string }> 
   seller: { label: "Vendedor", color: "text-teal-400", bg: "bg-teal-500/20" },
 };
 
-interface HomenzLayoutProps {
-  children: React.ReactNode;
-  title?: string;
+interface SidebarContentProps {
+  navItems: NavItem[];
+  location: string;
+  user: { name: string; role: string } | null;
+  roleInfo: { label: string; color: string; bg: string } | null;
+  onClose?: () => void;
+  onLogout: () => void;
 }
 
-export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
-  const [location] = useLocation();
-  const { user, logout } = useHomenzAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const navItems = user ? (NAV_BY_ROLE[user.role] ?? []) : [];
-  const roleInfo = user ? ROLE_LABELS[user.role] : null;
-
-  const handleLogout = () => {
-    logout();
-    toast.success("Sessão encerrada");
-    window.location.href = "/login";
-  };
-
-  const Sidebar = () => (
+// Sidebar definido FORA do HomenzLayout para evitar recriação a cada render
+function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout }: SidebarContentProps) {
+  return (
     <div className="flex flex-col h-full bg-[#0a1120] border-r border-white/5">
       {/* Logo */}
       <div className="p-5 border-b border-white/5">
-        <Link href="/">
+        <Link href="/" onClick={onClose}>
           <div className="flex items-center gap-2.5 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#14b8a6] to-[#3b82f6] flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
@@ -100,21 +92,23 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location === item.href || 
-            (item.href !== "/rede" && item.href !== "/franqueado" && item.href !== "/vendedor" && location.startsWith(item.href));
+          // Verificar se é a rota ativa: exata para raiz, startsWith para sub-rotas
+          const rootPaths = ["/rede", "/franqueado", "/vendedor"];
+          const isActive = location === item.href ||
+            (!rootPaths.includes(item.href) && location.startsWith(item.href));
+
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={onClose}>
               <div
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all select-none ${
                   isActive
                     ? "bg-gradient-to-r from-[#14b8a6]/20 to-[#3b82f6]/20 text-white border border-[#14b8a6]/20"
                     : "text-white/50 hover:text-white hover:bg-white/5"
                 }`}
-                onClick={() => setSidebarOpen(false)}
               >
                 <span className={isActive ? "text-[#14b8a6]" : ""}>{item.icon}</span>
-                <span className="text-sm font-medium">{item.label}</span>
-                {isActive && <ChevronRight className="w-3 h-3 ml-auto text-[#14b8a6]" />}
+                <span className="text-sm font-medium flex-1">{item.label}</span>
+                {isActive && <ChevronRight className="w-3 h-3 text-[#14b8a6]" />}
               </div>
             </Link>
           );
@@ -124,7 +118,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
       {/* Logout */}
       <div className="p-3 border-t border-white/5">
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
         >
           <LogOut className="w-4 h-4" />
@@ -133,19 +127,47 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
       </div>
     </div>
   );
+}
+
+interface HomenzLayoutProps {
+  children: React.ReactNode;
+  title?: string;
+}
+
+export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
+  const [location] = useLocation();
+  const { user, logout } = useHomenzAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navItems = user ? (NAV_BY_ROLE[user.role] ?? []) : [];
+  const roleInfo = user ? ROLE_LABELS[user.role] : null;
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Sessão encerrada");
+    window.location.href = "/login";
+  };
+
+  const sidebarProps: SidebarContentProps = {
+    navItems,
+    location,
+    user,
+    roleInfo,
+    onLogout: handleLogout,
+  };
 
   return (
     <div className="min-h-screen bg-[#070d1a] flex">
-      {/* Sidebar desktop */}
-      <div className="hidden lg:flex w-60 flex-shrink-0 flex-col">
-        <Sidebar />
+      {/* Sidebar desktop — sempre visível em lg+ */}
+      <div className="hidden lg:flex w-60 flex-shrink-0 flex-col sticky top-0 h-screen">
+        <SidebarContent {...sidebarProps} />
       </div>
 
       {/* Sidebar mobile overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="w-60 flex-shrink-0">
-            <Sidebar />
+          <div className="w-60 flex-shrink-0 h-full">
+            <SidebarContent {...sidebarProps} onClose={() => setSidebarOpen(false)} />
           </div>
           <div
             className="flex-1 bg-black/60 backdrop-blur-sm"

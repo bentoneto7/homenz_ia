@@ -258,6 +258,10 @@
 - [x] Botão "Voltar ao site" na tela de login
 - [x] API de login validada e funcionando (JWT retornado com sucesso)
 
+## Bugs (Março 2026)
+
+- [x] Menu lateral esquerdo (HomenzLayout) não navega ao clicar nos itens
+
 ## Painel Franqueado — Métricas de Performance Comercial (Março 2026)
 
 - [x] Redesenhar aba Vendedores com cards detalhados (tempo de abordagem, follow-up, funil individual)
