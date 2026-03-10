@@ -246,3 +246,14 @@
 - [x] Adicionar header Authorization com token JWT no tRPC client (main.tsx)
 - [ ] Testes Vitest para homenzRouter
 - [ ] Página /join integrada ao sistema Supabase (convites)
+
+## Tela de Login Premium (Março 2026)
+
+- [x] Reescrever HomenzLogin.tsx com design split-screen premium
+- [x] Lado esquerdo: branding Homenz com stats, grid decorativo e gradientes
+- [x] Lado direito: formulário de login com email/senha
+- [x] Cards de acesso rápido demo (Dono da Rede, Franqueado, Vendedor)
+- [x] Redirecionamento automático após login conforme role
+- [x] Botão "Logar agora" na navbar da landing page
+- [x] Botão "Voltar ao site" na tela de login
+- [x] API de login validada e funcionando (JWT retornado com sucesso)

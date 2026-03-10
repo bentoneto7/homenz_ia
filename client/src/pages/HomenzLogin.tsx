@@ -1,59 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useHomenzAuth, type HomenzUser } from "@/hooks/useHomenzAuth";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import {
+  Eye, EyeOff, Loader2, ArrowRight, Shield, Users, BarChart3,
+  ChevronRight, Lock
+} from "lucide-react";
 
 const DEMO_ACCOUNTS = [
   {
     label: "Dono da Rede",
     email: "admin@homenzbrasil.com.br",
-    password: "admin123",
-    color: "bg-violet-600",
+    password: "homenz2024",
+    color: "from-violet-500 to-purple-600",
+    borderColor: "border-violet-500/30",
+    hoverBg: "hover:bg-violet-500/10",
     badge: "Owner",
+    badgeBg: "bg-violet-500/20 text-violet-300",
+    icon: BarChart3,
+    description: "Visão completa da rede",
     redirect: "/rede",
   },
   {
     label: "Franqueado",
     email: "franqueado@homenzuberaba.com.br",
     password: "franq123",
-    color: "bg-blue-600",
+    color: "from-blue-500 to-cyan-500",
+    borderColor: "border-blue-500/30",
+    hoverBg: "hover:bg-blue-500/10",
     badge: "Franqueado",
+    badgeBg: "bg-blue-500/20 text-blue-300",
+    icon: Shield,
+    description: "Gestão da sua unidade",
     redirect: "/franqueado",
   },
   {
     label: "Vendedor",
     email: "carlos@homenzuberaba.com.br",
     password: "vendedor123",
-    color: "bg-teal-600",
+    color: "from-teal-500 to-emerald-500",
+    borderColor: "border-teal-500/30",
+    hoverBg: "hover:bg-teal-500/10",
     badge: "Vendedor",
+    badgeBg: "bg-teal-500/20 text-teal-300",
+    icon: Users,
+    description: "Seus leads e agendamentos",
     redirect: "/vendedor",
   },
 ];
 
 export default function HomenzLogin() {
   const [, navigate] = useLocation();
-  const { login } = useHomenzAuth();
+  const { login, user } = useHomenzAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [activeDemo, setActiveDemo] = useState<number | null>(null);
 
-  const loginMutation = trpc.homenz.login.useMutation({
-    onSuccess: (data) => {
-      login(data.token, data.user as HomenzUser);
-      toast.success(`Bem-vindo, ${data.user.name}!`);
-      // Redirecionar conforme role
+  // Redirecionar se já logado
+  useEffect(() => {
+    if (user) {
       const redirectMap: Record<string, string> = {
         owner: "/rede",
         franchisee: "/franqueado",
         seller: "/vendedor",
       };
-      navigate(redirectMap[data.user.role] ?? "/");
+      navigate(redirectMap[user.role] ?? "/");
+    }
+  }, [user, navigate]);
+
+  const loginMutation = trpc.homenz.login.useMutation({
+    onSuccess: (data) => {
+      login(data.token, data.user as HomenzUser);
+      toast.success(`Bem-vindo, ${data.user.name}!`, {
+        description: "Redirecionando para o painel...",
+      });
+      const redirectMap: Record<string, string> = {
+        owner: "/rede",
+        franchisee: "/franqueado",
+        seller: "/vendedor",
+      };
+      setTimeout(() => navigate(redirectMap[data.user.role] ?? "/"), 500);
     },
     onError: (err) => {
-      toast.error(err.message || "Email ou senha incorretos");
+      setActiveDemo(null);
+      toast.error("Acesso negado", {
+        description: err.message || "Email ou senha incorretos",
+      });
     },
+    onSettled: () => setActiveDemo(null),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -62,119 +98,231 @@ export default function HomenzLogin() {
     loginMutation.mutate({ email, password });
   };
 
-  const handleDemoLogin = (demo: typeof DEMO_ACCOUNTS[0]) => {
+  const handleDemoLogin = (demo: typeof DEMO_ACCOUNTS[0], idx: number) => {
+    setActiveDemo(idx);
     loginMutation.mutate({ email: demo.email, password: demo.password });
   };
 
   return (
-    <div className="min-h-screen bg-[#070d1a] flex items-center justify-center p-4">
-      {/* Background gradient */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#14b8a6]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#3b82f6]/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#14b8a6] to-[#3b82f6] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-black text-white">Homenz IA</span>
-          </div>
-          <p className="text-white/50 text-sm">Acesse o painel da sua unidade</p>
+    <div className="min-h-screen bg-[#060c1a] flex">
+      {/* ── Lado esquerdo: branding ── */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12">
+        {/* Gradiente de fundo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0d1f3c] via-[#060c1a] to-[#0a1628]" />
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#00c4cc]/8 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#1a56db]/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-violet-600/5 rounded-full blur-3xl" />
         </div>
 
-        {/* Card de login */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-          <h1 className="text-xl font-bold text-white mb-6">Entrar</h1>
+        {/* Grid decorativo */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "40px 40px"
+          }}
+        />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-white/60 text-sm font-medium block mb-1.5">Email</label>
+        {/* Conteúdo */}
+        <div className="relative z-10">
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-16">
+            <span className="text-2xl font-black text-white tracking-tight">HOMENZ</span>
+            <span className="text-2xl font-black text-[#00c4cc] tracking-tight">IA</span>
+            <span className="ml-2 text-[10px] font-bold text-[#1a56db] uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+              Homenz Brasil
+            </span>
+          </div>
+
+          {/* Headline */}
+          <div className="mb-12">
+            <h1 className="text-5xl font-black text-white leading-tight mb-4">
+              Sua clínica<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00c4cc] to-[#1a56db]">
+                no controle.
+              </span>
+            </h1>
+            <p className="text-white/50 text-lg leading-relaxed max-w-sm">
+              Leads qualificados, agendamentos automáticos e ranking da rede — tudo em um painel.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { value: "3x", label: "mais agendamentos" },
+              { value: "87%", label: "taxa de resposta" },
+              { value: "4.9★", label: "satisfação" },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-white/4 border border-white/8 rounded-2xl p-4">
+                <p className="text-2xl font-black text-white mb-1">{stat.value}</p>
+                <p className="text-white/40 text-xs">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Níveis de acesso */}
+        <div className="relative z-10">
+          <p className="text-white/30 text-xs font-semibold uppercase tracking-widest mb-3">
+            Níveis de acesso
+          </p>
+          <div className="flex gap-2">
+            {["Dono da Rede", "Franqueado", "Vendedor"].map((role, i) => (
+              <div
+                key={role}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  i === 0 ? "bg-violet-400" : i === 1 ? "bg-blue-400" : "bg-teal-400"
+                }`} />
+                <span className="text-white/60 text-xs">{role}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Lado direito: formulário ── */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md">
+
+          {/* Logo mobile */}
+          <div className="flex lg:hidden items-center gap-2 mb-10">
+            <span className="text-xl font-black text-white">HOMENZ</span>
+            <span className="text-xl font-black text-[#00c4cc]">IA</span>
+          </div>
+
+          {/* Cabeçalho */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-white mb-2">Entrar</h2>
+            <p className="text-white/40 text-sm">Acesse o painel da sua unidade Homenz</p>
+          </div>
+
+          {/* Formulário */}
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className="text-white/60 text-sm font-medium block">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com.br"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 focus:ring-1 focus:ring-[#14b8a6]/30 transition-all"
+                autoComplete="email"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#00c4cc]/50 focus:ring-2 focus:ring-[#00c4cc]/10 transition-all"
                 required
               />
             </div>
 
-            <div>
-              <label className="text-white/60 text-sm font-medium block mb-1.5">Senha</label>
+            {/* Senha */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-white/60 text-sm font-medium">Senha</label>
+                <button type="button" className="text-xs text-[#00c4cc]/70 hover:text-[#00c4cc] transition-colors">
+                  Esqueceu?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 focus:ring-1 focus:ring-[#14b8a6]/30 transition-all"
+                  autoComplete="current-password"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 pr-12 text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#00c4cc]/50 focus:ring-2 focus:ring-[#00c4cc]/10 transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
+            {/* Botão entrar */}
             <button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full relative overflow-hidden bg-gradient-to-r from-[#00c4cc] to-[#1a56db] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm mt-2"
             >
-              {loginMutation.isPending ? (
+              {loginMutation.isPending && activeDemo === null ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Entrando...
+                  Verificando...
                 </>
               ) : (
-                "Entrar"
+                <>
+                  <Lock className="w-4 h-4" />
+                  Entrar no painel
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </>
               )}
             </button>
           </form>
 
           {/* Divisor */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-white/30 text-xs">ou acesse com demo</span>
-            <div className="flex-1 h-px bg-white/10" />
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-white/8" />
+            <span className="text-white/25 text-xs font-medium">Acesso rápido — demo</span>
+            <div className="flex-1 h-px bg-white/8" />
           </div>
 
-          {/* Contas demo */}
-          <div className="space-y-2">
-            {DEMO_ACCOUNTS.map((demo) => (
-              <button
-                key={demo.email}
-                onClick={() => handleDemoLogin(demo)}
-                disabled={loginMutation.isPending}
-                className="w-full flex items-center gap-3 bg-white/3 border border-white/8 rounded-xl px-4 py-3 hover:bg-white/8 transition-colors disabled:opacity-50 text-left"
-              >
-                <div className={`w-8 h-8 rounded-lg ${demo.color} flex items-center justify-center flex-shrink-0`}>
-                  <span className="text-white text-xs font-black">{demo.badge[0]}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">{demo.label}</p>
-                  <p className="text-white/40 text-xs truncate">{demo.email}</p>
-                </div>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${demo.color}`}>
-                  {demo.badge}
-                </span>
-              </button>
-            ))}
+          {/* Cards de acesso demo */}
+          <div className="space-y-2.5">
+            {DEMO_ACCOUNTS.map((demo, idx) => {
+              const Icon = demo.icon;
+              const isLoading = loginMutation.isPending && activeDemo === idx;
+              return (
+                <button
+                  key={demo.email}
+                  onClick={() => handleDemoLogin(demo, idx)}
+                  disabled={loginMutation.isPending}
+                  className={`w-full flex items-center gap-3.5 bg-white/[0.03] border ${demo.borderColor} rounded-2xl px-4 py-3.5 ${demo.hoverBg} hover:border-white/20 transition-all disabled:opacity-60 group text-left`}
+                >
+                  {/* Ícone */}
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${demo.color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                    ) : (
+                      <Icon className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-white font-semibold text-sm">{demo.label}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${demo.badgeBg}`}>
+                        {demo.badge}
+                      </span>
+                    </div>
+                    <p className="text-white/35 text-xs">{demo.description}</p>
+                  </div>
+
+                  {/* Seta */}
+                  <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Rodapé */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={() => navigate("/")}
+              className="text-white/25 text-xs hover:text-white/50 transition-colors"
+            >
+              ← Voltar ao site
+            </button>
+            <p className="text-white/20 text-xs">
+              Ambiente de demonstração
+            </p>
           </div>
         </div>
-
-        {/* Nota de demo */}
-        <p className="text-center text-white/20 text-xs mt-4">
-          Ambiente de demonstração — dados fictícios
-        </p>
       </div>
     </div>
   );
