@@ -32,6 +32,7 @@ import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
 import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
 import HomenzLogin from "./pages/HomenzLogin";
+import FranchiseLanding from "./pages/FranchiseLanding";
 
 function Router() {
   return (
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/franqueado/agendamentos" component={FranchiseeDashboard} />
       <Route path="/franqueado/analytics" component={FranchiseeDashboard} />
       <Route path="/franqueado/configuracoes" component={FranchiseeDashboard} />
+      <Route path="/franqueado/landing-pages" component={FranchiseeDashboard} />
 
       {/* Painel do Vendedor */}
       <Route path="/vendedor" component={SellerDashboard} />
@@ -87,6 +89,9 @@ function Router() {
 
       {/* Painel do Criador (Superadmin) */}
       <Route path="/creator" component={CreatorPanel} />
+
+      {/* Landing pages públicas por franquia */}
+      <Route path="/l/:slug" component={FranchiseLanding} />
 
       {/* Login unificado Homenz */}
       <Route path="/login" component={HomenzLogin} />

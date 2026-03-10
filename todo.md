@@ -276,3 +276,16 @@
 - [x] Animação pulsante na chama para leads quentes, efeito de gelo para frios
 - [x] Contador de tempo decorrido em tempo real no card
 - [x] Barra de degrê de temperatura visual por card
+
+## Distribuição de Leads (Março 2026)
+
+- [x] Lógica de roteamento de lead para franquia (UTM franchise_id, cidade, estado, fallback owner)
+- [x] Tabela franchise_routing_rules no Supabase (regras de roteamento por UTM/cidade/estado)
+- [x] Lógica de distribuição entre vendedores: round-robin igualitário
+- [x] Tabela lead_distribution_log para auditoria de cada atribuição
+- [x] Procedure tRPC: assignLeadToFranchise + assignLeadToSeller
+- [x] Aba Landing Pages no FranchiseeDashboard (criar, copiar link, visualizar)
+- [x] Motor de distribuição round-robin no backend (server/leadDistribution.ts)
+- [x] Landing page pública por franquia /l/:slug com chat de captação capilar
+- [x] Upload de foto na área com queda capilar na landing page
+- [x] Branding oficial Homenz aplicado (azul #004A9D, teal #00C1B8, Montserrat)

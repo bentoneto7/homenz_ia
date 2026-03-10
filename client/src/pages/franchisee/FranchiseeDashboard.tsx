@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
@@ -10,8 +10,254 @@ import {
   ChevronRight, BarChart3, Clock, RefreshCw,
   AlertTriangle, CheckCircle2, XCircle, TrendingDown,
   Zap, Activity, ArrowUp, ArrowDown, Minus,
+  Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// ── Componente de Landing Pages ────────────────────────────────────────────────
+
+type LandingPage = {
+  id: string;
+  slug: string;
+  title: string;
+  procedure: string;
+  is_active: boolean;
+  views: number;
+  leads_generated: number;
+  conversion_rate: number;
+  created_at: string;
+};
+
+function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
+  const [pages, setPages] = useState<LandingPage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newProcedure, setNewProcedure] = useState("crescimento-capilar");
+  const [creating, setCreating] = useState(false);
+  const baseUrl = window.location.origin;
+
+  const loadPages = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/trpc/distribution.listLandingPages", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
+      });
+      const json = await res.json();
+      if (json.result?.data) setPages(json.result.data);
+    } catch {
+      // fallback: mostrar dados mock se API ainda não está pronta
+      setPages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadPages(); }, [franchiseId]);
+
+  const createPage = async () => {
+    if (!newTitle.trim()) { toast.error("Dê um nome para a landing page"); return; }
+    setCreating(true);
+    try {
+      const slug = newTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const res = await fetch("/api/trpc/distribution.createLandingPage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
+        body: JSON.stringify({ json: { title: newTitle, procedure: newProcedure, slug } }),
+      });
+      const json = await res.json();
+      if (json.result?.data) {
+        toast.success("Landing page criada!");
+        setShowCreate(false);
+        setNewTitle("");
+        loadPages();
+      } else {
+        toast.error("Erro ao criar landing page");
+      }
+    } catch {
+      toast.error("Erro ao criar landing page");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const copyLink = (slug: string) => {
+    navigator.clipboard.writeText(`${baseUrl}/l/${slug}`);
+    toast.success("Link copiado!");
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-40">
+      <Loader2 className="w-6 h-6 text-[#14b8a6] animate-spin" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h4 className="text-white font-bold text-lg">Landing Pages da Franquia</h4>
+          <p className="text-white/40 text-sm mt-0.5">Crie páginas de captação para usar no tráfego pago</p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30"
+        >
+          <Plus className="w-4 h-4" />
+          Nova Landing Page
+        </button>
+      </div>
+
+      {/* Como funciona */}
+      <div className="bg-blue-500/8 border border-blue-500/20 rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <Globe className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-white font-semibold text-sm mb-1">Como funciona</p>
+            <p className="text-white/50 text-sm leading-relaxed">
+              Cada landing page tem uma URL única da sua franquia. O lead preenche o chat, envia uma foto da área com queda capilar e é distribuído automaticamente entre seus vendedores via round-robin.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-3">
+              <span className="flex items-center gap-1.5 text-xs text-white/40"><Smartphone className="w-3.5 h-3.5" /> Otimizada para mobile</span>
+              <span className="flex items-center gap-1.5 text-xs text-white/40"><Share2 className="w-3.5 h-3.5" /> Funciona com Meta Ads</span>
+              <span className="flex items-center gap-1.5 text-xs text-white/40"><MousePointerClick className="w-3.5 h-3.5" /> Lead vai direto ao vendedor</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de landing pages */}
+      {pages.length === 0 ? (
+        <div className="bg-white/5 border border-white/8 rounded-2xl p-10 text-center">
+          <Link2 className="w-10 h-10 text-white/20 mx-auto mb-3" />
+          <p className="text-white/40 mb-1">Nenhuma landing page criada ainda</p>
+          <p className="text-white/25 text-sm mb-5">Crie sua primeira página e comece a captar leads</p>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+          >
+            Criar primeira landing page
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {pages.map((page) => (
+            <div key={page.id} className="bg-white/[0.03] border border-white/8 rounded-2xl p-5 hover:border-white/12 transition-all">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h5 className="text-white font-bold">{page.title}</h5>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      page.is_active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/30 border border-white/10"
+                    }`}>{page.is_active ? "Ativa" : "Inativa"}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Link2 className="w-3.5 h-3.5 text-white/30" />
+                    <span className="text-white/40 text-xs font-mono truncate">{baseUrl}/l/{page.slug}</span>
+                  </div>
+                </div>
+                {/* Métricas */}
+                <div className="flex items-center gap-5">
+                  <div className="text-center">
+                    <p className="text-white font-black text-sm">{page.views ?? 0}</p>
+                    <p className="text-white/30 text-[10px]">visualiz.</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-emerald-400 font-black text-sm">{page.leads_generated ?? 0}</p>
+                    <p className="text-white/30 text-[10px]">leads</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-amber-400 font-black text-sm">{page.conversion_rate ?? 0}%</p>
+                    <p className="text-white/30 text-[10px]">conversão</p>
+                  </div>
+                </div>
+              </div>
+              {/* Ações */}
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5 flex-wrap">
+                <button
+                  onClick={() => copyLink(page.slug)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#14b8a6] bg-[#14b8a6]/10 hover:bg-[#14b8a6]/20 px-3 py-1.5 rounded-lg transition-colors border border-[#14b8a6]/20"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copiar link
+                </button>
+                <a
+                  href={`/l/${page.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-white/50 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors border border-white/10"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Visualizar
+                </a>
+                <span className="flex items-center gap-1.5 text-xs text-white/30 ml-auto">
+                  <Eye className="w-3.5 h-3.5" /> UTM: utm_source=meta&utm_campaign={page.slug}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal criar landing page */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0d1425] border border-white/10 rounded-3xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-white mb-2">Nova Landing Page</h3>
+            <p className="text-white/50 text-sm mb-6">Configure a página de captação da sua franquia</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-white/60 text-sm font-medium block mb-1.5">Nome da página</label>
+                <input
+                  type="text"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Ex: Homenz Uberaba — Crescimento Capilar"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-white/60 text-sm font-medium block mb-1.5">Procedimento</label>
+                <select
+                  value={newProcedure}
+                  onChange={(e) => setNewProcedure(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                >
+                  <option value="crescimento-capilar">Crescimento Capilar</option>
+                  <option value="micropigmentacao">Micropigmentação Capilar</option>
+                  <option value="diagnostico">Diagnóstico Capilar Gratuito</option>
+                </select>
+              </div>
+              {newTitle && (
+                <div className="bg-white/5 rounded-xl p-3">
+                  <p className="text-white/40 text-xs mb-1">URL que será gerada:</p>
+                  <p className="text-[#14b8a6] text-xs font-mono break-all">
+                    {baseUrl}/l/{newTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setShowCreate(false); setNewTitle(""); }}
+                className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={createPage}
+                disabled={creating}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Criar Landing Page
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -471,22 +717,23 @@ export default function FranchiseeDashboard() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   // Sincronizar aba com a rota atual
-  const routeToTab: Record<string, "leads" | "sellers" | "funnel"> = {
+  const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing"> = {
     "/franqueado": "sellers",
     "/franqueado/vendedores": "sellers",
     "/franqueado/leads": "leads",
     "/franqueado/agendamentos": "leads",
     "/franqueado/analytics": "funnel",
     "/franqueado/configuracoes": "sellers",
+    "/franqueado/landing-pages": "landing",
   };
   // Aba ativa derivada da rota — reativa a mudanças de URL pelo menu lateral
   const activeTabFromRoute = useMemo(
     () => routeToTab[locationPath as string] ?? "sellers",
     [locationPath]
   );
-  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | null>(null);
+  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | "landing" | null>(null);
   const activeTab = manualTab ?? activeTabFromRoute;
-  const setActiveTab = (tab: "leads" | "sellers" | "funnel") => setManualTab(tab);
+  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing") => setManualTab(tab);
 
   const statsQuery = trpc.homenz.franchiseeStats.useQuery(undefined, {
     enabled: isFranchisee || isOwner,
@@ -568,8 +815,8 @@ export default function FranchiseeDashboard() {
 
         {/* Tabs */}
         <div>
-          <div className="flex gap-1 mb-6 bg-white/5 p-1 rounded-xl w-fit">
-            {(["sellers", "leads", "funnel"] as const).map((tab) => (
+          <div className="flex gap-1 mb-6 bg-white/5 p-1 rounded-xl flex-wrap">
+            {(["sellers", "leads", "funnel", "landing"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -577,7 +824,7 @@ export default function FranchiseeDashboard() {
                   activeTab === tab ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
                 }`}
               >
-                {tab === "leads" ? "Leads Recentes" : tab === "sellers" ? "Time Comercial" : "Funil"}
+                {tab === "leads" ? "Leads Recentes" : tab === "sellers" ? "Time Comercial" : tab === "funnel" ? "Funil" : "🔗 Landing Pages"}
               </button>
             ))}
           </div>
@@ -669,6 +916,11 @@ export default function FranchiseeDashboard() {
                 ))
               )}
             </div>
+          )}
+
+          {/* Tab: Landing Pages */}
+          {activeTab === "landing" && (
+            <LandingPagesTab franchiseId={franchise?.id} />
           )}
 
           {/* Tab: Funil */}
