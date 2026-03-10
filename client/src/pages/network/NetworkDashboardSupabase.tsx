@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
@@ -47,15 +47,12 @@ export default function NetworkDashboardSupabase() {
     onError: (err) => toast.error(err.message),
   });
 
-  if (!authLoading && !user) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/login");
+    if (!authLoading && user && !isOwner) navigate(user.role === "franchisee" ? "/franqueado" : "/vendedor");
+  }, [authLoading, user, isOwner, navigate]);
 
-  if (!authLoading && user && !isOwner) {
-    navigate(user.role === "franchisee" ? "/franqueado" : "/vendedor");
-    return null;
-  }
+  if (!authLoading && (!user || !isOwner)) return null;
 
   if (authLoading || statsQuery.isLoading) {
     return (

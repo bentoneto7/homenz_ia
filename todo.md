@@ -257,3 +257,10 @@
 - [x] Botão "Logar agora" na navbar da landing page
 - [x] Botão "Voltar ao site" na tela de login
 - [x] API de login validada e funcionando (JWT retornado com sucesso)
+
+## Painel Franqueado — Métricas de Performance Comercial (Março 2026)
+
+- [x] Redesenhar aba Vendedores com cards detalhados (tempo de abordagem, follow-up, funil individual)
+- [x] Adicionar visão de saúde do time com alertas de performance
+- [x] Indicadores: tempo médio de 1ª resposta, taxa de follow-up, leads perdidos por inatividade
+- [x] Classificação de perfil por vendedor (Alta performance, Em desenvolvimento, Precisa de atenção)
