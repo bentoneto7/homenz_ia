@@ -329,3 +329,20 @@
 - [x] Aplicar branding no NetworkDashboardSupabase — tema claro
 - [x] Corrigir bug: erro ao criar landing page no painel do franqueado
 - [x] Criar calendário de agendamentos no painel do franqueado
+
+## Correção Visual Landing Page — Fundo Branco Total (Março 2026 — v5)
+
+- [x] Hero: remover foto de fundo completamente, fundo gradiente azul-claro/branco, texto azul escuro
+- [x] Remover todas as seções com fundo escuro (#0a0f1e, #0d1425) da landing page
+- [x] Garantir que todas as seções usam bg-white ou gradiente azul-claro
+- [x] Textos: todos os títulos em #004A9D, subtítulos em #5A667A
+- [x] Nav: fundo branco com borda cinza claro
+- [x] Footer: fundo branco
+- [x] Seção de planos: cards claros, plano highlight em azul escuro (#004A9D) com texto branco
+- [x] CTA final: gradiente azul sólido (#004A9D → #00C1B8), sem foto, sem overlay
+- [x] Hero: cards de foto com legenda em gradiente azul apenas na parte inferior do card
+- [x] Navegação de slides no hero (01/03 com setas)
+- [x] Seção de métricas horizontal (fundo branco, texto azul)
+- [x] Seção Como Funciona: 4 passos em cards brancos
+- [x] Funcionalidades: grid 2x3 com hover azul
+- [x] Antes/depois: fundo branco, SVGs clínicos, textos legíveis
