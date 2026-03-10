@@ -47,11 +47,7 @@ export default function NetworkDashboardSupabase() {
     onError: (err) => toast.error(err.message),
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/login");
-    if (!authLoading && user && !isOwner) navigate(user.role === "franchisee" ? "/franqueado" : "/vendedor");
-  }, [authLoading, user, isOwner, navigate]);
-
+  // Auth guard is handled by ProtectedRoute in App.tsx — no navigate() in render
   if (!authLoading && (!user || !isOwner)) return null;
 
   if (authLoading || statsQuery.isLoading) {

@@ -33,6 +33,7 @@ import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
 import HomenzLogin from "./pages/HomenzLogin";
 import FranchiseLanding from "./pages/FranchiseLanding";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function Router() {
   return (
@@ -65,27 +66,59 @@ function Router() {
       <Route path="/painel/checkin" component={AdminDailyCheckin} />
       <Route path="/painel/ranking" component={AdminNetworkRanking} />
 
-      {/* Painel do Franqueado */}
-      <Route path="/franqueado" component={FranchiseeDashboard} />
-      <Route path="/franqueado/leads" component={FranchiseeDashboard} />
-      <Route path="/franqueado/vendedores" component={FranchiseeDashboard} />
-      <Route path="/franqueado/agendamentos" component={FranchiseeDashboard} />
-      <Route path="/franqueado/analytics" component={FranchiseeDashboard} />
-      <Route path="/franqueado/configuracoes" component={FranchiseeDashboard} />
-      <Route path="/franqueado/landing-pages" component={FranchiseeDashboard} />
+      {/* Painel do Franqueado — requer role franchisee */}
+      <Route path="/franqueado">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/leads">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/vendedores">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/agendamentos">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/analytics">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/configuracoes">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/landing-pages">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
 
-      {/* Painel do Vendedor */}
-      <Route path="/vendedor" component={SellerDashboard} />
-      <Route path="/vendedor/agendamentos" component={SellerDashboard} />
-      <Route path="/vendedor/desempenho" component={SellerDashboard} />
+      {/* Painel do Vendedor — requer role seller */}
+      <Route path="/vendedor">
+        <ProtectedRoute allowedRoles={["seller"]}><SellerDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/vendedor/agendamentos">
+        <ProtectedRoute allowedRoles={["seller"]}><SellerDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/vendedor/desempenho">
+        <ProtectedRoute allowedRoles={["seller"]}><SellerDashboard /></ProtectedRoute>
+      </Route>
 
-      {/* Painel Admin da Rede */}
-      <Route path="/rede" component={NetworkAdminDashboard} />
-      <Route path="/rede/franquias" component={NetworkAdminDashboard} />
-      <Route path="/rede/vendedores" component={NetworkAdminDashboard} />
-      <Route path="/rede/leads" component={NetworkAdminDashboard} />
-      <Route path="/rede/analytics" component={NetworkAdminDashboard} />
-      <Route path="/rede/configuracoes" component={NetworkAdminDashboard} />
+      {/* Painel Admin da Rede — requer role owner */}
+      <Route path="/rede">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/rede/franquias">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/rede/vendedores">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/rede/leads">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/rede/analytics">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/rede/configuracoes">
+        <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
+      </Route>
 
       {/* Painel do Criador (Superadmin) */}
       <Route path="/creator" component={CreatorPanel} />

@@ -298,3 +298,9 @@
 ## Bugs (Março 2026 — v2)
 
 - [x] Erro React: navigate() chamado durante render do FranchiseeDashboard (setState in render) — movido para useEffect em todos os 3 painéis
+
+## Melhorias de Auth e UX (Março 2026 — v3)
+
+- [x] Componente ProtectedRoute centralizado no App.tsx (por role)
+- [x] Teste de fluxo completo de login/redirecionamento por role (3/3 logins validados)
+- [x] Logout funcional e visível em todos os 3 painéis (com toast + redirect para /login)

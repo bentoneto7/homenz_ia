@@ -750,18 +750,7 @@ export default function FranchiseeDashboard() {
     onError: (err) => toast.error(err.message),
   });
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
-  }, [authLoading, user, navigate]);
-
-  useEffect(() => {
-    if (!authLoading && user && user.role === "seller") {
-      navigate("/vendedor");
-    }
-  }, [authLoading, user, navigate]);
-
+  // Auth guard is handled by ProtectedRoute in App.tsx — no navigate() in render
   if (!authLoading && (!user || user.role === "seller")) {
     return null;
   }

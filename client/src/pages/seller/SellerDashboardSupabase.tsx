@@ -403,14 +403,7 @@ export default function SellerDashboardSupabase() {
     });
   }, [addEventMutation]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    } else if (!authLoading && user && user.role !== "seller") {
-      navigate(user.role === "owner" ? "/rede" : "/franqueado");
-    }
-  }, [authLoading, user, navigate]);
-
+  // Auth guard is handled by ProtectedRoute in App.tsx — no navigate() in render
   if (!authLoading && (!user || user.role !== "seller")) {
     return null;
   }

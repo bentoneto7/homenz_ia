@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import {
@@ -120,10 +120,10 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
       <div className="p-3 border-t border-white/5">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all group"
         >
-          <LogOut className="w-4 h-4" />
-          <span className="text-sm font-medium">Sair</span>
+          <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          <span className="text-sm font-medium">Sair da conta</span>
         </button>
       </div>
     </div>
@@ -143,11 +143,18 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
   const navItems = user ? (NAV_BY_ROLE[user.role] ?? []) : [];
   const roleInfo = user ? ROLE_LABELS[user.role] : null;
 
-  const handleLogout = () => {
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = useCallback(() => {
+    if (loggingOut) return;
+    setLoggingOut(true);
     logout();
-    toast.success("Sessão encerrada");
-    window.location.href = "/login";
-  };
+    toast.success("Sessão encerrada", {
+      description: "Até logo!",
+      duration: 2000,
+    });
+    setTimeout(() => { window.location.href = "/login"; }, 600);
+  }, [logout, loggingOut]);
 
   const sidebarProps: SidebarContentProps = {
     navItems,
