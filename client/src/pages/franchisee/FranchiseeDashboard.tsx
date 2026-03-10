@@ -397,8 +397,8 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
   }
 
   return (
-    <div className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all ${
-      expanded ? "border-white/15" : "border-[#E2E8F0] hover:border-white/12"
+    <div className={`bg-white border rounded-2xl overflow-hidden transition-all ${
+      expanded ? "border-[#004A9D]/20" : "border-[#E2E8F0] hover:border-[#004A9D]/20"
     }`}>
       {/* Linha principal */}
       <button
@@ -424,7 +424,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
               {status.label}
             </span>
           </div>
-          <p className="text-white/35 text-xs mt-0.5">{seller.leadsAssigned} leads atribuídos este mês</p>
+          <p className="text-[#5A667A] text-xs mt-0.5">{seller.leadsAssigned} leads atribuídos este mês</p>
         </div>
 
         {/* Métricas resumidas */}
@@ -473,7 +473,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
             <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-4 h-4 text-[#00C1B8]" />
-                <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Velocidade de Abordagem</p>
+                <p className="text-[#5A667A] text-xs font-bold uppercase tracking-wider">Velocidade de Abordagem</p>
               </div>
               <div className="flex items-end justify-between">
                 <div>
@@ -506,7 +506,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
             <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <RefreshCw className="w-4 h-4 text-blue-400" />
-                <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Follow-up</p>
+                <p className="text-[#5A667A] text-xs font-bold uppercase tracking-wider">Follow-up</p>
               </div>
               <div className="flex items-end justify-between">
                 <div>
@@ -539,7 +539,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
             <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-violet-400" />
-                <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Conversão em Agenda</p>
+                <p className="text-[#5A667A] text-xs font-bold uppercase tracking-wider">Conversão em Agenda</p>
               </div>
               <div className="flex items-end justify-between">
                 <div>
@@ -626,7 +626,7 @@ function TeamHealthPanel({ sellers }: { sellers: Seller[] }) {
   );
 
   return (
-    <div className="bg-white/[0.03] border border-[#E2E8F0] rounded-2xl p-5 mb-6">
+    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-[#00C1B8]" />
@@ -645,25 +645,25 @@ function TeamHealthPanel({ sellers }: { sellers: Seller[] }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white rounded-xl p-3 text-center">
           <ResponseTimeBadge minutes={avgResponse} />
-          <p className="text-white/35 text-[11px] mt-1">tempo médio resposta</p>
+          <p className="text-[#5A667A] text-[11px] mt-1">tempo médio resposta</p>
         </div>
         <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${avgConversion >= 50 ? "text-emerald-400" : avgConversion >= 35 ? "text-amber-400" : "text-red-400"}`}>
             {avgConversion}%
           </p>
-          <p className="text-white/35 text-[11px] mt-1">conversão média</p>
+          <p className="text-[#5A667A] text-[11px] mt-1">conversão média</p>
         </div>
         <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${avgFollowup >= 80 ? "text-emerald-400" : avgFollowup >= 65 ? "text-amber-400" : "text-red-400"}`}>
             {avgFollowup}%
           </p>
-          <p className="text-white/35 text-[11px] mt-1">taxa de follow-up</p>
+          <p className="text-[#5A667A] text-[11px] mt-1">taxa de follow-up</p>
         </div>
         <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${totalLost === 0 ? "text-emerald-400" : totalLost <= 3 ? "text-amber-400" : "text-red-400"}`}>
             {totalLost}
           </p>
-          <p className="text-white/35 text-[11px] mt-1">leads perdidos no mês</p>
+          <p className="text-[#5A667A] text-[11px] mt-1">leads perdidos no mês</p>
         </div>
       </div>
 
@@ -853,7 +853,7 @@ export default function FranchiseeDashboard() {
 
               {/* Legenda de métricas */}
               {sellers.length > 0 && (
-                <div className="mt-4 bg-white/[0.02] border border-white/6 rounded-xl p-4">
+                <div className="mt-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4">
                   <p className="text-[#A0AABB] text-xs font-semibold uppercase tracking-wider mb-3">Como interpretar as métricas</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#5A667A]">
                     <div className="flex items-start gap-2">
@@ -887,7 +887,7 @@ export default function FranchiseeDashboard() {
                   <div key={lead.id} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 hover:bg-white/8 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#14b8a6]/30 to-[#3b82f6]/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-sm font-bold">
+                        <span className="text-[#004A9D] text-sm font-bold">
                           {lead.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
                         </span>
                       </div>
@@ -933,13 +933,13 @@ export default function FranchiseeDashboard() {
                 {funnel.map((step, i) => (
                   <div key={i}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/70 text-sm">{step.step}</span>
+                      <span className="text-[#374151] text-sm font-medium">{step.step}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-[#0A2540] font-bold text-sm">{step.count}</span>
                         <span className="text-[#5A667A] text-xs">({step.pct}%)</span>
                       </div>
                     </div>
-                    <div className="h-2 bg-white rounded-full overflow-hidden">
+                    <div className="h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{

@@ -354,3 +354,13 @@
 - [x] Antes/depois: fotos reais de pacientes (CDN) substituindo SVGs genéricos
 - [x] Regra anti-overlay global: zero gradiente escuro sobre fotos em todas as páginas
 - [x] Logo "HOMENZ PLATAFORMA" no login e painéis internos
+
+## Bugs (Março 2026 — v7)
+
+- [x] FranchiseeDashboard aba Funil: labels das etapas com text-white sobre fundo branco (invisíveis)
+- [x] ClinicLanding (página pública do lead): fundo escuro #0a0a0a removido, substituído por tema claro Homenz (gradiente azul-claro/branco)
+- [x] ClinicLanding: campos de formulário com text-white sobre fundo branco (invisíveis) — corrigido para text-[#0A2540]
+- [x] ClinicLanding: depoimentos com text-white/80 sobre fundo branco — corrigido para text-[#374151]
+- [x] FranchiseeDashboard: legenda de métricas com bg-white/[0.02] + border-white/6 — corrigido para bg-[#F8FAFC]
+- [x] FranchiseeDashboard: iniciais do lead com text-white sobre fundo claro — corrigido para text-[#004A9D]
+- [x] FranchiseeDashboard: TeamHealthPanel com bg-white/[0.03] — corrigido para bg-[#F8FAFC]
