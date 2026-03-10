@@ -883,16 +883,26 @@ export default function HomenzLanding() {
                 <div className="text-xs text-white/40">Luiz Fernando Homenz</div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <img
-                  src={PHOTOS.lifestyleRunning}
-                  alt="Estilo de vida Homenz"
-                  className="rounded-xl w-full object-cover aspect-square shadow-lg"
-                />
-                <img
-                  src={PHOTOS.lifestyleTennis}
-                  alt="Estilo de vida Homenz"
-                  className="rounded-xl w-full object-cover aspect-square shadow-lg"
-                />
+                <div className="rounded-xl bg-[#0d1425] border border-white/10 p-5 flex flex-col justify-between shadow-lg aspect-square">
+                  <div className="w-10 h-10 rounded-full bg-[#00c4cc]/10 border border-[#00c4cc]/20 flex items-center justify-center text-xl">
+                    📅
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-[#00c4cc] mb-1">+47%</div>
+                    <div className="text-sm font-bold text-white">Consultas agendadas</div>
+                    <div className="text-xs text-white/40 mt-1">Média das unidades ativas na rede</div>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-[#0d1425] border border-white/10 p-5 flex flex-col justify-between shadow-lg aspect-square">
+                  <div className="w-10 h-10 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 flex items-center justify-center text-xl">
+                    ⚡
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-[#60a5fa] mb-1">&lt;8min</div>
+                    <div className="text-sm font-bold text-white">Tempo de resposta</div>
+                    <div className="text-xs text-white/40 mt-1">Top vendedores da rede Homenz</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

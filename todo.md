@@ -289,3 +289,8 @@
 - [x] Landing page pública por franquia /l/:slug com chat de captação capilar
 - [x] Upload de foto na área com queda capilar na landing page
 - [x] Branding oficial Homenz aplicado (azul #004A9D, teal #00C1B8, Montserrat)
+
+## Correções Visuais Landing Page (Março 2026 — v2)
+
+- [x] Remover fotos de lifestyle (selfie ao ar livre e tênis) da seção "A Rede Homenz Já Provou"
+- [x] Substituir por cards de métricas visuais (+47% consultas agendadas / <8min resposta)
