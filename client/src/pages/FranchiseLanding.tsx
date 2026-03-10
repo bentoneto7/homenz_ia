@@ -376,7 +376,7 @@ export default function FranchiseLanding() {
       <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.3)" }}>
         <img src={LOGO_URL} alt="Homenz" className="h-8" />
         <div>
-          <p className="text-white font-semibold text-sm" style={{ fontFamily: "Montserrat, sans-serif" }}>
+          <p className="text-[#0A2540] font-semibold text-sm" style={{ fontFamily: "Montserrat, sans-serif" }}>
             Homenz {landingPage.city}
           </p>
           <div className="flex items-center gap-1.5">

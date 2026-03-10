@@ -42,23 +42,23 @@ export default function FunnelResult() {
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-2">Analisando suas fotos...</h2>
-          <p className="text-white/50 text-sm mb-8">
+          <p className="text-[#5A667A] text-sm mb-8">
             Nossa IA está processando suas imagens e gerando a visualização personalizada do resultado.
           </p>
 
-          <div className="space-y-3 text-left bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="space-y-3 text-left bg-white border border-[#E2E8F0] rounded-2xl p-5">
             {steps.map((step, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
                 <div
                   className="w-2 h-2 rounded-full bg-[#D4A843] flex-shrink-0"
                   style={{ animation: `pulse 1.5s ease-in-out ${i * 0.4}s infinite` }}
                 />
-                <span className="text-white/60">{step}</span>
+                <span className="text-[#5A667A]">{step}</span>
               </div>
             ))}
           </div>
 
-          <p className="text-xs text-white/30 mt-6">Isso pode levar até 30 segundos...</p>
+          <p className="text-xs text-[#A0AABB] mt-6">Isso pode levar até 30 segundos...</p>
         </div>
       </div>
     );
@@ -71,12 +71,12 @@ export default function FunnelResult() {
         <div className="text-center max-w-sm">
           <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Erro no processamento</h2>
-          <p className="text-white/50 text-sm mb-6">
+          <p className="text-[#5A667A] text-sm mb-6">
             Não foi possível processar suas fotos. Por favor, tente novamente com fotos mais nítidas.
           </p>
           <button
             onClick={() => navigate(`/c/${slug}/fotos/${token}`)}
-            className="bg-white/10 border border-white/20 text-white px-6 py-3 rounded-xl text-sm hover:bg-white/15 transition-colors"
+            className="bg-[#EBF4FF] border border-white/20 text-white px-6 py-3 rounded-xl text-sm hover:bg-white/15 transition-colors"
           >
             Tentar novamente
           </button>
@@ -111,16 +111,16 @@ export default function FunnelResult() {
             Análise personalizada por IA
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Seu resultado está pronto!</h1>
-          <p className="text-white/50 text-sm">Veja como você ficará após o preenchimento capilar</p>
+          <p className="text-[#5A667A] text-sm">Veja como você ficará após o preenchimento capilar</p>
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 -mt-8 space-y-4">
         {/* Before/After slider */}
         {result.beforeImageUrl && result.afterImageUrl ? (
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
             <div className="px-4 pt-4 pb-2">
-              <p className="text-xs text-white/40 uppercase tracking-wide font-semibold">Antes × Depois — Arraste para comparar</p>
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Antes × Depois — Arraste para comparar</p>
             </div>
             <div
               className="relative aspect-[4/3] cursor-ew-resize select-none"
@@ -152,13 +152,13 @@ export default function FunnelResult() {
             </div>
           </div>
         ) : result.afterImageUrl ? (
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
             <div className="px-4 pt-4 pb-2">
-              <p className="text-xs text-white/40 uppercase tracking-wide font-semibold">Resultado simulado</p>
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Resultado simulado</p>
             </div>
             <img src={result.afterImageUrl} alt="Resultado" className="w-full aspect-[4/3] object-cover" />
             <div className="px-4 py-3">
-              <p className="text-xs text-white/50 text-center">Simulação gerada por IA com base nas suas fotos</p>
+              <p className="text-xs text-[#5A667A] text-center">Simulação gerada por IA com base nas suas fotos</p>
             </div>
           </div>
         ) : null}
@@ -167,17 +167,17 @@ export default function FunnelResult() {
         <div className={`border rounded-2xl p-5 ${scoreBg}`}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-1">Seu perfil capilar</p>
-              <h2 className="font-bold text-lg text-white">{scoreLabel}</h2>
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-1">Seu perfil capilar</p>
+              <h2 className="font-bold text-lg text-[#0A2540]">{scoreLabel}</h2>
             </div>
             <div className="text-right">
               <div className="text-3xl font-black" style={{ color: scoreColor }}>{score}</div>
-              <div className="text-xs text-white/40">/ 100 pts</div>
+              <div className="text-xs text-[#5A667A]">/ 100 pts</div>
             </div>
           </div>
 
           {/* Score bar */}
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+          <div className="h-2 bg-[#EBF4FF] rounded-full overflow-hidden mb-4">
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{ width: `${score}%`, backgroundColor: scoreColor }}
@@ -186,22 +186,22 @@ export default function FunnelResult() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-black/20 rounded-xl p-3 text-center">
-              <p className="text-xs text-white/40 mb-1">Escala de calvície</p>
+              <p className="text-xs text-[#5A667A] mb-1">Escala de calvície</p>
               <p className="text-xl font-black text-[#D4A843]">{result.baldnessScale ?? "N/A"}</p>
             </div>
             <div className="bg-black/20 rounded-xl p-3 text-center">
-              <p className="text-xs text-white/40 mb-1">Nível</p>
+              <p className="text-xs text-[#5A667A] mb-1">Nível</p>
               <p className="text-xl font-black text-white capitalize">{result.baldnessLevel ?? "N/A"}</p>
             </div>
             <div className="bg-black/20 rounded-xl p-3 text-center">
-              <p className="text-xs text-white/40 mb-1">Sessões estimadas</p>
+              <p className="text-xs text-[#5A667A] mb-1">Sessões estimadas</p>
               <p className="text-xl font-black text-[#D4A843]">{result.estimatedSessions ?? "2-3"}</p>
             </div>
             <div className="bg-black/20 rounded-xl p-3 text-center">
-              <p className="text-xs text-white/40 mb-1">Potencial</p>
+              <p className="text-xs text-[#5A667A] mb-1">Potencial</p>
               <div className="flex justify-center gap-0.5 mt-1">
                 {[1,2,3,4,5].map((i) => (
-                  <Star key={i} className={`w-4 h-4 ${i <= Math.round(score / 20) ? "text-[#D4A843] fill-[#D4A843]" : "text-white/20"}`} />
+                  <Star key={i} className={`w-4 h-4 ${i <= Math.round(score / 20) ? "text-[#D4A843] fill-[#D4A843]" : "text-[#C0CADB]"}`} />
                 ))}
               </div>
             </div>
@@ -210,12 +210,12 @@ export default function FunnelResult() {
 
         {/* Analysis text */}
         {result.analysisText && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-4 h-4 text-[#D4A843]" />
               <h3 className="font-semibold text-sm">Análise detalhada</h3>
             </div>
-            <p className="text-sm text-white/60 leading-relaxed">{result.analysisText}</p>
+            <p className="text-sm text-[#5A667A] leading-relaxed">{result.analysisText}</p>
           </div>
         )}
 
@@ -231,27 +231,27 @@ export default function FunnelResult() {
         )}
 
         {/* Social proof */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-3">Resultados reais</p>
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
+          <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-3">Resultados reais</p>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-2xl font-black text-[#D4A843]">98%</p>
-              <p className="text-xs text-white/40 mt-0.5">satisfação</p>
+              <p className="text-xs text-[#5A667A] mt-0.5">satisfação</p>
             </div>
             <div>
               <p className="text-2xl font-black text-[#D4A843]">+1.200</p>
-              <p className="text-xs text-white/40 mt-0.5">procedimentos</p>
+              <p className="text-xs text-[#5A667A] mt-0.5">procedimentos</p>
             </div>
             <div>
               <p className="text-2xl font-black text-[#D4A843]">8 anos</p>
-              <p className="text-xs text-white/40 mt-0.5">de experiência</p>
+              <p className="text-xs text-[#5A667A] mt-0.5">de experiência</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-white/10 px-4 py-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4">
         <div className="max-w-lg mx-auto">
           <button
             onClick={() => navigate(`/c/${slug}/agendar/${token}`)}
@@ -261,7 +261,7 @@ export default function FunnelResult() {
             Agendar consulta gratuita
             <ChevronRight className="w-5 h-5" />
           </button>
-          <p className="text-xs text-white/30 text-center mt-2">
+          <p className="text-xs text-[#A0AABB] text-center mt-2">
             Consulta 100% gratuita e sem compromisso
           </p>
         </div>

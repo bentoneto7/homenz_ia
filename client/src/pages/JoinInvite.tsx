@@ -100,7 +100,7 @@ export default function JoinInvite() {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#0a1628] flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#EBF4FF] flex items-center justify-center mx-auto mb-4">
             <Crown className="w-7 h-7 text-[#00d4c8]" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Convite Homenz IA</h1>
@@ -127,7 +127,7 @@ export default function JoinInvite() {
           <div className="space-y-3">
             <p className="text-sm text-gray-500 text-center">Faça login para aceitar o convite e acessar o painel.</p>
             <Button
-              className="w-full bg-[#0a1628] hover:bg-[#0d1f38] text-white"
+              className="w-full bg-[#EBF4FF] hover:bg-[#DBEAFE] text-[#0A2540]"
               onClick={() => {
                 sessionStorage.setItem("invite_token", token || "");
               window.location.href = getLoginUrl();
@@ -143,7 +143,7 @@ export default function JoinInvite() {
               Logado como <strong>{user.name}</strong>. Clique para aceitar o convite.
             </p>
             <Button
-              className="w-full bg-[#0a1628] hover:bg-[#0d1f38] text-white"
+              className="w-full bg-[#EBF4FF] hover:bg-[#DBEAFE] text-[#0A2540]"
               onClick={() => acceptInvite.mutate({ token: token! })}
               disabled={acceptInvite.isPending}
             >

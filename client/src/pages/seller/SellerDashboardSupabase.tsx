@@ -126,11 +126,11 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     dead: {
       label: "Inativo",
       emoji: "💀",
-      borderColor: "border-white/10",
-      bgColor: "bg-white/3",
-      textColor: "text-white/30",
-      avatarBg: "bg-white/10",
-      avatarText: "text-white/30",
+      borderColor: "border-[#E2E8F0]",
+      bgColor: "bg-[#F8FAFC]",
+      textColor: "text-[#A0AABB]",
+      avatarBg: "bg-[#EBF4FF]",
+      avatarText: "text-[#A0AABB]",
     },
   };
 
@@ -154,7 +154,7 @@ function HeatBar({ percentCooled, level }: { percentCooled: number; level: HeatL
     dead: "from-white/20 to-white/10",
   };
   return (
-    <div className="h-1 bg-white/5 rounded-full overflow-hidden mt-3">
+    <div className="h-1 bg-white rounded-full overflow-hidden mt-3">
       <div
         className={`h-full bg-gradient-to-r ${gradientMap[level]} rounded-full transition-all duration-1000`}
         style={{ width: `${Math.max(2, heatPercent)}%` }}
@@ -169,7 +169,7 @@ function HeatBadge({ level, label, emoji }: { level: HeatLevel; label: string; e
     hot: "text-orange-400 bg-orange-500/15 border-orange-500/30",
     warm: "text-amber-400 bg-amber-500/15 border-amber-500/30",
     cold: "text-blue-400 bg-blue-500/15 border-blue-500/30",
-    dead: "text-white/30 bg-white/5 border-white/10",
+    dead: "text-[#A0AABB] bg-white border-[#E2E8F0]",
   };
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${colorMap[level]} ${level === "hot" ? "animate-pulse" : ""}`}>
@@ -208,7 +208,7 @@ function FunnelStepBadge({ step }: { step: string }) {
   const isScheduled = step === "scheduled";
   return (
     <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${
-      isScheduled ? "text-emerald-400 bg-emerald-500/15" : "text-white/40 bg-white/5"
+      isScheduled ? "text-emerald-400 bg-emerald-500/15" : "text-[#5A667A] bg-white"
     }`}>
       {label}
     </span>
@@ -252,13 +252,13 @@ function LeadCard({
         <div className="flex-1 min-w-0">
           {/* Nome + badges */}
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <p className="text-white font-bold">{lead.name}</p>
+            <p className="text-[#0A2540] font-bold">{lead.name}</p>
             <ScoreBadge score={lead.lead_score} />
             <HeatBadge level={heat.level} label={heat.label} emoji={heat.emoji} />
           </div>
 
           {/* Dados do lead */}
-          <div className="flex items-center gap-2 text-xs text-white/40 flex-wrap mb-2">
+          <div className="flex items-center gap-2 text-xs text-[#5A667A] flex-wrap mb-2">
             {lead.age && <span>{lead.age} anos</span>}
             {lead.hair_problem && <span>· {lead.hair_problem}</span>}
           </div>
@@ -270,8 +270,8 @@ function LeadCard({
           <div className="flex items-center gap-1.5 mt-2">
             <Clock className={`w-3 h-3 ${heat.textColor} flex-shrink-0`} />
             <span className={`text-xs font-medium ${heat.textColor}`}>{heat.timeDisplay}</span>
-            <span className="text-white/20 text-xs">·</span>
-            <span className="text-xs text-white/40 truncate">{heat.urgencyMessage}</span>
+            <span className="text-[#C0CADB] text-xs">·</span>
+            <span className="text-xs text-[#5A667A] truncate">{heat.urgencyMessage}</span>
           </div>
 
           {/* Barra de temperatura */}
@@ -301,7 +301,7 @@ function LeadCard({
 
       {/* Detalhes expandidos */}
       {isSelected && (
-        <div className="mt-4 pt-4 border-t border-white/5 space-y-3">
+        <div className="mt-4 pt-4 border-t border-[#E2E8F0] space-y-3">
           {/* Alerta de urgência destacado */}
           {(heat.level === "hot" || heat.level === "warm") && (
             <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${heat.bgColor} border ${heat.borderColor}`}>
@@ -311,28 +311,28 @@ function LeadCard({
           )}
 
           {/* Legenda das métricas de temperatura */}
-          <div className="bg-white/3 border border-white/5 rounded-xl p-3">
-            <p className="text-white/30 text-xs font-semibold mb-2 uppercase tracking-wide">Régua de temperatura (padrão de mercado)</p>
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3">
+            <p className="text-[#A0AABB] text-xs font-semibold mb-2 uppercase tracking-wide">Régua de temperatura (padrão de mercado)</p>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
               <div className="flex items-center gap-1.5">
                 <span>🔥</span>
                 <span className="text-orange-400 font-medium">Quente</span>
-                <span className="text-white/30">0–30min · conv. &gt;60%</span>
+                <span className="text-[#A0AABB]">0–30min · conv. &gt;60%</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>🌡</span>
                 <span className="text-amber-400 font-medium">Morno</span>
-                <span className="text-white/30">30min–4h · conv. 20–40%</span>
+                <span className="text-[#A0AABB]">30min–4h · conv. 20–40%</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>🧊</span>
                 <span className="text-blue-400 font-medium">Frio</span>
-                <span className="text-white/30">4h–24h · conv. 5–15%</span>
+                <span className="text-[#A0AABB]">4h–24h · conv. 5–15%</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>💀</span>
-                <span className="text-white/30 font-medium">Inativo</span>
-                <span className="text-white/20">&gt;24h · conv. &lt;5%</span>
+                <span className="text-[#A0AABB] font-medium">Inativo</span>
+                <span className="text-[#C0CADB]">&gt;24h · conv. &lt;5%</span>
               </div>
             </div>
           </div>
@@ -340,30 +340,30 @@ function LeadCard({
           {/* Dados de contato */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-white/40 text-xs mb-0.5">Telefone</p>
-              <p className="text-white font-medium">{lead.phone}</p>
+              <p className="text-[#5A667A] text-xs mb-0.5">Telefone</p>
+              <p className="text-[#0A2540] font-medium">{lead.phone}</p>
             </div>
             {lead.email && (
               <div>
-                <p className="text-white/40 text-xs mb-0.5">Email</p>
-                <p className="text-white font-medium truncate">{lead.email}</p>
+                <p className="text-[#5A667A] text-xs mb-0.5">Email</p>
+                <p className="text-[#0A2540] font-medium truncate">{lead.email}</p>
               </div>
             )}
             {lead.hair_loss_type && (
               <div>
-                <p className="text-white/40 text-xs mb-0.5">Tipo de queda</p>
-                <p className="text-white font-medium">{lead.hair_loss_type}</p>
+                <p className="text-[#5A667A] text-xs mb-0.5">Tipo de queda</p>
+                <p className="text-[#0A2540] font-medium">{lead.hair_loss_type}</p>
               </div>
             )}
             {lead.utm_source && (
               <div>
-                <p className="text-white/40 text-xs mb-0.5">Origem</p>
-                <p className="text-white font-medium">{lead.utm_source} / {lead.utm_medium}</p>
+                <p className="text-[#5A667A] text-xs mb-0.5">Origem</p>
+                <p className="text-[#0A2540] font-medium">{lead.utm_source} / {lead.utm_medium}</p>
               </div>
             )}
             <div className="col-span-2">
-              <p className="text-white/40 text-xs mb-0.5">Chegou em</p>
-              <p className="text-white font-medium">
+              <p className="text-[#5A667A] text-xs mb-0.5">Chegou em</p>
+              <p className="text-[#0A2540] font-medium">
                 {new Date(lead.created_at ?? lead.last_activity_at).toLocaleString("pt-BR")}
               </p>
             </div>
@@ -412,7 +412,7 @@ export default function SellerDashboardSupabase() {
     return (
       <HomenzLayout title="Meus Leads">
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-[#14b8a6] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#00C1B8] animate-spin" />
         </div>
       </HomenzLayout>
     );
@@ -423,8 +423,8 @@ export default function SellerDashboardSupabase() {
     return (
       <HomenzLayout title="Meus Leads">
         <div className="flex items-center justify-center h-64 flex-col gap-3">
-          <p className="text-white/40">Nenhum lead atribuído ainda</p>
-          <p className="text-white/20 text-sm">Aguarde a atribuição pelo franqueado</p>
+          <p className="text-[#5A667A]">Nenhum lead atribuído ainda</p>
+          <p className="text-[#C0CADB] text-sm">Aguarde a atribuição pelo franqueado</p>
         </div>
       </HomenzLayout>
     );
@@ -443,17 +443,17 @@ export default function SellerDashboardSupabase() {
 
         {/* Header */}
         <div>
-          <h2 className="text-2xl font-black text-white">Olá, {user?.name.split(" ")[0]}!</h2>
-          <p className="text-white/50 text-sm mt-1">
+          <h2 className="text-2xl font-black text-[#0A2540]">Olá, {user?.name.split(" ")[0]}!</h2>
+          <p className="text-[#5A667A] text-sm mt-1">
             {stats.totalLeads} leads atribuídos · {stats.scheduledLeads} agendados
           </p>
         </div>
 
         {/* KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white/5 border border-white/8 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-white">{stats.totalLeads}</p>
-            <p className="text-xs text-white/40 mt-0.5">Total de Leads</p>
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 text-center">
+            <p className="text-2xl font-black text-[#0A2540]">{stats.totalLeads}</p>
+            <p className="text-xs text-[#5A667A] mt-0.5">Total de Leads</p>
           </div>
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 text-center">
             <p className="text-2xl font-black text-orange-400">{stats.hotLeads}</p>
@@ -463,52 +463,52 @@ export default function SellerDashboardSupabase() {
             <p className="text-2xl font-black text-emerald-400">{stats.scheduledLeads}</p>
             <p className="text-xs text-emerald-400/60 mt-0.5">Agendados ✓</p>
           </div>
-          <div className="bg-[#14b8a6]/10 border border-[#14b8a6]/20 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-[#14b8a6]">{metrics?.score ?? 0}</p>
-            <p className="text-xs text-[#14b8a6]/60 mt-0.5">Meu Score</p>
+          <div className="bg-teal-50 border border-[#00C1B8] rounded-2xl p-4 text-center">
+            <p className="text-2xl font-black text-[#00C1B8]">{metrics?.score ?? 0}</p>
+            <p className="text-xs text-[#00C1B8]/60 mt-0.5">Meu Score</p>
           </div>
         </div>
 
         {/* Métricas do mês */}
         {metrics && (
-          <div className="bg-white/5 border border-white/8 rounded-2xl p-5">
-            <h3 className="text-white font-bold mb-4 text-sm">Desempenho do Mês</h3>
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
+            <h3 className="text-[#0A2540] font-bold mb-4 text-sm">Desempenho do Mês</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#14b8a6]" />
-                  <span className="text-white/40 text-xs">Conversão</span>
+                  <TrendingUp className="w-3.5 h-3.5 text-[#00C1B8]" />
+                  <span className="text-[#5A667A] text-xs">Conversão</span>
                 </div>
-                <p className="text-xl font-black text-white">{metrics.conversion_rate}%</p>
+                <p className="text-xl font-black text-[#0A2540]">{metrics.conversion_rate}%</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-white/40 text-xs">Tempo resposta</span>
+                  <span className="text-[#5A667A] text-xs">Tempo resposta</span>
                 </div>
-                <p className="text-xl font-black text-white">{metrics.avg_response_minutes}min</p>
+                <p className="text-xl font-black text-[#0A2540]">{metrics.avg_response_minutes}min</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Phone className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="text-white/40 text-xs">Contactados</span>
+                  <span className="text-[#5A667A] text-xs">Contactados</span>
                 </div>
-                <p className="text-xl font-black text-white">{metrics.leads_contacted}</p>
+                <p className="text-xl font-black text-[#0A2540]">{metrics.leads_contacted}</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-white/40 text-xs">Confirmados</span>
+                  <span className="text-[#5A667A] text-xs">Confirmados</span>
                 </div>
-                <p className="text-xl font-black text-white">{metrics.leads_confirmed}</p>
+                <p className="text-xl font-black text-[#0A2540]">{metrics.leads_confirmed}</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-white/40 text-xs">Score geral</span>
-                <span className="text-[#14b8a6] font-black text-sm">{metrics.score}/100</span>
+                <span className="text-[#5A667A] text-xs">Score geral</span>
+                <span className="text-[#00C1B8] font-black text-sm">{metrics.score}/100</span>
               </div>
-              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-2 bg-white rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] rounded-full transition-all"
                   style={{ width: `${metrics.score}%` }}
@@ -529,16 +529,16 @@ export default function SellerDashboardSupabase() {
                 cold: `🧊 Frios (${stats.coldLeads})`,
               };
               const colors = {
-                all: activeFilter === "all" ? "bg-white/10 text-white" : "text-white/40",
-                hot: activeFilter === "hot" ? "bg-orange-500/20 text-orange-400" : "text-white/40",
-                warm: activeFilter === "warm" ? "bg-amber-500/20 text-amber-400" : "text-white/40",
-                cold: activeFilter === "cold" ? "bg-blue-500/20 text-blue-400" : "text-white/40",
+                all: activeFilter === "all" ? "bg-[#EBF4FF] text-[#0A2540]" : "text-[#5A667A]",
+                hot: activeFilter === "hot" ? "bg-orange-500/20 text-orange-400" : "text-[#5A667A]",
+                warm: activeFilter === "warm" ? "bg-amber-500/20 text-amber-400" : "text-[#5A667A]",
+                cold: activeFilter === "cold" ? "bg-blue-500/20 text-blue-400" : "text-[#5A667A]",
               };
               return (
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/5 ${colors[f]}`}
+                  className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:bg-white ${colors[f]}`}
                 >
                   {labels[f]}
                 </button>
@@ -548,9 +548,9 @@ export default function SellerDashboardSupabase() {
 
           <div className="space-y-3">
             {filteredLeads.length === 0 ? (
-              <div className="bg-white/5 border border-white/8 rounded-2xl p-8 text-center">
-                <Target className="w-10 h-10 text-white/20 mx-auto mb-3" />
-                <p className="text-white/40">Nenhum lead nesta categoria</p>
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center">
+                <Target className="w-10 h-10 text-[#C0CADB] mx-auto mb-3" />
+                <p className="text-[#5A667A]">Nenhum lead nesta categoria</p>
               </div>
             ) : (
               filteredLeads.map((lead: any) => (

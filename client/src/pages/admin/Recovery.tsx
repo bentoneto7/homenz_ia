@@ -72,7 +72,7 @@ export default function Recovery() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Recuperação de Leads</h1>
+            <h1 className="text-2xl font-bold text-[#0A2540]">Recuperação de Leads</h1>
             <p className="text-slate-400 text-sm mt-1">
               Leads que pararam no funil — aja rápido antes de perder a venda
             </p>
@@ -81,7 +81,7 @@ export default function Recovery() {
             variant="outline"
             size="sm"
             onClick={() => refetch()}
-            className="border-slate-600 text-slate-300 hover:text-white"
+            className="border-slate-600 text-slate-300 hover:text-[#0A2540]"
           >
             <RefreshCw className="w-4 h-4 mr-2" /> Atualizar
           </Button>
@@ -104,7 +104,7 @@ export default function Recovery() {
                   <TempIcon temp={temp} />
                   <span className={`text-sm font-bold ${cfg.color}`}>{cfg.label}</span>
                 </div>
-                <p className="text-2xl font-bold text-white">{count}</p>
+                <p className="text-2xl font-bold text-[#0A2540]">{count}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{cfg.urgency}</p>
               </button>
             );
@@ -193,14 +193,14 @@ export default function Recovery() {
                           {lead.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-white">{lead.name}</p>
+                          <p className="font-semibold text-[#0A2540]">{lead.name}</p>
                           <p className="text-xs text-slate-400">{lead.phone}</p>
                         </div>
                       </div>
 
                       {/* Playbook */}
                       <div className="bg-slate-900/40 rounded-lg p-3 space-y-1">
-                        <p className="text-xs font-bold text-white">{playbook.title}</p>
+                        <p className="text-xs font-bold text-[#0A2540]">{playbook.title}</p>
                         <p className="text-xs text-slate-400 leading-relaxed">{playbook.instruction}</p>
                         <p className="text-xs text-amber-400 font-medium">⏱ {playbook.timeLimit}</p>
                       </div>
@@ -221,7 +221,7 @@ export default function Recovery() {
                         <Button
                           size="sm"
                           onClick={() => window.open(whatsappUrl, "_blank")}
-                          className="bg-green-600 hover:bg-green-500 text-white font-bold text-xs"
+                          className="bg-green-600 hover:bg-green-500 text-[#0A2540] font-bold text-xs"
                         >
                           <MessageCircle className="w-3.5 h-3.5 mr-1" />
                           WhatsApp

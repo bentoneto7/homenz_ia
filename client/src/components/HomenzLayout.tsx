@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import {
   LayoutDashboard, Users, TrendingUp, Calendar, Settings,
-  LogOut, Menu, X, Bell, ChevronRight, Sparkles,
+  LogOut, Menu, Bell, ChevronRight,
   Building2, BarChart3, Target, Award, Link2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,9 +39,9 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
 };
 
 const ROLE_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  owner: { label: "Dono da Rede", color: "text-violet-400", bg: "bg-violet-500/20" },
-  franchisee: { label: "Franqueado", color: "text-blue-400", bg: "bg-blue-500/20" },
-  seller: { label: "Vendedor", color: "text-teal-400", bg: "bg-teal-500/20" },
+  owner: { label: "Dono da Rede", color: "text-violet-700", bg: "bg-violet-50" },
+  franchisee: { label: "Franqueado", color: "text-[#004A9D]", bg: "bg-blue-50" },
+  seller: { label: "Vendedor", color: "text-[#007A75]", bg: "bg-teal-50" },
 };
 
 interface SidebarContentProps {
@@ -56,30 +56,33 @@ interface SidebarContentProps {
 // Sidebar definido FORA do HomenzLayout para evitar recriação a cada render
 function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout }: SidebarContentProps) {
   return (
-    <div className="flex flex-col h-full bg-[#0a1120] border-r border-white/5">
+    <div className="flex flex-col h-full bg-white border-r border-[#E2E8F0]">
       {/* Logo */}
-      <div className="p-5 border-b border-white/5">
+      <div className="p-5 border-b border-[#E2E8F0]">
         <Link href="/" onClick={onClose}>
           <div className="flex items-center gap-2.5 cursor-pointer">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#14b8a6] to-[#3b82f6] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-[#004A9D] flex items-center justify-center">
+              <span className="text-white font-black text-sm">H</span>
             </div>
-            <span className="text-white font-black text-lg">Homenz IA</span>
+            <div>
+              <span className="text-[#004A9D] font-black text-lg leading-none">HOMENZ</span>
+              <span className="block text-[#00C1B8] text-[10px] font-semibold tracking-widest uppercase leading-none">Plataforma</span>
+            </div>
           </div>
         </Link>
       </div>
 
       {/* User info */}
       {user && (
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#14b8a6] to-[#3b82f6] flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#004A9D] flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-bold">
                 {user.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
               </span>
             </div>
             <div className="min-w-0">
-              <p className="text-white font-semibold text-sm truncate">{user.name}</p>
+              <p className="text-[#0A2540] font-semibold text-sm truncate">{user.name}</p>
               {roleInfo && (
                 <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${roleInfo.bg} ${roleInfo.color}`}>
                   {roleInfo.label}
@@ -103,13 +106,13 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
               <div
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all select-none ${
                   isActive
-                    ? "bg-gradient-to-r from-[#14b8a6]/20 to-[#3b82f6]/20 text-white border border-[#14b8a6]/20"
-                    : "text-white/50 hover:text-white hover:bg-white/5"
+                    ? "bg-[#EBF4FF] text-[#004A9D]"
+                    : "text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8]"
                 }`}
               >
-                <span className={isActive ? "text-[#14b8a6]" : ""}>{item.icon}</span>
-                <span className="text-sm font-medium flex-1">{item.label}</span>
-                {isActive && <ChevronRight className="w-3 h-3 text-[#14b8a6]" />}
+                <span className={isActive ? "text-[#004A9D]" : "text-[#5A667A]"}>{item.icon}</span>
+                <span className={`text-sm flex-1 ${isActive ? "font-semibold" : "font-medium"}`}>{item.label}</span>
+                {isActive && <ChevronRight className="w-3 h-3 text-[#004A9D]" />}
               </div>
             </Link>
           );
@@ -117,10 +120,10 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-white/5">
+      <div className="p-3 border-t border-[#E2E8F0]">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all group"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#5A667A] hover:text-red-500 hover:bg-red-50 transition-all group"
         >
           <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           <span className="text-sm font-medium">Sair da conta</span>
@@ -165,7 +168,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#070d1a] flex">
+    <div className="min-h-screen bg-[#F0F4F8] flex">
       {/* Sidebar desktop — sempre visível em lg+ */}
       <div className="hidden lg:flex w-60 flex-shrink-0 flex-col sticky top-0 h-screen">
         <SidebarContent {...sidebarProps} />
@@ -187,20 +190,20 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 border-b border-white/5 bg-[#0a1120]/80 backdrop-blur-sm flex items-center px-4 gap-4 sticky top-0 z-10">
+        <header className="h-14 border-b border-[#E2E8F0] bg-white flex items-center px-4 gap-4 sticky top-0 z-10 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-white/50 hover:text-white transition-colors"
+            className="lg:hidden text-[#5A667A] hover:text-[#0A2540] transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           {title && (
-            <h1 className="text-white font-bold text-base flex-1 truncate">{title}</h1>
+            <h1 className="text-[#0A2540] font-bold text-base flex-1 truncate" style={{ fontFamily: "'Montserrat', sans-serif" }}>{title}</h1>
           )}
 
           <div className="ml-auto flex items-center gap-2">
-            <button className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all">
+            <button className="w-8 h-8 rounded-lg bg-[#F0F4F8] flex items-center justify-center text-[#5A667A] hover:text-[#004A9D] hover:bg-[#EBF4FF] transition-all">
               <Bell className="w-4 h-4" />
             </button>
           </div>

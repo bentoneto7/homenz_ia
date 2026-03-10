@@ -44,7 +44,7 @@ export default function ClinicOnboarding() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 rounded-2xl gradient-gold flex items-center justify-center mx-auto mb-6">
-            <Scissors className="w-8 h-8 text-white" />
+            <Scissors className="w-8 h-8 text-[#0A2540]" />
           </div>
           <h1 className="text-2xl font-bold mb-3">Cadastre sua clínica</h1>
           <p className="text-muted-foreground mb-6">
@@ -89,7 +89,7 @@ export default function ClinicOnboarding() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
-              <Scissors className="w-4 h-4 text-white" />
+              <Scissors className="w-4 h-4 text-[#0A2540]" />
             </div>
             <span className="font-bold text-lg text-gradient-gold">CapilarIA</span>
           </div>

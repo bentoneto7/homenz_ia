@@ -15,7 +15,7 @@ export default function Home() {
         <div className="container flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
-              <Scissors className="w-4 h-4 text-white" />
+              <Scissors className="w-4 h-4 text-[#0A2540]" />
             </div>
             <span className="font-bold text-lg text-gradient-gold">CapilarIA</span>
           </div>
@@ -182,7 +182,7 @@ export default function Home() {
         <div className="container flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded gradient-gold flex items-center justify-center">
-              <Scissors className="w-3 h-3 text-white" />
+              <Scissors className="w-3 h-3 text-[#0A2540]" />
             </div>
             <span className="text-sm font-semibold text-gradient-gold">CapilarIA</span>
           </div>

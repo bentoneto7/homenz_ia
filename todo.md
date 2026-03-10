@@ -304,3 +304,17 @@
 - [x] Componente ProtectedRoute centralizado no App.tsx (por role)
 - [x] Teste de fluxo completo de login/redirecionamento por role (3/3 logins validados)
 - [x] Logout funcional e visível em todos os 3 painéis (com toast + redirect para /login)
+
+## Rebranding Unificado — Tema Claro Homenz (Março 2026)
+
+- [x] Capturar branding completo do site oficial Homenz (cores, tipografia, botões, componentes)
+- [x] Redefinir tokens globais (index.css): fundo branco/cinza claro, azul #004A9D, teal #00C1B8, Montserrat
+- [x] Aplicar branding na HomenzLanding (home) — fundo claro, hero limpo
+- [x] Aplicar branding na FranchiseLanding (quiz/formulário de captação) — foco em preenchimento capilar
+- [x] Aplicar branding no HomenzLogin — fundo claro, split-screen limpo
+- [x] Aplicar branding no HomenzLayout (painéis internos) — sidebar clara, tipografia Homenz
+- [x] Aplicar branding no FranchiseeDashboard — tema claro
+- [x] Aplicar branding no SellerDashboardSupabase — tema claro
+- [x] Aplicar branding no NetworkDashboardSupabase — tema claro
+- [x] Corrigir bug: erro ao criar landing page no painel do franqueado
+- [x] Criar calendário de agendamentos no painel do franqueado

@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-sm px-4">
           <div className="w-16 h-16 rounded-2xl gradient-gold flex items-center justify-center mx-auto mb-6">
-            <Scissors className="w-8 h-8 text-white" />
+            <Scissors className="w-8 h-8 text-[#0A2540]" />
           </div>
           <h1 className="text-2xl font-bold mb-3">Painel da Clínica</h1>
           <p className="text-muted-foreground mb-6">Faça login para acessar seu painel.</p>
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
-              <Scissors className="w-4 h-4 text-white" />
+              <Scissors className="w-4 h-4 text-[#0A2540]" />
             </div>
             <div>
               <p className="text-xs font-bold text-sidebar-foreground">CapilarIA</p>
@@ -162,27 +162,27 @@ export default function AdminDashboard() {
               title="Total de leads"
               value={stats?.total ?? 0}
               sub={`${stats?.scheduled ?? 0} agendados`}
-              icon={<Users className="w-4 h-4 text-white" />}
+              icon={<Users className="w-4 h-4 text-[#0A2540]" />}
               color="gradient-gold"
             />
             <StatCard
               title="Agendamentos"
               value={stats?.scheduled ?? 0}
-              icon={<Calendar className="w-4 h-4 text-white" />}
+              icon={<Calendar className="w-4 h-4 text-[#0A2540]" />}
               color="bg-blue-500"
             />
             <StatCard
               title="Taxa de conversão"
               value={`${stats?.conversionRate ?? 0}%`}
               sub="Lead → Agendamento"
-              icon={<TrendingUp className="w-4 h-4 text-white" />}
+              icon={<TrendingUp className="w-4 h-4 text-[#0A2540]" />}
               color="bg-emerald-500"
             />
             <StatCard
               title="Score médio"
               value={stats?.avgScore ?? 0}
               sub="Qualificação IA"
-              icon={<Bell className="w-4 h-4 text-white" />}
+              icon={<Bell className="w-4 h-4 text-[#0A2540]" />}
               color="bg-purple-500"
             />
           </div>

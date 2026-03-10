@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import HomenzLayout from "@/components/HomenzLayout";
+import CalendarTab from "@/components/CalendarTab";
 import {
   Target, Calendar, Users, Award, TrendingUp,
   Flame, Thermometer, Snowflake, Copy, Plus,
@@ -38,15 +39,16 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
   const baseUrl = window.location.origin;
 
   const loadPages = async () => {
+    if (!franchiseId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const res = await fetch("/api/trpc/distribution.listLandingPages", {
+      const res = await fetch(`/api/trpc/distribution.getFranchiseLandingPages?input=${encodeURIComponent(JSON.stringify({ json: { franchiseId } }))}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
       });
       const json = await res.json();
       if (json.result?.data) setPages(json.result.data);
+      else setPages([]);
     } catch {
-      // fallback: mostrar dados mock se API ainda não está pronta
       setPages([]);
     } finally {
       setLoading(false);
@@ -60,10 +62,11 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
     setCreating(true);
     try {
       const slug = newTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (!franchiseId) { toast.error("ID da franquia não encontrado"); setCreating(false); return; }
       const res = await fetch("/api/trpc/distribution.createLandingPage", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
-        body: JSON.stringify({ json: { title: newTitle, procedure: newProcedure, slug } }),
+        body: JSON.stringify({ json: { title: newTitle, procedure: newProcedure, franchiseId } }),
       });
       const json = await res.json();
       if (json.result?.data) {
@@ -88,7 +91,7 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
 
   if (loading) return (
     <div className="flex items-center justify-center h-40">
-      <Loader2 className="w-6 h-6 text-[#14b8a6] animate-spin" />
+      <Loader2 className="w-6 h-6 text-[#00C1B8] animate-spin" />
     </div>
   );
 
@@ -97,12 +100,12 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h4 className="text-white font-bold text-lg">Landing Pages da Franquia</h4>
-          <p className="text-white/40 text-sm mt-0.5">Crie páginas de captação para usar no tráfego pago</p>
+          <h4 className="text-[#0A2540] font-bold text-lg">Landing Pages da Franquia</h4>
+          <p className="text-[#5A667A] text-sm mt-0.5">Crie páginas de captação para usar no tráfego pago</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30"
+          className="flex items-center gap-2 bg-teal-50 text-[#00C1B8] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#00C1B8]/30 transition-colors border border-[#14b8a6]/30"
         >
           <Plus className="w-4 h-4" />
           Nova Landing Page
@@ -114,14 +117,14 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
         <div className="flex items-start gap-3">
           <Globe className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-white font-semibold text-sm mb-1">Como funciona</p>
-            <p className="text-white/50 text-sm leading-relaxed">
+            <p className="text-[#0A2540] font-semibold text-sm mb-1">Como funciona</p>
+            <p className="text-[#5A667A] text-sm leading-relaxed">
               Cada landing page tem uma URL única da sua franquia. O lead preenche o chat, envia uma foto da área com queda capilar e é distribuído automaticamente entre seus vendedores via round-robin.
             </p>
             <div className="flex flex-wrap gap-3 mt-3">
-              <span className="flex items-center gap-1.5 text-xs text-white/40"><Smartphone className="w-3.5 h-3.5" /> Otimizada para mobile</span>
-              <span className="flex items-center gap-1.5 text-xs text-white/40"><Share2 className="w-3.5 h-3.5" /> Funciona com Meta Ads</span>
-              <span className="flex items-center gap-1.5 text-xs text-white/40"><MousePointerClick className="w-3.5 h-3.5" /> Lead vai direto ao vendedor</span>
+              <span className="flex items-center gap-1.5 text-xs text-[#5A667A]"><Smartphone className="w-3.5 h-3.5" /> Otimizada para mobile</span>
+              <span className="flex items-center gap-1.5 text-xs text-[#5A667A]"><Share2 className="w-3.5 h-3.5" /> Funciona com Meta Ads</span>
+              <span className="flex items-center gap-1.5 text-xs text-[#5A667A]"><MousePointerClick className="w-3.5 h-3.5" /> Lead vai direto ao vendedor</span>
             </div>
           </div>
         </div>
@@ -129,13 +132,13 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
 
       {/* Lista de landing pages */}
       {pages.length === 0 ? (
-        <div className="bg-white/5 border border-white/8 rounded-2xl p-10 text-center">
-          <Link2 className="w-10 h-10 text-white/20 mx-auto mb-3" />
-          <p className="text-white/40 mb-1">Nenhuma landing page criada ainda</p>
-          <p className="text-white/25 text-sm mb-5">Crie sua primeira página e comece a captar leads</p>
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-10 text-center">
+          <Link2 className="w-10 h-10 text-[#C0CADB] mx-auto mb-3" />
+          <p className="text-[#5A667A] mb-1">Nenhuma landing page criada ainda</p>
+          <p className="text-[#A0AABB] text-sm mb-5">Crie sua primeira página e comece a captar leads</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+            className="bg-[#00C1B8] text-white text-sm font-bold px-6 py-2.5 rounded-full hover:bg-[#009E96] transition-colors"
           >
             Criar primeira landing page
           </button>
@@ -143,41 +146,41 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
       ) : (
         <div className="space-y-3">
           {pages.map((page) => (
-            <div key={page.id} className="bg-white/[0.03] border border-white/8 rounded-2xl p-5 hover:border-white/12 transition-all">
+            <div key={page.id} className="bg-white border border-[#E2E8F0] rounded-2xl p-5 hover:shadow-md transition-all shadow-sm">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h5 className="text-white font-bold">{page.title}</h5>
+                    <h5 className="text-[#0A2540] font-bold">{page.title}</h5>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      page.is_active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/30 border border-white/10"
+                      page.is_active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-white text-[#A0AABB] border border-[#E2E8F0]"
                     }`}>{page.is_active ? "Ativa" : "Inativa"}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1.5">
-                    <Link2 className="w-3.5 h-3.5 text-white/30" />
-                    <span className="text-white/40 text-xs font-mono truncate">{baseUrl}/l/{page.slug}</span>
+                    <Link2 className="w-3.5 h-3.5 text-[#A0AABB]" />
+                    <span className="text-[#5A667A] text-xs font-mono truncate">{baseUrl}/l/{page.slug}</span>
                   </div>
                 </div>
                 {/* Métricas */}
                 <div className="flex items-center gap-5">
                   <div className="text-center">
-                    <p className="text-white font-black text-sm">{page.views ?? 0}</p>
-                    <p className="text-white/30 text-[10px]">visualiz.</p>
+                    <p className="text-[#0A2540] font-black text-sm">{page.views ?? 0}</p>
+                    <p className="text-[#A0AABB] text-[10px]">visualiz.</p>
                   </div>
                   <div className="text-center">
                     <p className="text-emerald-400 font-black text-sm">{page.leads_generated ?? 0}</p>
-                    <p className="text-white/30 text-[10px]">leads</p>
+                    <p className="text-[#A0AABB] text-[10px]">leads</p>
                   </div>
                   <div className="text-center">
                     <p className="text-amber-400 font-black text-sm">{page.conversion_rate ?? 0}%</p>
-                    <p className="text-white/30 text-[10px]">conversão</p>
+                    <p className="text-[#A0AABB] text-[10px]">conversão</p>
                   </div>
                 </div>
               </div>
               {/* Ações */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5 flex-wrap">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#E2E8F0] flex-wrap">
                 <button
                   onClick={() => copyLink(page.slug)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-[#14b8a6] bg-[#14b8a6]/10 hover:bg-[#14b8a6]/20 px-3 py-1.5 rounded-lg transition-colors border border-[#14b8a6]/20"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#00C1B8] bg-teal-50 hover:bg-teal-50 px-3 py-1.5 rounded-lg transition-colors border border-[#00C1B8]"
                 >
                   <Copy className="w-3.5 h-3.5" /> Copiar link
                 </button>
@@ -185,11 +188,11 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
                   href={`/l/${page.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-white/50 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors border border-white/10"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#5A667A] bg-white hover:bg-[#EBF4FF] px-3 py-1.5 rounded-lg transition-colors border border-[#E2E8F0]"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> Visualizar
                 </a>
-                <span className="flex items-center gap-1.5 text-xs text-white/30 ml-auto">
+                <span className="flex items-center gap-1.5 text-xs text-[#A0AABB] ml-auto">
                   <Eye className="w-3.5 h-3.5" /> UTM: utm_source=meta&utm_campaign={page.slug}
                 </span>
               </div>
@@ -201,26 +204,26 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
       {/* Modal criar landing page */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1425] border border-white/10 rounded-3xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-white mb-2">Nova Landing Page</h3>
-            <p className="text-white/50 text-sm mb-6">Configure a página de captação da sua franquia</p>
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-[#0A2540] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>Nova Landing Page</h3>
+            <p className="text-[#5A667A] text-sm mb-6">Configure a página de captação da sua franquia</p>
             <div className="space-y-4">
               <div>
-                <label className="text-white/60 text-sm font-medium block mb-1.5">Nome da página</label>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Nome da página</label>
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="Ex: Homenz Uberaba — Crescimento Capilar"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
                 />
               </div>
               <div>
-                <label className="text-white/60 text-sm font-medium block mb-1.5">Procedimento</label>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Procedimento</label>
                 <select
                   value={newProcedure}
                   onChange={(e) => setNewProcedure(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] focus:outline-none focus:border-[#00C1B8] transition-all"
                 >
                   <option value="crescimento-capilar">Crescimento Capilar</option>
                   <option value="micropigmentacao">Micropigmentação Capilar</option>
@@ -228,9 +231,9 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
                 </select>
               </div>
               {newTitle && (
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-white/40 text-xs mb-1">URL que será gerada:</p>
-                  <p className="text-[#14b8a6] text-xs font-mono break-all">
+                <div className="bg-white rounded-xl p-3">
+                  <p className="text-[#5A667A] text-xs mb-1">URL que será gerada:</p>
+                  <p className="text-[#00C1B8] text-xs font-mono break-all">
                     {baseUrl}/l/{newTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}
                   </p>
                 </div>
@@ -239,14 +242,14 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => { setShowCreate(false); setNewTitle(""); }}
-                className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
               >
                 Cancelar
               </button>
               <button
                 onClick={createPage}
                 disabled={creating}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-[#0A2540] font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Criar Landing Page
@@ -297,9 +300,9 @@ function getSellerStatus(m: SellerMetrics | null): {
 } {
   if (!m) return {
     label: "Sem dados",
-    color: "text-white/40",
-    bg: "bg-white/5",
-    border: "border-white/10",
+    color: "text-[#5A667A]",
+    bg: "bg-white",
+    border: "border-[#E2E8F0]",
     icon: <Minus className="w-3.5 h-3.5" />,
     description: "Nenhuma métrica registrada ainda",
   };
@@ -360,11 +363,11 @@ function MiniBar({ value, max, color }: { value: number; max: number; color: str
   );
 }
 
-function MetricPill({ label, value, color = "text-white" }: { label: string; value: string | number; color?: string }) {
+function MetricPill({ label, value, color = "text-[#0A2540]" }: { label: string; value: string | number; color?: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5 min-w-[52px]">
       <span className={`font-black text-sm leading-none ${color}`}>{value}</span>
-      <span className="text-white/30 text-[10px] leading-none text-center">{label}</span>
+      <span className="text-[#A0AABB] text-[10px] leading-none text-center">{label}</span>
     </div>
   );
 }
@@ -395,7 +398,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
 
   return (
     <div className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all ${
-      expanded ? "border-white/15" : "border-white/8 hover:border-white/12"
+      expanded ? "border-white/15" : "border-[#E2E8F0] hover:border-white/12"
     }`}>
       {/* Linha principal */}
       <button
@@ -404,7 +407,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
       >
         {/* Rank */}
         <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm border ${
-          rankColors[rank - 1] ?? "bg-white/10 text-white/50 border-white/10"
+          rankColors[rank - 1] ?? "bg-[#EBF4FF] text-[#5A667A] border-[#E2E8F0]"
         }`}>{rank}</div>
 
         {/* Avatar */}
@@ -415,7 +418,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
         {/* Nome + status */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-white font-semibold text-sm">{seller.name}</p>
+            <p className="text-[#0A2540] font-semibold text-sm">{seller.name}</p>
             <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${status.bg} ${status.color} ${status.border}`}>
               {status.icon}
               {status.label}
@@ -427,11 +430,11 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
         {/* Métricas resumidas */}
         {m && (
           <div className="hidden sm:flex items-center gap-5 mr-2">
-            <MetricPill label="agendados" value={m.leads_scheduled} color="text-white" />
+            <MetricPill label="agendados" value={m.leads_scheduled} color="text-[#0A2540]" />
             <MetricPill label="conversão" value={`${m.conversion_rate}%`} color={m.conversion_rate >= 55 ? "text-emerald-400" : m.conversion_rate >= 40 ? "text-amber-400" : "text-red-400"} />
             <div className="flex flex-col items-center gap-0.5">
               <ResponseTimeBadge minutes={m.avg_response_minutes} />
-              <span className="text-white/30 text-[10px]">1ª resposta</span>
+              <span className="text-[#A0AABB] text-[10px]">1ª resposta</span>
             </div>
             <MetricPill label="follow-up" value={`${m.followup_rate?.toFixed(0) ?? "—"}%`} color={(m.followup_rate ?? 0) >= 80 ? "text-emerald-400" : (m.followup_rate ?? 0) >= 65 ? "text-amber-400" : "text-red-400"} />
           </div>
@@ -446,7 +449,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
               "bg-red-500/15 text-red-400"
             }`}>{m.score}</div>
           )}
-          <ChevronRight className={`w-4 h-4 text-white/30 transition-transform ${expanded ? "rotate-90" : ""}`} />
+          <ChevronRight className={`w-4 h-4 text-[#A0AABB] transition-transform ${expanded ? "rotate-90" : ""}`} />
         </div>
       </button>
 
@@ -463,31 +466,31 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
 
       {/* Painel expandido */}
       {expanded && m && (
-        <div className="px-5 pb-5 pt-4 border-t border-white/8 mt-3">
+        <div className="px-5 pb-5 pt-4 border-t border-[#E2E8F0] mt-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Bloco 1: Abordagem */}
-            <div className="bg-white/5 rounded-xl p-4 space-y-3">
+            <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-[#14b8a6]" />
+                <Zap className="w-4 h-4 text-[#00C1B8]" />
                 <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Velocidade de Abordagem</p>
               </div>
               <div className="flex items-end justify-between">
                 <div>
                   <ResponseTimeBadge minutes={m.avg_response_minutes} />
-                  <p className="text-white/40 text-xs mt-1">tempo médio de 1ª resposta</p>
+                  <p className="text-[#5A667A] text-xs mt-1">tempo médio de 1ª resposta</p>
                 </div>
                 <div className="text-right">
                   <p className={`font-black text-sm ${(m.first_contact_rate ?? 0) >= 85 ? "text-emerald-400" : (m.first_contact_rate ?? 0) >= 70 ? "text-amber-400" : "text-red-400"}`}>
                     {m.first_contact_rate?.toFixed(0) ?? "—"}%
                   </p>
-                  <p className="text-white/30 text-xs">leads abordados</p>
+                  <p className="text-[#A0AABB] text-xs">leads abordados</p>
                 </div>
               </div>
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-white/40">Abordados</span>
-                  <span className="text-white font-semibold">{m.leads_contacted} / {m.leads_assigned}</span>
+                  <span className="text-[#5A667A]">Abordados</span>
+                  <span className="text-[#0A2540] font-semibold">{m.leads_contacted} / {m.leads_assigned}</span>
                 </div>
                 <MiniBar value={m.leads_contacted} max={m.leads_assigned} color="bg-gradient-to-r from-[#14b8a6] to-[#3b82f6]" />
                 {(m.leads_lost_no_contact ?? 0) > 0 && (
@@ -500,7 +503,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
             </div>
 
             {/* Bloco 2: Follow-up */}
-            <div className="bg-white/5 rounded-xl p-4 space-y-3">
+            <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <RefreshCw className="w-4 h-4 text-blue-400" />
                 <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Follow-up</p>
@@ -510,17 +513,17 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
                   <p className={`font-black text-2xl leading-none ${(m.followup_rate ?? 0) >= 80 ? "text-emerald-400" : (m.followup_rate ?? 0) >= 65 ? "text-amber-400" : "text-red-400"}`}>
                     {m.followup_rate?.toFixed(0) ?? "—"}%
                   </p>
-                  <p className="text-white/40 text-xs mt-1">taxa de follow-up</p>
+                  <p className="text-[#5A667A] text-xs mt-1">taxa de follow-up</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-black text-sm">{m.leads_followup_done ?? 0}</p>
-                  <p className="text-white/30 text-xs">follow-ups feitos</p>
+                  <p className="text-[#0A2540] font-black text-sm">{m.leads_followup_done ?? 0}</p>
+                  <p className="text-[#A0AABB] text-xs">follow-ups feitos</p>
                 </div>
               </div>
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-white/40">Recontatos</span>
-                  <span className="text-white font-semibold">{m.leads_followup_done ?? 0} / {m.leads_contacted}</span>
+                  <span className="text-[#5A667A]">Recontatos</span>
+                  <span className="text-[#0A2540] font-semibold">{m.leads_followup_done ?? 0} / {m.leads_contacted}</span>
                 </div>
                 <MiniBar value={m.leads_followup_done ?? 0} max={m.leads_contacted} color="bg-gradient-to-r from-blue-500 to-cyan-400" />
                 {(m.leads_lost_no_followup ?? 0) > 0 && (
@@ -533,7 +536,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
             </div>
 
             {/* Bloco 3: Conversão */}
-            <div className="bg-white/5 rounded-xl p-4 space-y-3">
+            <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-violet-400" />
                 <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Conversão em Agenda</p>
@@ -543,20 +546,20 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
                   <p className={`font-black text-2xl leading-none ${m.conversion_rate >= 55 ? "text-emerald-400" : m.conversion_rate >= 40 ? "text-amber-400" : "text-red-400"}`}>
                     {m.conversion_rate}%
                   </p>
-                  <p className="text-white/40 text-xs mt-1">leads → agendamento</p>
+                  <p className="text-[#5A667A] text-xs mt-1">leads → agendamento</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-black text-sm">{m.leads_confirmed}</p>
-                  <p className="text-white/30 text-xs">confirmados</p>
+                  <p className="text-[#0A2540] font-black text-sm">{m.leads_confirmed}</p>
+                  <p className="text-[#A0AABB] text-xs">confirmados</p>
                 </div>
               </div>
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-white/40">Agendados</span>
-                  <span className="text-white font-semibold">{m.leads_scheduled} / {m.leads_assigned}</span>
+                  <span className="text-[#5A667A]">Agendados</span>
+                  <span className="text-[#0A2540] font-semibold">{m.leads_scheduled} / {m.leads_assigned}</span>
                 </div>
                 <MiniBar value={m.leads_scheduled} max={m.leads_assigned} color="bg-gradient-to-r from-violet-500 to-purple-400" />
-                <div className="flex justify-between text-[11px] text-white/40 pt-0.5">
+                <div className="flex justify-between text-[11px] text-[#5A667A] pt-0.5">
                   <span>Confirmados: {m.leads_confirmed}</span>
                   <span>Pendentes: {m.leads_scheduled - m.leads_confirmed}</span>
                 </div>
@@ -567,7 +570,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
           {/* Alertas automáticos */}
           {alerts.length > 0 && (
             <div className="mt-4 space-y-2">
-              <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">Diagnóstico automático</p>
+              <p className="text-[#A0AABB] text-xs font-semibold uppercase tracking-wider">Diagnóstico automático</p>
               {alerts.map((alert, i) => (
                 <div key={i} className={`flex items-start gap-2 text-xs px-3 py-2 rounded-lg ${
                   alert.type === "danger" ? "bg-red-500/10 text-red-400 border border-red-500/20" :
@@ -594,7 +597,7 @@ function SellerCard({ seller, rank }: { seller: Seller; rank: number }) {
               <Phone className="w-3.5 h-3.5" />
               WhatsApp
             </a>
-            <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-white/50 text-xs font-semibold hover:bg-white/10 transition-colors border border-white/10">
+            <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white text-[#5A667A] text-xs font-semibold hover:bg-[#EBF4FF] transition-colors border border-[#E2E8F0]">
               <MessageSquare className="w-3.5 h-3.5" />
               Dar feedback
             </button>
@@ -623,11 +626,11 @@ function TeamHealthPanel({ sellers }: { sellers: Seller[] }) {
   );
 
   return (
-    <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-5 mb-6">
+    <div className="bg-white/[0.03] border border-[#E2E8F0] rounded-2xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#14b8a6]" />
-          <p className="text-white font-bold text-sm">Saúde do Time Comercial</p>
+          <Activity className="w-4 h-4 text-[#00C1B8]" />
+          <p className="text-[#0A2540] font-bold text-sm">Saúde do Time Comercial</p>
         </div>
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-black text-sm ${
           healthScore >= 70 ? "bg-emerald-500/15 text-emerald-400" :
@@ -640,23 +643,23 @@ function TeamHealthPanel({ sellers }: { sellers: Seller[] }) {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white/5 rounded-xl p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <ResponseTimeBadge minutes={avgResponse} />
           <p className="text-white/35 text-[11px] mt-1">tempo médio resposta</p>
         </div>
-        <div className="bg-white/5 rounded-xl p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${avgConversion >= 50 ? "text-emerald-400" : avgConversion >= 35 ? "text-amber-400" : "text-red-400"}`}>
             {avgConversion}%
           </p>
           <p className="text-white/35 text-[11px] mt-1">conversão média</p>
         </div>
-        <div className="bg-white/5 rounded-xl p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${avgFollowup >= 80 ? "text-emerald-400" : avgFollowup >= 65 ? "text-amber-400" : "text-red-400"}`}>
             {avgFollowup}%
           </p>
           <p className="text-white/35 text-[11px] mt-1">taxa de follow-up</p>
         </div>
-        <div className="bg-white/5 rounded-xl p-3 text-center">
+        <div className="bg-white rounded-xl p-3 text-center">
           <p className={`font-black text-sm ${totalLost === 0 ? "text-emerald-400" : totalLost <= 3 ? "text-amber-400" : "text-red-400"}`}>
             {totalLost}
           </p>
@@ -683,13 +686,13 @@ function StatCard({ label, value, sub, icon, color }: {
   icon: React.ReactNode; color: string;
 }) {
   return (
-    <div className="bg-white/5 border border-white/8 rounded-2xl p-5 hover:bg-white/8 transition-colors">
+    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 hover:bg-white/8 transition-colors">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${color}`}>
         {icon}
       </div>
-      <p className="text-2xl font-black text-white">{value}</p>
-      <p className="text-sm text-white/50 mt-0.5">{label}</p>
-      {sub && <p className="text-xs text-[#14b8a6] font-medium mt-1">{sub}</p>}
+      <p className="text-2xl font-black text-[#0A2540]">{value}</p>
+      <p className="text-sm text-[#5A667A] mt-0.5">{label}</p>
+      {sub && <p className="text-xs text-[#00C1B8] font-medium mt-1">{sub}</p>}
     </div>
   );
 }
@@ -717,11 +720,11 @@ export default function FranchiseeDashboard() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   // Sincronizar aba com a rota atual
-  const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing"> = {
+  const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing" | "calendar"> = {
     "/franqueado": "sellers",
     "/franqueado/vendedores": "sellers",
     "/franqueado/leads": "leads",
-    "/franqueado/agendamentos": "leads",
+    "/franqueado/agendamentos": "calendar",
     "/franqueado/analytics": "funnel",
     "/franqueado/configuracoes": "sellers",
     "/franqueado/landing-pages": "landing",
@@ -731,9 +734,9 @@ export default function FranchiseeDashboard() {
     () => routeToTab[locationPath as string] ?? "sellers",
     [locationPath]
   );
-  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | "landing" | null>(null);
+  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | "landing" | "calendar" | null>(null);
   const activeTab = manualTab ?? activeTabFromRoute;
-  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing") => setManualTab(tab);
+  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing" | "calendar") => setManualTab(tab);
 
   const statsQuery = trpc.homenz.franchiseeStats.useQuery(undefined, {
     enabled: isFranchisee || isOwner,
@@ -759,7 +762,7 @@ export default function FranchiseeDashboard() {
     return (
       <HomenzLayout title="Dashboard Franqueado">
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-[#14b8a6] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#00C1B8] animate-spin" />
         </div>
       </HomenzLayout>
     );
@@ -770,8 +773,8 @@ export default function FranchiseeDashboard() {
     return (
       <HomenzLayout title="Dashboard Franqueado">
         <div className="flex items-center justify-center h-64 flex-col gap-3">
-          <p className="text-white/40">Nenhum dado disponível</p>
-          <p className="text-white/20 text-sm">Execute a migração SQL no Supabase</p>
+          <p className="text-[#5A667A]">Nenhum dado disponível</p>
+          <p className="text-[#C0CADB] text-sm">Execute a migração SQL no Supabase</p>
         </div>
       </HomenzLayout>
     );
@@ -786,14 +789,14 @@ export default function FranchiseeDashboard() {
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-2xl font-black text-white">{franchise?.name ?? "Minha Franquia"}</h2>
-            <p className="text-white/50 text-sm mt-1">
+            <h2 className="text-2xl font-black text-[#0A2540]">{franchise?.name ?? "Minha Franquia"}</h2>
+            <p className="text-[#5A667A] text-sm mt-1">
               {franchise?.city}, {franchise?.state} · {sellers.length} vendedores
             </p>
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30"
+            className="flex items-center gap-2 bg-teal-50 text-[#00C1B8] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#00C1B8]/30 transition-colors border border-[#14b8a6]/30"
           >
             <UserPlus className="w-4 h-4" />
             Convidar Vendedor
@@ -802,24 +805,24 @@ export default function FranchiseeDashboard() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total de Leads" value={stats.totalLeads} sub="Este mês" icon={<Target className="w-5 h-5 text-white" />} color="bg-blue-500/20" />
-          <StatCard label="Agendamentos" value={stats.scheduledLeads} sub={`${stats.conversionRate}% conversão`} icon={<Calendar className="w-5 h-5 text-white" />} color="bg-emerald-500/20" />
-          <StatCard label="Score Médio" value={stats.avgScore} sub="0–100 pts" icon={<Award className="w-5 h-5 text-white" />} color="bg-amber-500/20" />
-          <StatCard label="Leads Quentes" value={stats.hotLeads} sub={`${stats.warmLeads} mornos, ${stats.coldLeads} frios`} icon={<Flame className="w-5 h-5 text-white" />} color="bg-orange-500/20" />
+          <StatCard label="Total de Leads" value={stats.totalLeads} sub="Este mês" icon={<Target className="w-5 h-5 text-[#0A2540]" />} color="bg-blue-500/20" />
+          <StatCard label="Agendamentos" value={stats.scheduledLeads} sub={`${stats.conversionRate}% conversão`} icon={<Calendar className="w-5 h-5 text-[#0A2540]" />} color="bg-emerald-500/20" />
+          <StatCard label="Score Médio" value={stats.avgScore} sub="0–100 pts" icon={<Award className="w-5 h-5 text-[#0A2540]" />} color="bg-amber-500/20" />
+          <StatCard label="Leads Quentes" value={stats.hotLeads} sub={`${stats.warmLeads} mornos, ${stats.coldLeads} frios`} icon={<Flame className="w-5 h-5 text-[#0A2540]" />} color="bg-orange-500/20" />
         </div>
 
         {/* Tabs */}
         <div>
-          <div className="flex gap-1 mb-6 bg-white/5 p-1 rounded-xl flex-wrap">
-            {(["sellers", "leads", "funnel", "landing"] as const).map((tab) => (
+          <div className="flex gap-1 mb-6 bg-white p-1 rounded-xl flex-wrap">
+            {(["sellers", "leads", "calendar", "funnel", "landing"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeTab === tab ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+                  activeTab === tab ? "bg-[#EBF4FF] text-[#004A9D]" : "text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8]"
                 }`}
               >
-                {tab === "leads" ? "Leads Recentes" : tab === "sellers" ? "Time Comercial" : tab === "funnel" ? "Funil" : "🔗 Landing Pages"}
+                {tab === "leads" ? "Leads" : tab === "sellers" ? "Time" : tab === "calendar" ? "📅 Agenda" : tab === "funnel" ? "Funil" : "🔗 Landing"}
               </button>
             ))}
           </div>
@@ -830,12 +833,12 @@ export default function FranchiseeDashboard() {
               <TeamHealthPanel sellers={sellers as Seller[]} />
               <div className="space-y-3">
                 {sellers.length === 0 ? (
-                  <div className="bg-white/5 border border-white/8 rounded-2xl p-8 text-center">
-                    <Users className="w-10 h-10 text-white/20 mx-auto mb-3" />
-                    <p className="text-white/40 mb-3">Nenhum vendedor cadastrado</p>
+                  <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center">
+                    <Users className="w-10 h-10 text-[#C0CADB] mx-auto mb-3" />
+                    <p className="text-[#5A667A] mb-3">Nenhum vendedor cadastrado</p>
                     <button
                       onClick={() => setShowInviteModal(true)}
-                      className="flex items-center gap-2 bg-[#14b8a6]/20 text-[#14b8a6] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#14b8a6]/30 transition-colors border border-[#14b8a6]/30 mx-auto"
+                      className="flex items-center gap-2 bg-teal-50 text-[#00C1B8] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#00C1B8]/30 transition-colors border border-[#14b8a6]/30 mx-auto"
                     >
                       <Plus className="w-4 h-4" />
                       Convidar primeiro vendedor
@@ -851,19 +854,19 @@ export default function FranchiseeDashboard() {
               {/* Legenda de métricas */}
               {sellers.length > 0 && (
                 <div className="mt-4 bg-white/[0.02] border border-white/6 rounded-xl p-4">
-                  <p className="text-white/30 text-xs font-semibold uppercase tracking-wider mb-3">Como interpretar as métricas</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-white/40">
+                  <p className="text-[#A0AABB] text-xs font-semibold uppercase tracking-wider mb-3">Como interpretar as métricas</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#5A667A]">
                     <div className="flex items-start gap-2">
-                      <Zap className="w-3.5 h-3.5 text-[#14b8a6] flex-shrink-0 mt-0.5" />
-                      <span><strong className="text-white/60">1ª Resposta:</strong> ideal abaixo de 10min. Acima de 30min o lead esfria significativamente.</span>
+                      <Zap className="w-3.5 h-3.5 text-[#00C1B8] flex-shrink-0 mt-0.5" />
+                      <span><strong className="text-[#5A667A]">1ª Resposta:</strong> ideal abaixo de 10min. Acima de 30min o lead esfria significativamente.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <RefreshCw className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-                      <span><strong className="text-white/60">Follow-up:</strong> recontato após 24h sem resposta. Acima de 80% é excelente.</span>
+                      <span><strong className="text-[#5A667A]">Follow-up:</strong> recontato após 24h sem resposta. Acima de 80% é excelente.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Calendar className="w-3.5 h-3.5 text-violet-400 flex-shrink-0 mt-0.5" />
-                      <span><strong className="text-white/60">Conversão:</strong> % de leads que viraram agendamento. Acima de 55% é referência de mercado.</span>
+                      <span><strong className="text-[#5A667A]">Conversão:</strong> % de leads que viraram agendamento. Acima de 55% é referência de mercado.</span>
                     </div>
                   </div>
                 </div>
@@ -875,13 +878,13 @@ export default function FranchiseeDashboard() {
           {activeTab === "leads" && (
             <div className="space-y-2">
               {leads.length === 0 ? (
-                <div className="bg-white/5 border border-white/8 rounded-2xl p-8 text-center">
-                  <Target className="w-10 h-10 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/40">Nenhum lead ainda</p>
+                <div className="bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center">
+                  <Target className="w-10 h-10 text-[#C0CADB] mx-auto mb-3" />
+                  <p className="text-[#5A667A]">Nenhum lead ainda</p>
                 </div>
               ) : (
                 leads.map((lead) => (
-                  <div key={lead.id} className="bg-white/5 border border-white/8 rounded-2xl p-4 hover:bg-white/8 transition-colors">
+                  <div key={lead.id} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 hover:bg-white/8 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#14b8a6]/30 to-[#3b82f6]/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-sm font-bold">
@@ -890,21 +893,21 @@ export default function FranchiseeDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                          <p className="text-white font-semibold text-sm">{lead.name}</p>
+                          <p className="text-[#0A2540] font-semibold text-sm">{lead.name}</p>
                           <ScoreBadge score={lead.lead_score} />
                           <TemperatureIcon temp={lead.temperature} />
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-white/40 flex-wrap">
+                        <div className="flex items-center gap-2 text-xs text-[#5A667A] flex-wrap">
                           <span>{lead.phone}</span>
                           {lead.age && <span>· {lead.age} anos</span>}
                           {lead.hair_problem && <span>· {lead.hair_problem}</span>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-xs text-white/30 bg-white/5 px-2 py-1 rounded-lg capitalize">
+                        <span className="text-xs text-[#A0AABB] bg-white px-2 py-1 rounded-lg capitalize">
                           {lead.funnel_step?.replace(/_/g, " ")}
                         </span>
-                        <ChevronRight className="w-4 h-4 text-white/20" />
+                        <ChevronRight className="w-4 h-4 text-[#C0CADB]" />
                       </div>
                     </div>
                   </div>
@@ -913,6 +916,10 @@ export default function FranchiseeDashboard() {
             </div>
           )}
 
+          {/* Tab: Agenda */}
+          {activeTab === "calendar" && (
+            <CalendarTab />
+          )}
           {/* Tab: Landing Pages */}
           {activeTab === "landing" && (
             <LandingPagesTab franchiseId={franchise?.id} />
@@ -920,19 +927,19 @@ export default function FranchiseeDashboard() {
 
           {/* Tab: Funil */}
           {activeTab === "funnel" && (
-            <div className="bg-white/5 border border-white/8 rounded-2xl p-6">
-              <h4 className="text-white font-bold mb-6">Funil de Conversão</h4>
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
+              <h4 className="text-[#0A2540] font-bold mb-6">Funil de Conversão</h4>
               <div className="space-y-3">
                 {funnel.map((step, i) => (
                   <div key={i}>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-white/70 text-sm">{step.step}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-bold text-sm">{step.count}</span>
-                        <span className="text-white/40 text-xs">({step.pct}%)</span>
+                        <span className="text-[#0A2540] font-bold text-sm">{step.count}</span>
+                        <span className="text-[#5A667A] text-xs">({step.pct}%)</span>
                       </div>
                     </div>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-2 bg-white rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
@@ -951,13 +958,13 @@ export default function FranchiseeDashboard() {
         {/* Modal de convite */}
         {showInviteModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#0d1425] border border-white/10 rounded-3xl p-6 w-full max-w-md">
-              <h3 className="text-xl font-bold text-white mb-2">Convidar Vendedor</h3>
-              <p className="text-white/50 text-sm mb-6">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold text-[#0A2540] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>Convidar Vendedor</h3>
+              <p className="text-[#5A667A] text-sm mb-6">
                 Gere um link de convite para adicionar um vendedor à sua equipe
               </p>
               <div className="mb-4">
-                <label className="text-white/60 text-sm font-medium block mb-1.5">
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">
                   Email do vendedor (opcional)
                 </label>
                 <input
@@ -965,20 +972,20 @@ export default function FranchiseeDashboard() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="vendedor@email.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#14b8a6]/60 transition-all"
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowInviteModal(false); setInviteEmail(""); }}
-                  className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+                  className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={() => createInviteMutation.mutate({ email: inviteEmail || undefined, expiresInDays: 7 })}
                   disabled={createInviteMutation.isPending}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-[#0A2540] font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
                 >
                   {createInviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
                   Gerar Link

@@ -138,14 +138,14 @@ export default function FunnelPhotos() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-[#0A2540]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div>
               <h1 className="font-bold text-sm">Captura de Fotos</h1>
-              <p className="text-xs text-white/40">Para análise capilar com IA</p>
+              <p className="text-xs text-[#5A667A]">Para análise capilar com IA</p>
             </div>
             <span className="text-sm font-bold text-[#D4A843]">{capturedCount}/4</span>
           </div>
@@ -158,7 +158,7 @@ export default function FunnelPhotos() {
                     ? "bg-emerald-500"
                     : i === currentPhotoIndex
                     ? "bg-[#D4A843]"
-                    : "bg-white/10"
+                    : "bg-[#EBF4FF]"
                 }`}
               />
             ))}
@@ -211,15 +211,15 @@ export default function FunnelPhotos() {
               {/* Top instruction */}
               <div className="absolute top-3 left-0 right-0 text-center px-4">
                 <div className="bg-black/70 backdrop-blur rounded-full px-4 py-1.5 inline-block">
-                  <p className="text-xs font-medium text-white">{currentStep.icon} {currentStep.label}</p>
+                  <p className="text-xs font-medium text-[#0A2540]">{currentStep.icon} {currentStep.label}</p>
                 </div>
               </div>
 
               {/* Bottom guide */}
               <div className="absolute bottom-4 left-0 right-0 text-center px-4">
                 <div className="bg-black/70 backdrop-blur rounded-xl px-4 py-2 inline-block">
-                  <p className="text-xs font-medium text-white">{currentStep.guide}</p>
-                  <p className="text-[10px] text-white/60 mt-0.5">{currentStep.tip}</p>
+                  <p className="text-xs font-medium text-[#0A2540]">{currentStep.guide}</p>
+                  <p className="text-[10px] text-[#5A667A] mt-0.5">{currentStep.tip}</p>
                 </div>
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function FunnelPhotos() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={closeCamera}
-                className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-xl py-3.5 text-sm text-white hover:bg-white/10 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E2E8F0] rounded-xl py-3.5 text-sm text-white hover:bg-[#EBF4FF] transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
                 Cancelar
@@ -267,7 +267,7 @@ export default function FunnelPhotos() {
                       ? "border-emerald-500"
                       : i === currentPhotoIndex
                       ? "border-[#D4A843] border-dashed shadow-[0_0_12px_rgba(212,168,67,0.2)]"
-                      : "border-white/10"
+                      : "border-[#E2E8F0]"
                   }`}
                 >
                   {capturedPhotos[step.type] ? (
@@ -278,14 +278,14 @@ export default function FunnelPhotos() {
                         className="w-full h-full object-cover scale-x-[-1]"
                       />
                       <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
-                        <Check className="w-3 h-3 text-white" />
+                        <Check className="w-3 h-3 text-[#0A2540]" />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
-                        <p className="text-xs text-white font-semibold">{step.label}</p>
+                        <p className="text-xs text-[#0A2540] font-semibold">{step.label}</p>
                       </div>
                     </>
                   ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#D4A843]/5" : "bg-white/3"}`}>
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#D4A843]/5" : "bg-[#F8FAFC]"}`}>
                       <span className="text-3xl">{step.icon}</span>
                       <p className="text-xs font-medium text-center px-2 text-white/70">{step.label}</p>
                       {i === currentPhotoIndex && (
@@ -303,19 +303,19 @@ export default function FunnelPhotos() {
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-400">Câmera não disponível</p>
-                  <p className="text-xs text-white/50 mt-0.5">Permita o acesso à câmera nas configurações do navegador e tente novamente.</p>
+                  <p className="text-xs text-[#5A667A] mt-0.5">Permita o acesso à câmera nas configurações do navegador e tente novamente.</p>
                 </div>
               </div>
             )}
 
             {/* Current step instruction */}
             {!allCaptured && (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
-                <p className="text-xs text-white/40 mb-1 uppercase tracking-wide font-semibold">Próxima foto</p>
+              <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 mb-4">
+                <p className="text-xs text-[#5A667A] mb-1 uppercase tracking-wide font-semibold">Próxima foto</p>
                 <p className="font-semibold text-sm mb-1">
                   {currentStep.icon} Foto {currentPhotoIndex + 1} de 4: {currentStep.label}
                 </p>
-                <p className="text-xs text-white/50">{currentStep.instruction}</p>
+                <p className="text-xs text-[#5A667A]">{currentStep.instruction}</p>
               </div>
             )}
 
@@ -351,8 +351,8 @@ export default function FunnelPhotos() {
 
             {/* Privacy note */}
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Lock className="w-3.5 h-3.5 text-white/30" />
-              <p className="text-xs text-white/30">
+              <Lock className="w-3.5 h-3.5 text-[#A0AABB]" />
+              <p className="text-xs text-[#A0AABB]">
                 Suas fotos são criptografadas e usadas apenas para análise capilar
               </p>
             </div>

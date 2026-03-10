@@ -42,71 +42,76 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ============================================================
+ * TEMA CLARO HOMENZ BRASIL — Branding Oficial
+ * Fundo: #FFFFFF | Azul: #004A9D | Teal: #00C1B8
+ * Tipografia: Montserrat (títulos 800) + Inter (corpo)
+ * ============================================================ */
 :root {
-  /* ============================================================
-   * Paleta Oficial Homenz Brasil
-   * Azul primário: #004A9D | Teal accent: #00C1B8
-   * Tipografia: Montserrat (títulos) + Inter (corpo)
-   * ============================================================ */
-  --radius: 0.75rem;
+  --radius: 0.625rem;
 
-  /* Fundo escuro azul-marinho Homenz */
-  --background: oklch(0.11 0.030 240);
-  --foreground: oklch(0.97 0.005 240);
+  /* Fundo branco limpo */
+  --background: oklch(0.99 0.002 240);
+  --foreground: oklch(0.13 0.035 240);
 
-  --card: oklch(0.15 0.025 240);
-  --card-foreground: oklch(0.97 0.005 240);
+  /* Cards brancos com sombra suave */
+  --card: oklch(1.0 0 0);
+  --card-foreground: oklch(0.13 0.035 240);
 
-  --popover: oklch(0.15 0.025 240);
-  --popover-foreground: oklch(0.97 0.005 240);
+  --popover: oklch(1.0 0 0);
+  --popover-foreground: oklch(0.13 0.035 240);
 
   /* Azul primário Homenz #004A9D */
-  --primary: oklch(0.42 0.18 255);
-  --primary-foreground: oklch(0.97 0.005 240);
+  --primary: oklch(0.40 0.175 255);
+  --primary-foreground: oklch(1.0 0 0);
 
-  --secondary: oklch(0.20 0.025 240);
-  --secondary-foreground: oklch(0.90 0.008 240);
+  /* Cinza claro para elementos secundários */
+  --secondary: oklch(0.96 0.004 240);
+  --secondary-foreground: oklch(0.30 0.040 240);
 
-  --muted: oklch(0.20 0.022 240);
-  --muted-foreground: oklch(0.58 0.015 240);
+  /* Muted — cinza muito claro */
+  --muted: oklch(0.96 0.004 240);
+  --muted-foreground: oklch(0.50 0.020 240);
 
   /* Teal accent Homenz #00C1B8 */
-  --accent: oklch(0.72 0.14 185);
-  --accent-foreground: oklch(0.11 0.030 240);
+  --accent: oklch(0.72 0.135 185);
+  --accent-foreground: oklch(1.0 0 0);
 
   --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.97 0.005 240);
+  --destructive-foreground: oklch(1.0 0 0);
 
-  --border: oklch(0.24 0.025 240);
-  --input: oklch(0.20 0.025 240);
-  --ring: oklch(0.72 0.14 185);
+  /* Bordas sutis */
+  --border: oklch(0.90 0.006 240);
+  --input: oklch(0.94 0.004 240);
+  --ring: oklch(0.40 0.175 255);
 
-  /* Charts — azul, teal, verde, laranja, vermelho */
-  --chart-1: oklch(0.42 0.18 255);
-  --chart-2: oklch(0.72 0.14 185);
+  /* Charts */
+  --chart-1: oklch(0.40 0.175 255);
+  --chart-2: oklch(0.72 0.135 185);
   --chart-3: oklch(0.65 0.15 150);
   --chart-4: oklch(0.70 0.15 55);
   --chart-5: oklch(0.55 0.22 25);
 
-  /* Sidebar Homenz */
-  --sidebar: oklch(0.09 0.025 240);
-  --sidebar-foreground: oklch(0.90 0.008 240);
-  --sidebar-primary: oklch(0.72 0.14 185);
-  --sidebar-primary-foreground: oklch(0.11 0.030 240);
-  --sidebar-accent: oklch(0.18 0.025 240);
-  --sidebar-accent-foreground: oklch(0.90 0.008 240);
-  --sidebar-border: oklch(0.22 0.025 240);
-  --sidebar-ring: oklch(0.72 0.14 185);
+  /* Sidebar clara Homenz */
+  --sidebar: oklch(1.0 0 0);
+  --sidebar-foreground: oklch(0.13 0.035 240);
+  --sidebar-primary: oklch(0.40 0.175 255);
+  --sidebar-primary-foreground: oklch(1.0 0 0);
+  --sidebar-accent: oklch(0.96 0.006 240);
+  --sidebar-accent-foreground: oklch(0.13 0.035 240);
+  --sidebar-border: oklch(0.90 0.006 240);
+  --sidebar-ring: oklch(0.40 0.175 255);
 
   /* Variáveis Homenz customizadas */
   --hz-blue: #004A9D;
   --hz-blue-dark: #0A2540;
   --hz-teal: #00C1B8;
+  --hz-teal-dark: #007A75;
   --hz-white: #FFFFFF;
   --hz-gray: #5A667A;
+  --hz-light-bg: #F0F4F8;
+  --hz-border: #E2E8F0;
 }
-
-/* Tema único escuro — sem alternância light/dark */
 
 @layer base {
   * {
@@ -114,11 +119,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Montserrat', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-  h1, h2, h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 800;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 700;
+    color: #0A2540;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -134,24 +140,11 @@
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,7 +155,7 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
@@ -176,6 +169,10 @@
   }
 }
 
+/* ============================================================
+ * Utilitários de Branding Homenz
+ * ============================================================ */
+
 /* Gradiente azul Homenz */
 .gradient-homenz {
   background: linear-gradient(135deg, #004A9D 0%, #0A2540 100%);
@@ -184,6 +181,11 @@
 /* Gradiente teal Homenz */
 .gradient-teal {
   background: linear-gradient(135deg, #00C1B8 0%, #007A75 100%);
+}
+
+/* Gradiente hero claro */
+.gradient-hero-light {
+  background: linear-gradient(160deg, #EBF4FF 0%, #F0FFFE 50%, #FFFFFF 100%);
 }
 
 /* Texto com gradiente teal */
@@ -202,6 +204,96 @@
   background-clip: text;
 }
 
+/* Botão pill Homenz — CTA principal */
+.btn-homenz-primary {
+  background: #00C1B8;
+  color: #FFFFFF;
+  border-radius: 50px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+.btn-homenz-primary:hover {
+  background: #00A89F;
+  box-shadow: 0 4px 16px rgba(0, 193, 184, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Botão pill Homenz — secundário (outline teal) */
+.btn-homenz-outline {
+  background: transparent;
+  color: #00C1B8;
+  border-radius: 50px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  border: 2px solid #00C1B8;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-homenz-outline:hover {
+  background: #00C1B8;
+  color: #FFFFFF;
+}
+
+/* Botão pill Homenz — azul primário */
+.btn-homenz-blue {
+  background: #004A9D;
+  color: #FFFFFF;
+  border-radius: 50px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-homenz-blue:hover {
+  background: #003A7A;
+  box-shadow: 0 4px 16px rgba(0, 74, 157, 0.35);
+}
+
+/* Card Homenz claro */
+.card-homenz {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(10, 37, 64, 0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card-homenz:hover {
+  box-shadow: 0 8px 32px rgba(10, 37, 64, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Sidebar item ativo */
+.sidebar-item-active {
+  background: #EBF4FF;
+  color: #004A9D;
+  font-weight: 600;
+  border-right: 3px solid #004A9D;
+}
+
+/* Badge teal */
+.badge-teal {
+  background: rgba(0, 193, 184, 0.12);
+  color: #007A75;
+  border: 1px solid rgba(0, 193, 184, 0.3);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+}
+
+/* Badge azul */
+.badge-blue {
+  background: rgba(0, 74, 157, 0.1);
+  color: #004A9D;
+  border: 1px solid rgba(0, 74, 157, 0.2);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+}
+
 /* Animação de pulso teal */
 @keyframes pulse-teal {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0, 193, 184, 0.4); }
@@ -209,14 +301,6 @@
 }
 .pulse-teal {
   animation: pulse-teal 2s infinite;
-}
-
-/* Botão pill Homenz */
-.btn-homenz {
-  border-radius: 150px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.02em;
 }
 
 /* Chat bubble animations */
@@ -240,8 +324,48 @@
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-/* Scrollbar personalizada */
+/* Scrollbar personalizada — clara */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: oklch(0.12 0.012 260); }
-::-webkit-scrollbar-thumb { background: oklch(0.30 0.015 260); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: oklch(0.72 0.14 185 / 0.6); }
+::-webkit-scrollbar-track { background: #F0F4F8; }
+::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #00C1B8; }
+
+/* Seção com fundo azul Homenz */
+.section-blue {
+  background: #004A9D;
+  color: #FFFFFF;
+}
+.section-blue h1, .section-blue h2, .section-blue h3 {
+  color: #FFFFFF;
+}
+
+/* Divisor decorativo */
+.hz-divider {
+  height: 3px;
+  background: linear-gradient(90deg, #004A9D 0%, #00C1B8 100%);
+  border-radius: 2px;
+}
+
+/* Input Homenz */
+.input-homenz {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  color: #0A2540;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-homenz:focus {
+  border-color: #004A9D;
+  box-shadow: 0 0 0 3px rgba(0, 74, 157, 0.12);
+  outline: none;
+}
+
+/* Temperatura de lead */
+@keyframes flame-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+.flame-hot { animation: flame-pulse 1s infinite; color: #EF4444; }
+.flame-warm { color: #F97316; }
+.flame-cold { color: #3B82F6; }
+.flame-dead { color: #94A3B8; }

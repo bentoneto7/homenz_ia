@@ -80,7 +80,7 @@ function FunnelProgress({ currentStep }: { currentStep: string }) {
     <div className="space-y-1.5">
       <div className="flex justify-between text-xs text-slate-400">
         <span>Progresso no Funil</span>
-        <span className="font-bold text-white">{progress}%</span>
+        <span className="font-bold text-[#0A2540]">{progress}%</span>
       </div>
       <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
         <div
@@ -181,7 +181,7 @@ export default function LeadJourney() {
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/painel/leads")} className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/painel/leads")} className="text-slate-400 hover:text-[#0A2540]">
             <ChevronLeft className="w-4 h-4 mr-1" /> Leads
           </Button>
           <span className="text-slate-600">/</span>
@@ -193,11 +193,11 @@ export default function LeadJourney() {
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-bold text-[#0A2540]">
                   {lead.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">{lead.name}</h1>
+                  <h1 className="text-xl font-bold text-[#0A2540]">{lead.name}</h1>
                   <p className="text-slate-400 text-sm">{lead.phone} · {lead.email ?? "sem e-mail"}</p>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function LeadJourney() {
                 </Badge>
                 <span className="text-xs text-slate-400 uppercase tracking-wider">{playbook.timeLimit}</span>
               </div>
-              <h2 className="text-base font-bold text-white">{playbook.title}</h2>
+              <h2 className="text-base font-bold text-[#0A2540]">{playbook.title}</h2>
               <p className="text-sm text-slate-300 leading-relaxed">{playbook.instruction}</p>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function LeadJourney() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleWhatsAppContact}
-                  className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold"
+                  className="flex-1 bg-green-600 hover:bg-green-500 text-[#0A2540] font-bold"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Abrir WhatsApp
@@ -278,7 +278,7 @@ export default function LeadJourney() {
               variant="outline"
               size="sm"
               onClick={() => window.open(`tel:${lead.phone}`, "_self")}
-              className="border-slate-600 text-slate-300 hover:text-white"
+              className="border-slate-600 text-slate-300 hover:text-[#0A2540]"
             >
               <Phone className="w-3.5 h-3.5 mr-1.5" /> Ligar
             </Button>
@@ -287,7 +287,7 @@ export default function LeadJourney() {
               size="sm"
               onClick={() => scheduleFollowupMutation.mutate({ leadId })}
               disabled={scheduleFollowupMutation.isPending}
-              className="border-slate-600 text-slate-300 hover:text-white"
+              className="border-slate-600 text-slate-300 hover:text-[#0A2540]"
             >
               <Clock className="w-3.5 h-3.5 mr-1.5" /> Agendar Follow-up
             </Button>
@@ -296,7 +296,7 @@ export default function LeadJourney() {
               size="sm"
               onClick={() => cancelFollowupsMutation.mutate({ leadId })}
               disabled={cancelFollowupsMutation.isPending}
-              className="border-slate-600 text-slate-300 hover:text-white"
+              className="border-slate-600 text-slate-300 hover:text-[#0A2540]"
             >
               <XCircle className="w-3.5 h-3.5 mr-1.5" /> Cancelar Follow-ups
             </Button>
@@ -314,7 +314,7 @@ export default function LeadJourney() {
                 variant="ghost"
                 size="sm"
                 onClick={() => addEventMutation.mutate({ leadId, eventType: "whatsapp_contacted", description: "Contato manual registrado" })}
-                className="text-xs text-slate-400 hover:text-white"
+                className="text-xs text-slate-400 hover:text-[#0A2540]"
               >
                 + Registrar contato
               </Button>

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 function StatCard({
-  icon, label, value, sub, color = "text-white",
+  icon, label, value, sub, color = "text-[#0A2540]",
 }: {
   icon: React.ReactNode;
   label: string;
@@ -69,7 +69,7 @@ export default function Analytics() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Analytics do Funil</h1>
+            <h1 className="text-2xl font-bold text-[#0A2540]">Analytics do Funil</h1>
             <p className="text-slate-400 text-sm mt-1">
               Dados de conversão, abandono e performance da clínica
             </p>
@@ -105,7 +105,7 @@ export default function Analytics() {
                 label="Total de Leads"
                 value={analytics?.totalLeads ?? 0}
                 sub={`últimos ${period} dias`}
-                color="text-white"
+                color="text-[#0A2540]"
               />
               <StatCard
                 icon={<Target className="w-4 h-4" />}
@@ -140,7 +140,7 @@ export default function Analytics() {
             <div className="rounded-2xl border border-slate-700/50 bg-slate-800/20 p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-amber-400" />
-                <h2 className="text-base font-bold text-white">Funil de Conversão por Etapa</h2>
+                <h2 className="text-base font-bold text-[#0A2540]">Funil de Conversão por Etapa</h2>
               </div>
               <p className="text-xs text-slate-500">
                 Quantos leads chegaram em cada etapa — identifique onde o funil quebra
@@ -171,7 +171,7 @@ export default function Analytics() {
                             </span>
                           )}
                         </div>
-                        <span className="font-bold text-white">{item.count}</span>
+                        <span className="font-bold text-[#0A2540]">{item.count}</span>
                       </div>
                       <div className="h-6 bg-slate-800 rounded-lg overflow-hidden">
                         <div
@@ -179,7 +179,7 @@ export default function Analytics() {
                           style={{ width: `${Math.max(pct, 2)}%` }}
                         >
                           {pct > 15 && (
-                            <span className="text-xs font-bold text-white">{pct}%</span>
+                            <span className="text-xs font-bold text-[#0A2540]">{pct}%</span>
                           )}
                         </div>
                       </div>
@@ -194,7 +194,7 @@ export default function Analytics() {
               <div className="rounded-2xl border border-slate-700/50 bg-slate-800/20 p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-blue-400" />
-                  <h2 className="text-base font-bold text-white">Agendamentos</h2>
+                  <h2 className="text-base font-bold text-[#0A2540]">Agendamentos</h2>
                 </div>
                 <div className="space-y-3">
                   {[
@@ -240,7 +240,7 @@ export default function Analytics() {
               <div className="rounded-2xl border border-slate-700/50 bg-slate-800/20 p-6 space-y-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-amber-400" />
-                  <h2 className="text-base font-bold text-white">Origem dos Leads</h2>
+                  <h2 className="text-base font-bold text-[#0A2540]">Origem dos Leads</h2>
                 </div>
                 {(!analytics?.bySource || analytics.bySource.length === 0) ? (
                   <p className="text-slate-500 text-sm text-center py-4">
@@ -275,7 +275,7 @@ export default function Analytics() {
             <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-amber-400" />
-                <h2 className="text-base font-bold text-white">Insights Automáticos</h2>
+                <h2 className="text-base font-bold text-[#0A2540]">Insights Automáticos</h2>
               </div>
               <div className="space-y-3">
                 {/* Insight de conversão */}

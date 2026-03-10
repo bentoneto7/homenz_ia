@@ -112,19 +112,19 @@ export default function FunnelSchedule() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           {step !== "calendar" && (
             <button
               onClick={() => step === "time" ? setStep("calendar") : setStep("time")}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-8 h-8 rounded-full bg-[#EBF4FF] flex items-center justify-center hover:bg-white/20 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
           )}
           <div className="flex-1">
             <p className="font-bold text-sm">Agendar Consulta Gratuita</p>
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-[#5A667A]">
               {step === "calendar" && "Escolha o melhor dia"}
               {step === "time" && formattedDate}
               {step === "confirm" && "Confirme seu agendamento"}
@@ -158,14 +158,14 @@ export default function FunnelSchedule() {
               </div>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
               {/* Navegação do mês */}
               <div className="flex items-center justify-between mb-5">
-                <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                <button onClick={prevMonth} className="w-8 h-8 rounded-lg bg-white hover:bg-[#EBF4FF] flex items-center justify-center transition-colors">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <span className="font-bold text-sm">{MONTHS[viewMonth]} {viewYear}</span>
-                <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                <button onClick={nextMonth} className="w-8 h-8 rounded-lg bg-white hover:bg-[#EBF4FF] flex items-center justify-center transition-colors">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -173,7 +173,7 @@ export default function FunnelSchedule() {
               {/* Cabeçalho dos dias */}
               <div className="grid grid-cols-7 mb-2">
                 {DAYS_SHORT.map((d) => (
-                  <div key={d} className="text-center text-[10px] text-white/30 py-1 font-semibold uppercase">{d}</div>
+                  <div key={d} className="text-center text-[10px] text-[#A0AABB] py-1 font-semibold uppercase">{d}</div>
                 ))}
               </div>
 
@@ -198,8 +198,8 @@ export default function FunnelSchedule() {
                           : disabled
                           ? "text-white/15 cursor-not-allowed"
                           : isToday
-                          ? "bg-white/10 text-white border border-[#D4A843]/40"
-                          : "hover:bg-white/10 text-white/70 hover:text-white"
+                          ? "bg-[#EBF4FF] text-white border border-[#D4A843]/40"
+                          : "hover:bg-[#EBF4FF] text-white/70 hover:text-[#0A2540]"
                       }`}
                     >
                       {day}
@@ -213,10 +213,10 @@ export default function FunnelSchedule() {
             </div>
 
             {/* Legenda */}
-            <div className="flex items-center justify-center gap-5 text-xs text-white/40">
+            <div className="flex items-center justify-center gap-5 text-xs text-[#5A667A]">
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded gradient-gold" /><span>Selecionado</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded border border-[#D4A843]/40 bg-white/10" /><span>Hoje</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-white/10" /><span>Indisponível</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded border border-[#D4A843]/40 bg-[#EBF4FF]" /><span>Hoje</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#EBF4FF]" /><span>Indisponível</span></div>
             </div>
 
             {/* Benefícios */}
@@ -226,9 +226,9 @@ export default function FunnelSchedule() {
                 { icon: "⏱️", label: "Duração: 1 hora" },
                 { icon: "🏆", label: "Especialista certificado" },
               ].map(b => (
-                <div key={b.label} className="bg-white/3 border border-white/8 rounded-xl p-3 text-center">
+                <div key={b.label} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 text-center">
                   <div className="text-lg mb-1">{b.icon}</div>
-                  <p className="text-[10px] text-white/50">{b.label}</p>
+                  <p className="text-[10px] text-[#5A667A]">{b.label}</p>
                 </div>
               ))}
             </div>
@@ -239,14 +239,14 @@ export default function FunnelSchedule() {
         {step === "time" && (
           <>
             <div className="text-center space-y-1">
-              <p className="text-white/50 text-sm">Horários disponíveis para</p>
+              <p className="text-[#5A667A] text-sm">Horários disponíveis para</p>
               <p className="font-bold text-base text-[#D4A843]">{formattedDate}</p>
             </div>
 
             {loadingSlots && (
               <div className="flex flex-col items-center gap-3 py-12">
                 <div className="w-10 h-10 border-2 border-[#D4A843]/30 border-t-[#D4A843] rounded-full animate-spin" />
-                <p className="text-white/50 text-sm">Verificando disponibilidade...</p>
+                <p className="text-[#5A667A] text-sm">Verificando disponibilidade...</p>
               </div>
             )}
 
@@ -254,7 +254,7 @@ export default function FunnelSchedule() {
               <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center">
                 <p className="text-2xl mb-2">🚫</p>
                 <p className="font-semibold text-red-400">Data indisponível</p>
-                <p className="text-sm text-white/50 mt-1">{slotsData?.reason ?? "A clínica não atende neste dia."}</p>
+                <p className="text-sm text-[#5A667A] mt-1">{slotsData?.reason ?? "A clínica não atende neste dia."}</p>
                 <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#D4A843] underline">
                   Escolher outra data
                 </button>
@@ -262,10 +262,10 @@ export default function FunnelSchedule() {
             )}
 
             {hasNoSlots && !loadingSlots && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+              <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 text-center">
                 <p className="text-2xl mb-2">📅</p>
                 <p className="font-semibold">Sem horários disponíveis</p>
-                <p className="text-sm text-white/50 mt-1">Todos os horários deste dia já foram reservados.</p>
+                <p className="text-sm text-[#5A667A] mt-1">Todos os horários deste dia já foram reservados.</p>
                 <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#D4A843] underline">
                   Escolher outra data
                 </button>
@@ -274,7 +274,7 @@ export default function FunnelSchedule() {
 
             {!loadingSlots && !isBlocked && allSlots.length > 0 && (
               <>
-                <div className="flex items-center gap-2 text-sm text-white/50">
+                <div className="flex items-center gap-2 text-sm text-[#5A667A]">
                   <Clock className="w-4 h-4" />
                   <span>{availableSlots.length} horário{availableSlots.length !== 1 ? "s" : ""} disponível{availableSlots.length !== 1 ? "s" : ""}</span>
                 </div>
@@ -286,17 +286,17 @@ export default function FunnelSchedule() {
                       disabled={!slot.available}
                       className={`py-3 rounded-xl text-sm font-semibold transition-all border ${
                         !slot.available
-                          ? "border-white/5 text-white/20 cursor-not-allowed line-through"
+                          ? "border-[#E2E8F0] text-[#C0CADB] cursor-not-allowed line-through"
                           : selectedSlot?.time === slot.time
                           ? "gradient-gold text-black border-transparent shadow-[0_0_10px_rgba(212,168,67,0.3)]"
-                          : "border-white/10 hover:border-[#D4A843]/40 text-white/70 hover:text-white bg-white/3"
+                          : "border-[#E2E8F0] hover:border-[#D4A843]/40 text-white/70 hover:text-white bg-[#F8FAFC]"
                       }`}
                     >
                       {slot.time}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-white/30 text-center">Horários riscados já foram reservados</p>
+                <p className="text-xs text-[#A0AABB] text-center">Horários riscados já foram reservados</p>
               </>
             )}
 
@@ -304,7 +304,7 @@ export default function FunnelSchedule() {
             {!loadingSlots && !slotsData && (
               <div className="bg-amber-400/10 border border-amber-400/20 rounded-2xl p-4 text-center">
                 <p className="text-sm text-amber-300">A clínica ainda está configurando os horários disponíveis.</p>
-                <p className="text-xs text-white/40 mt-1">Entre em contato diretamente para agendar.</p>
+                <p className="text-xs text-[#5A667A] mt-1">Entre em contato diretamente para agendar.</p>
                 {clinic?.whatsapp && (
                   <a
                     href={`https://wa.me/55${clinic.whatsapp.replace(/\D/g, "")}`}
@@ -328,7 +328,7 @@ export default function FunnelSchedule() {
                 <CheckCircle2 className="w-8 h-8 text-[#D4A843]" />
               </div>
               <h2 className="text-xl font-bold">Confirmar agendamento</h2>
-              <p className="text-white/50 text-sm">Revise os detalhes antes de confirmar</p>
+              <p className="text-[#5A667A] text-sm">Revise os detalhes antes de confirmar</p>
             </div>
 
             {/* Resumo */}
@@ -344,7 +344,7 @@ export default function FunnelSchedule() {
                     {item.icon}
                   </div>
                   <div>
-                    <p className="text-xs text-white/40">{item.label}</p>
+                    <p className="text-xs text-[#5A667A]">{item.label}</p>
                     <p className="font-semibold text-sm">{item.value}</p>
                   </div>
                 </div>
@@ -352,14 +352,14 @@ export default function FunnelSchedule() {
             </div>
 
             {/* Aviso */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white/60">
+            <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 text-sm text-[#5A667A]">
               <p className="font-medium text-white/80 mb-1">⚠️ Importante</p>
               <p>Compareça com 10 minutos de antecedência. Em caso de imprevisto, entre em contato com a clínica para reagendar.</p>
             </div>
 
             {/* O que está incluído */}
-            <div className="bg-white/3 border border-white/5 rounded-2xl p-4">
-              <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-3">O que está incluído</p>
+            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4">
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-3">O que está incluído</p>
               <div className="space-y-2">
                 {[
                   "Avaliação completa do couro cabeludo",
@@ -369,7 +369,7 @@ export default function FunnelSchedule() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span className="text-xs text-white/60">{item}</span>
+                    <span className="text-xs text-[#5A667A]">{item}</span>
                   </div>
                 ))}
               </div>
@@ -380,7 +380,7 @@ export default function FunnelSchedule() {
 
       {/* Fixed CTA */}
       {(step === "calendar" && selectedDateStr) || step === "time" || step === "confirm" ? (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-white/10 px-4 py-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4">
           <div className="max-w-lg mx-auto">
             {step === "calendar" && selectedDateStr && (
               <button
@@ -410,7 +410,7 @@ export default function FunnelSchedule() {
                 )}
               </button>
             )}
-            <p className="text-xs text-white/30 text-center mt-2">
+            <p className="text-xs text-[#A0AABB] text-center mt-2">
               Você receberá uma confirmação após o agendamento
             </p>
           </div>

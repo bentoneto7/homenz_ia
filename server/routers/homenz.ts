@@ -417,6 +417,70 @@ export const homenzRouter = router({
       return { success: true };
     }),
 
+  // ── Agendamentos da franquia ────────────────────────────────────────────────
+
+  getAppointments: franchiseeProcedure
+    .input(z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      let query = supabaseAdmin
+        .from('appointments')
+        .select(`id, scheduled_at, duration_minutes, status, notes, created_at, lead_id, seller_id, leads!inner(id, name, phone, hair_loss_type), profiles!appointments_seller_id_fkey(id, name)`)
+        .eq('franchise_id', franchiseId)
+        .order('scheduled_at', { ascending: true });
+      if (input.startDate) query = query.gte('scheduled_at', input.startDate);
+      if (input.endDate) query = query.lte('scheduled_at', input.endDate);
+      const { data, error } = await query;
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data ?? [];
+    }),
+
+  createAppointment: franchiseeProcedure
+    .input(z.object({
+      leadId: z.string().uuid(),
+      sellerId: z.string().uuid().optional(),
+      scheduledAt: z.string(),
+      durationMinutes: z.number().default(60),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      const { data, error } = await supabaseAdmin
+        .from('appointments')
+        .insert({
+          lead_id: input.leadId,
+          franchise_id: franchiseId,
+          seller_id: input.sellerId ?? ctx.homenzUser.id,
+          scheduled_at: input.scheduledAt,
+          duration_minutes: input.durationMinutes,
+          notes: input.notes,
+          status: 'pending',
+        })
+        .select()
+        .single();
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data;
+    }),
+
+  updateAppointmentStatus: franchiseeProcedure
+    .input(z.object({
+      appointmentId: z.string().uuid(),
+      status: z.enum(['pending', 'confirmed', 'completed', 'cancelled', 'no_show']),
+    }))
+    .mutation(async ({ input }) => {
+      const { error } = await supabaseAdmin
+        .from('appointments')
+        .update({ status: input.status, updated_at: new Date().toISOString() })
+        .eq('id', input.appointmentId);
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return { success: true };
+    }),
+
   // ── Verificar convite ─────────────────────────────────────────────────────
 
   getInviteInfo: publicProcedure

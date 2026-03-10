@@ -54,7 +54,7 @@ export default function FunnelConfirmation() {
             <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
             <div className="relative w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
               <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                <CheckCircle2 className="w-8 h-8 text-white" />
+                <CheckCircle2 className="w-8 h-8 text-[#0A2540]" />
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function FunnelConfirmation() {
           <h1 className="text-3xl font-black mb-2">
             Consulta agendada! 🎉
           </h1>
-          <p className="text-white/50 text-sm leading-relaxed">
+          <p className="text-[#5A667A] text-sm leading-relaxed">
             Sua consulta foi confirmada com sucesso.<br />
             Aguardamos você para transformar seu visual!
           </p>
@@ -70,14 +70,14 @@ export default function FunnelConfirmation() {
 
         {/* Appointment card */}
         {scheduledDate && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4">
-            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mb-4">
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#E2E8F0]">
               <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center flex-shrink-0">
                 <Calendar className="w-5 h-5 text-black" />
               </div>
               <div>
                 <p className="font-bold">{clinic?.name ?? "Clínica Capilar"}</p>
-                <p className="text-xs text-white/40 flex items-center gap-1">
+                <p className="text-xs text-[#5A667A] flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {clinic?.city ?? "Uberaba"}/{clinic?.state ?? "MG"}
                 </p>
@@ -93,7 +93,7 @@ export default function FunnelConfirmation() {
               <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-white/40">Data</p>
+                  <p className="text-xs text-[#5A667A]">Data</p>
                   <p className="text-sm font-semibold capitalize">
                     {scheduledDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
@@ -102,7 +102,7 @@ export default function FunnelConfirmation() {
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-white/40">Horário</p>
+                  <p className="text-xs text-[#5A667A]">Horário</p>
                   <p className="text-sm font-semibold">
                     {scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                   </p>
@@ -113,8 +113,8 @@ export default function FunnelConfirmation() {
         )}
 
         {/* Next steps */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4">
-          <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-3">Próximos passos</p>
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mb-4">
+          <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-3">Próximos passos</p>
           <div className="space-y-3">
             {[
               { num: "1", text: "A clínica confirmará seu agendamento em breve" },
@@ -126,7 +126,7 @@ export default function FunnelConfirmation() {
                 <div className="w-5 h-5 rounded-full gradient-gold text-black flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
                   {step.num}
                 </div>
-                <span className="text-sm text-white/60">{step.text}</span>
+                <span className="text-sm text-[#5A667A]">{step.text}</span>
               </div>
             ))}
           </div>
@@ -142,11 +142,11 @@ export default function FunnelConfirmation() {
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-5 h-5 text-white" />
+                <MessageCircle className="w-5 h-5 text-[#0A2540]" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-emerald-400">Falar no WhatsApp</p>
-                <p className="text-xs text-white/40">Tire dúvidas com nossa equipe</p>
+                <p className="text-xs text-[#5A667A]">Tire dúvidas com nossa equipe</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-emerald-400" />
@@ -154,16 +154,16 @@ export default function FunnelConfirmation() {
         )}
 
         {/* Rating prompt */}
-        <div className="bg-white/3 border border-white/5 rounded-2xl p-4 text-center">
+        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 text-center">
           <p className="text-sm font-semibold mb-2">Como foi sua experiência até aqui?</p>
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button key={star} className="group">
-                <Star className="w-7 h-7 text-white/20 group-hover:text-[#D4A843] group-hover:fill-[#D4A843] transition-colors" />
+                <Star className="w-7 h-7 text-[#C0CADB] group-hover:text-[#D4A843] group-hover:fill-[#D4A843] transition-colors" />
               </button>
             ))}
           </div>
-          <p className="text-xs text-white/30 mt-2">Sua avaliação nos ajuda a melhorar</p>
+          <p className="text-xs text-[#A0AABB] mt-2">Sua avaliação nos ajuda a melhorar</p>
         </div>
       </div>
     </div>

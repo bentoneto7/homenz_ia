@@ -93,7 +93,7 @@ export default function DailyCheckin() {
       <DashboardLayout>
         <div className="max-w-2xl mx-auto px-4 py-12 text-center">
           <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <CheckCircle className="w-12 h-12 text-white" />
+            <CheckCircle className="w-12 h-12 text-[#0A2540]" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Check-in enviado! 🎉</h1>
           <p className="text-gray-500 mb-2">Seus dados foram registrados e o health score da clínica foi atualizado.</p>
@@ -152,7 +152,7 @@ export default function DailyCheckin() {
         {/* Step card */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
           <div className={`bg-gradient-to-r ${step.color} px-6 py-4`}>
-            <h2 className="text-xl font-bold text-white">{step.title}</h2>
+            <h2 className="text-xl font-bold text-[#0A2540]">{step.title}</h2>
             <p className="text-white/80 text-sm mt-1">{step.subtitle}</p>
           </div>
 
@@ -311,7 +311,7 @@ export default function DailyCheckin() {
           {currentStep < STEPS.length - 1 ? (
             <Button
               onClick={() => setCurrentStep(s => s + 1)}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-[#0A2540] font-semibold"
             >
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
@@ -319,7 +319,7 @@ export default function DailyCheckin() {
             <Button
               onClick={() => submitCheckin.mutate(form)}
               disabled={submitCheckin.isPending}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-[#0A2540] font-semibold"
             >
               {submitCheckin.isPending ? "Enviando..." : "Enviar Check-in 🎯"}
             </Button>

@@ -384,7 +384,7 @@ export default function CreatorPanel() {
             Se você é o criador do sistema, clique abaixo para reivindicar o acesso de owner (só funciona se nenhum owner existir ainda).
           </p>
           <Button
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-[#0A2540]"
             onClick={() => claimOwner.mutate()}
             disabled={claimOwner.isPending}
           >

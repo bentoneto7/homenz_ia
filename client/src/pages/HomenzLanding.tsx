@@ -73,7 +73,7 @@ function PhoneBeforeAfter() {
           >
             {/* Status bar */}
             <div className="bg-[#0a0a14] px-6 py-2 flex justify-between items-center">
-              <span className="text-white/60 text-[10px] font-medium">9:41</span>
+              <span className="text-[#5A667A] text-[10px] font-medium">9:41</span>
               <div className="w-20 h-4 bg-[#1a1a2e] rounded-full" />
               <div className="flex gap-1">
                 <div className="w-3 h-2 bg-white/40 rounded-sm" />
@@ -119,8 +119,8 @@ function PhoneBeforeAfter() {
                     </div>
                   </div>
                   {/* Timeline */}
-                  <div className="bg-white/3 rounded-xl p-3">
-                    <p className="text-white/40 text-[8px] uppercase tracking-wider mb-2">Timeline do Lead</p>
+                  <div className="bg-[#F8FAFC] rounded-xl p-3">
+                    <p className="text-[#5A667A] text-[8px] uppercase tracking-wider mb-2">Timeline do Lead</p>
                     {[
                       { time: "09:14", label: "Lead entrou no funil", color: "#60a5fa" },
                       { time: "09:16", label: "Chat iniciado", color: "#a78bfa" },
@@ -130,7 +130,7 @@ function PhoneBeforeAfter() {
                     ].map((ev, i) => (
                       <div key={i} className="flex items-center gap-2 mb-1.5">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
-                        <span className="text-white/30 text-[8px] w-8">{ev.time}</span>
+                        <span className="text-[#A0AABB] text-[8px] w-8">{ev.time}</span>
                         <span className="text-white/70 text-[8px]">{ev.label}</span>
                       </div>
                     ))}
@@ -139,11 +139,11 @@ function PhoneBeforeAfter() {
                   <div className="grid grid-cols-2 gap-1.5">
                     <div className="bg-[#003d40]/40 border border-[#00c4cc]/20 rounded-xl p-2 text-center">
                       <p className="text-[#00c4cc] text-lg font-black">47</p>
-                      <p className="text-white/40 text-[8px]">Agendados/mês</p>
+                      <p className="text-[#5A667A] text-[8px]">Agendados/mês</p>
                     </div>
                     <div className="bg-[#003d40]/40 border border-[#00c4cc]/20 rounded-xl p-2 text-center">
                       <p className="text-[#00c4cc] text-lg font-black">R$38k</p>
-                      <p className="text-white/40 text-[8px]">Faturamento</p>
+                      <p className="text-[#5A667A] text-[8px]">Faturamento</p>
                     </div>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ function PhoneBeforeAfter() {
                   <div className="w-6 h-6 rounded-full bg-red-500/40 flex items-center justify-center">
                     <span className="text-[8px] font-black text-red-300">?</span>
                   </div>
-                  <span className="text-white/50 text-xs">Sem sistema</span>
+                  <span className="text-[#5A667A] text-xs">Sem sistema</span>
                   <div className="ml-auto flex items-center gap-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500/60" />
                     <span className="text-red-400/60 text-[9px]">Offline</span>
@@ -174,7 +174,7 @@ function PhoneBeforeAfter() {
                         <span className="text-red-400/60 text-xs">?</span>
                       </div>
                       <div>
-                        <p className="text-white/40 text-xs">Lead desconhecido</p>
+                        <p className="text-[#5A667A] text-xs">Lead desconhecido</p>
                         <p className="text-red-400/60 text-[9px]">Sem qualificação — Frio ❄️</p>
                       </div>
                       <div className="ml-auto bg-red-500/20 text-red-400 text-[8px] font-bold px-2 py-0.5 rounded-full">SEM RETORNO</div>
@@ -189,12 +189,12 @@ function PhoneBeforeAfter() {
                   </div>
                   {/* No timeline */}
                   <div className="bg-white/2 rounded-xl p-3">
-                    <p className="text-white/20 text-[8px] uppercase tracking-wider mb-2">Histórico</p>
+                    <p className="text-[#C0CADB] text-[8px] uppercase tracking-wider mb-2">Histórico</p>
                     <div className="flex flex-col gap-2">
                       {["Sem registro de contato", "Sem histórico de interação", "Sem diagnóstico"].map((t, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-red-500/30" />
-                          <span className="text-white/20 text-[8px]">{t}</span>
+                          <span className="text-[#C0CADB] text-[8px]">{t}</span>
                         </div>
                       ))}
                     </div>
@@ -203,11 +203,11 @@ function PhoneBeforeAfter() {
                   <div className="grid grid-cols-2 gap-1.5">
                     <div className="bg-red-900/10 border border-red-500/10 rounded-xl p-2 text-center">
                       <p className="text-red-400/60 text-lg font-black">8</p>
-                      <p className="text-white/20 text-[8px]">Agendados/mês</p>
+                      <p className="text-[#C0CADB] text-[8px]">Agendados/mês</p>
                     </div>
                     <div className="bg-red-900/10 border border-red-500/10 rounded-xl p-2 text-center">
                       <p className="text-red-400/60 text-lg font-black">R$6k</p>
-                      <p className="text-white/20 text-[8px]">Faturamento</p>
+                      <p className="text-[#C0CADB] text-[8px]">Faturamento</p>
                     </div>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ function PhoneBeforeAfter() {
                 className="absolute top-0 bottom-0 z-20 flex items-center justify-center"
                 style={{ left: `${sliderPos}%`, transform: "translateX(-50%)" }}
               >
-                <div className="w-0.5 h-full bg-white/30" />
+                <div className="w-0.5 h-full bg-[#F8FAFC]0" />
                 <div className="absolute w-10 h-10 rounded-full bg-white shadow-2xl flex items-center justify-center cursor-ew-resize">
                   <div className="flex gap-0.5">
                     <div className="flex flex-col gap-0.5">
@@ -257,7 +257,7 @@ function PhoneBeforeAfter() {
           DO LEAD FRIO<br />
           <span className="text-[#00c4cc]">AO AGENDAMENTO CONFIRMADO.</span>
         </h3>
-        <p className="text-white/60 mb-8 leading-relaxed">
+        <p className="text-[#5A667A] mb-8 leading-relaxed">
           Arraste o slider para ver a diferença entre uma clínica que opera no escuro e uma clínica que usa o Homenz IA. Cada lead chega qualificado, com score, diagnóstico e histórico de interação.
         </p>
         <div className="space-y-4">
@@ -267,22 +267,22 @@ function PhoneBeforeAfter() {
             { before: "Sem histórico de interação", after: "Timeline completa de cada lead", icon: "📊" },
             { before: "R$ 6k de faturamento", after: "R$ 38k de faturamento", icon: "💰" },
           ].map((row, i) => (
-            <div key={i} className="flex items-center gap-4 bg-white/3 border border-white/8 rounded-2xl p-4">
+            <div key={i} className="flex items-center gap-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4">
               <span className="text-2xl">{row.icon}</span>
               <div className="flex-1 grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] text-red-400/60 uppercase tracking-wider mb-0.5">Antes</p>
-                  <p className="text-white/40 text-sm line-through">{row.before}</p>
+                  <p className="text-[#5A667A] text-sm line-through">{row.before}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-[#00c4cc] uppercase tracking-wider mb-0.5">Depois</p>
-                  <p className="text-white font-semibold text-sm">{row.after}</p>
+                  <p className="text-[#0A2540] font-semibold text-sm">{row.after}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-white/30 text-xs mt-6">* Dados baseados em médias da rede Homenz. Resultados individuais podem variar.</p>
+        <p className="text-[#A0AABB] text-xs mt-6">* Dados baseados em médias da rede Homenz. Resultados individuais podem variar.</p>
       </div>
     </div>
   );
@@ -327,29 +327,29 @@ function ClinicBeforeAfter() {
         {scenarios.map((s, i) => (
           <div
             key={i}
-            className="relative bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden"
+            className="relative bg-[#0d1425] border border-[#E2E8F0] rounded-3xl overflow-hidden"
             style={{
               boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
               transform: `perspective(800px) rotateY(${i % 2 === 0 ? -1 : 1}deg) rotateX(1deg)`,
             }}
           >
             {/* Header */}
-            <div className="px-6 pt-6 pb-4 border-b border-white/5">
+            <div className="px-6 pt-6 pb-4 border-b border-[#E2E8F0]">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{s.icon}</span>
-                <h4 className="text-lg font-black text-white">{s.title}</h4>
+                <h4 className="text-lg font-black text-[#0A2540]">{s.title}</h4>
               </div>
             </div>
 
             {/* Before / After split */}
             <div className="grid grid-cols-2">
               {/* Before */}
-              <div className="p-5 border-r border-white/5 bg-red-950/10">
+              <div className="p-5 border-r border-[#E2E8F0] bg-red-950/10">
                 <div className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-3">
                   ✖ {s.before.label}
                 </div>
                 <p className="text-2xl font-black mb-2" style={{ color: s.before.color }}>{s.before.value}</p>
-                <p className="text-white/40 text-xs leading-relaxed">{s.before.detail}</p>
+                <p className="text-[#5A667A] text-xs leading-relaxed">{s.before.detail}</p>
               </div>
               {/* After */}
               <div className="p-5 bg-[#003d40]/10">
@@ -357,7 +357,7 @@ function ClinicBeforeAfter() {
                   ✔ {s.after.label}
                 </div>
                 <p className="text-2xl font-black mb-2" style={{ color: s.after.color }}>{s.after.value}</p>
-                <p className="text-white/60 text-xs leading-relaxed">{s.after.detail}</p>
+                <p className="text-[#5A667A] text-xs leading-relaxed">{s.after.detail}</p>
               </div>
             </div>
 
@@ -369,7 +369,7 @@ function ClinicBeforeAfter() {
           </div>
         ))}
       </div>
-      <p className="text-center text-white/20 text-xs mt-8">* Resultados baseados em médias da rede Homenz. Resultados individuais podem variar conforme gestão, tráfego e equipe de cada unidade.</p>
+      <p className="text-center text-[#C0CADB] text-xs mt-8">* Resultados baseados em médias da rede Homenz. Resultados individuais podem variar conforme gestão, tráfego e equipe de cada unidade.</p>
     </div>
   );
 }
@@ -467,28 +467,28 @@ export default function HomenzLanding() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white font-sans">
+    <div className="min-h-screen bg-[#0a0f1e] text-[#0A2540] font-sans">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-[#0a0f1e]/95 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 bg-[#0a0f1e]/95 backdrop-blur-md border-b border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-               <span className="text-xl font-black tracking-tight text-white">HOMENZ</span>
+               <span className="text-xl font-black tracking-tight text-[#0A2540]">HOMENZ</span>
                 <span className="text-xl font-black tracking-tight text-[#00c4cc]"> IA</span>
               </div>
-              <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+              <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-[#E2E8F0]">
                 <span className="text-[10px] font-bold text-[#1a56db] uppercase tracking-widest">Homenz Brasil</span>
               </div>
             </div>
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#como-funciona" className="text-sm text-white/60 hover:text-white transition-colors">Como funciona</a>
-              <a href="#funcionalidades" className="text-sm text-white/60 hover:text-white transition-colors">Funcionalidades</a>
-              <a href="#resultados" className="text-sm text-white/60 hover:text-white transition-colors">Resultados</a>
-              <a href="#precos" className="text-sm text-white/60 hover:text-white transition-colors">Planos</a>
+              <a href="#como-funciona" className="text-sm text-[#5A667A] hover:text-white transition-colors">Como funciona</a>
+              <a href="#funcionalidades" className="text-sm text-[#5A667A] hover:text-white transition-colors">Funcionalidades</a>
+              <a href="#resultados" className="text-sm text-[#5A667A] hover:text-white transition-colors">Resultados</a>
+              <a href="#precos" className="text-sm text-[#5A667A] hover:text-white transition-colors">Planos</a>
             </div>
 
             <div className="flex items-center gap-3">
@@ -550,10 +550,10 @@ export default function HomenzLanding() {
               </span>
               <br />
               DE AGENDAR CONSULTAS E{" "}
-              <span className="text-white">VENDER PROTOCOLOS</span>
+              <span className="text-[#0A2540]">VENDER PROTOCOLOS</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/60 mb-10 leading-relaxed max-w-2xl">
+            <p className="text-lg sm:text-xl text-[#5A667A] mb-10 leading-relaxed max-w-2xl">
               Funil completo com IA para clínicas Homenz: chat qualificador, análise capilar, visualização 3D, agendamento automático e rastreamento de leads com temperatura em tempo real. O sistema oficial da rede.
             </p>
 
@@ -561,14 +561,14 @@ export default function HomenzLanding() {
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <button
                 onClick={() => navigate("/cadastro")}
-                className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1a56db] hover:bg-[#1a56db]/90 text-white font-bold text-base transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(26,86,219,0.5)]"
+                className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1a56db] hover:bg-[#1a56db]/90 text-[#0A2540] font-bold text-base transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(26,86,219,0.5)]"
               >
               Ativar minha unidade grátis
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
               <button
                 onClick={() => navigate("/c/demo")}
-                className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-base transition-all"
+                className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white hover:bg-[#EBF4FF] border border-[#E2E8F0] text-[#0A2540] font-semibold text-base transition-all"
               >
                 <Play className="w-4 h-4 text-[#00c4cc]" />
                 Ver demo ao vivo
@@ -576,7 +576,7 @@ export default function HomenzLanding() {
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-6 text-sm text-white/40">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-[#5A667A]">
               <div className="flex items-center gap-1.5">
                 <CheckCircle className="w-4 h-4 text-[#00c4cc]" />
                 <span>15 dias grátis</span>
@@ -595,12 +595,12 @@ export default function HomenzLanding() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <ChevronDown className="w-6 h-6 text-white/30" />
+          <ChevronDown className="w-6 h-6 text-[#A0AABB]" />
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 border-t border-white/5 bg-[#0d1425]">
+      <section className="py-16 border-t border-[#E2E8F0] bg-[#0d1425]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -614,7 +614,7 @@ export default function HomenzLanding() {
                   <Counter end={stat.value} suffix={stat.suffix} />
                 </div>
                 <div className="text-sm font-semibold text-white/80 mb-0.5">{stat.label}</div>
-                <div className="text-xs text-white/40">{stat.sub}</div>
+                <div className="text-xs text-[#5A667A]">{stat.sub}</div>
               </div>
             ))}
           </div>
@@ -634,7 +634,7 @@ export default function HomenzLanding() {
                 <br />
                 <span className="text-red-400">OS LEADS SOMEM.</span>
               </h2>
-              <div className="space-y-4 text-white/60">
+              <div className="space-y-4 text-[#5A667A]">
                 <p className="text-lg leading-relaxed">
                   Você investe em tráfego pago, o lead chega, mas sem um processo estruturado, 70% não vira consulta. Sem rastreamento, você não sabe onde está perdendo.
                 </p>
@@ -651,7 +651,7 @@ export default function HomenzLanding() {
                 ].map((pain) => (
                   <div key={pain} className="flex items-start gap-2 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
                     <span className="text-red-400 mt-0.5 flex-shrink-0">✕</span>
-                    <span className="text-sm text-white/60">{pain}</span>
+                    <span className="text-sm text-[#5A667A]">{pain}</span>
                   </div>
                 ))}
               </div>
@@ -683,7 +683,7 @@ export default function HomenzLanding() {
               <br />
               <span className="text-[#00c4cc]">RESULTADOS MENSURÁVEIS.</span>
             </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto">
+            <p className="text-lg text-[#5A667A] max-w-2xl mx-auto">
               Cada unidade Homenz recebe seu link exclusivo para campanhas de tráfego pago. O lead entra no funil e é guiado até o agendamento — tudo automatizado.
             </p>
           </div>
@@ -722,15 +722,15 @@ export default function HomenzLanding() {
               },
             ].map((item, i) => (
               <div key={item.step} className="relative group">
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-5 h-full hover:border-[#1a56db]/40 hover:bg-[#1a56db]/5 transition-all">
+                <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 h-full hover:border-[#1a56db]/40 hover:bg-[#1a56db]/5 transition-all">
                   <div className="text-3xl mb-3">{item.icon}</div>
                   <div className="text-xs font-mono text-[#00c4cc] mb-2 uppercase tracking-widest">{item.step}</div>
                   <div className="font-bold text-white mb-2">{item.title}</div>
-                  <div className="text-sm text-white/50 leading-relaxed">{item.desc}</div>
+                  <div className="text-sm text-[#5A667A] leading-relaxed">{item.desc}</div>
                 </div>
                 {i < 4 && (
                   <div className="hidden lg:flex absolute top-1/2 -right-2 z-10 items-center justify-center w-4 h-4 -translate-y-1/2">
-                    <ArrowRight className="w-4 h-4 text-white/20" />
+                    <ArrowRight className="w-4 h-4 text-[#C0CADB]" />
                   </div>
                 )}
               </div>
@@ -740,7 +740,7 @@ export default function HomenzLanding() {
           <div className="mt-12 text-center">
             <button
               onClick={() => navigate("/c/demo")}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-[#EBF4FF] border border-[#E2E8F0] text-[#0A2540] font-semibold transition-all"
             >
               <Play className="w-4 h-4 text-[#00c4cc]" />
               Experimentar o Homenz IA agora
@@ -761,7 +761,7 @@ export default function HomenzLanding() {
               <br />
               <span className="text-[#1a56db]">MAIS 3 BÔNUS EXCLUSIVOS.</span>
             </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto mt-4">
+            <p className="text-lg text-[#5A667A] max-w-2xl mx-auto mt-4">
               O Homenz IA foi construído para entregar três resultados concretos para a sua unidade — e ainda te dá visibilidade total sobre o que está funcionando e o que não está.
             </p>
           </div>
@@ -776,13 +776,13 @@ export default function HomenzLanding() {
                   className={`w-full text-left p-5 rounded-2xl border transition-all ${
                     activeFeature === i
                       ? "bg-[#1a56db]/10 border-[#1a56db]/40"
-                      : "bg-white/3 border-white/8 hover:border-white/15"
+                      : "bg-[#F8FAFC] border-[#E2E8F0] hover:border-white/15"
                   }`}
                 >
                   <div className="flex items-start gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        activeFeature === i ? "bg-[#1a56db] text-white" : "bg-white/5 text-white/40"
+                        activeFeature === i ? "bg-[#1a56db] text-[#0A2540]" : "bg-white text-[#5A667A]"
                       }`}
                     >
                       {feature.icon}
@@ -790,10 +790,10 @@ export default function HomenzLanding() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${feature.pillar === "★" ? "bg-yellow-500/20 text-yellow-400" : "bg-[#1a56db]/30 text-[#60a5fa]"}`}>{feature.pillar}</span>
-                        <div className="font-bold text-white">{feature.title}</div>
+                        <div className="font-bold text-[#0A2540]">{feature.title}</div>
                       </div>
                       {activeFeature === i && (
-                        <div className="text-sm text-white/60 leading-relaxed mt-2">{feature.desc}</div>
+                        <div className="text-sm text-[#5A667A] leading-relaxed mt-2">{feature.desc}</div>
                       )}
                     </div>
                   </div>
@@ -804,11 +804,11 @@ export default function HomenzLanding() {
             {/* Feature highlight */}
             <div className="lg:sticky lg:top-24 h-fit">
               <div className="bg-gradient-to-br from-[#1a56db]/20 to-[#00c4cc]/10 border border-[#1a56db]/20 rounded-3xl p-8">
-                <div className="w-14 h-14 rounded-2xl bg-[#1a56db] flex items-center justify-center mb-6 text-white">
+                <div className="w-14 h-14 rounded-2xl bg-[#1a56db] flex items-center justify-center mb-6 text-[#0A2540]">
                   {features[activeFeature].icon}
                 </div>
                 <h3 className="text-2xl font-black text-white mb-4">{features[activeFeature].title}</h3>
-                <p className="text-white/60 leading-relaxed mb-6">{features[activeFeature].desc}</p>
+                <p className="text-[#5A667A] leading-relaxed mb-6">{features[activeFeature].desc}</p>
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-[#00c4cc]/10 border border-[#00c4cc]/20">
                   <CheckCircle className="w-5 h-5 text-[#00c4cc] flex-shrink-0 mt-0.5" />
                   <span className="text-sm font-semibold text-[#00c4cc]">{features[activeFeature].highlight}</span>
@@ -858,7 +858,7 @@ export default function HomenzLanding() {
                     <div className={`text-4xl font-black ${result.color} flex-shrink-0 w-20`}>{result.metric}</div>
                     <div>
                       <div className="font-bold text-white mb-1">{result.label}</div>
-                      <div className="text-sm text-white/50">{result.desc}</div>
+                      <div className="text-sm text-[#5A667A]">{result.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -871,7 +871,7 @@ export default function HomenzLanding() {
                 alt="Homenz no Unocast"
                 className="rounded-2xl w-full object-cover aspect-video shadow-2xl"
               />
-              <div className="absolute -top-4 -right-4 bg-[#0d1425] border border-white/10 rounded-2xl p-4 shadow-2xl">
+              <div className="absolute -top-4 -right-4 bg-[#0d1425] border border-[#E2E8F0] rounded-2xl p-4 shadow-2xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
@@ -879,28 +879,28 @@ export default function HomenzLanding() {
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 </div>
-                <div className="text-xs font-bold text-white">Unocast — Podcast</div>
-                <div className="text-xs text-white/40">Luiz Fernando Homenz</div>
+                <div className="text-xs font-bold text-[#0A2540]">Unocast — Podcast</div>
+                <div className="text-xs text-[#5A667A]">Luiz Fernando Homenz</div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-[#0d1425] border border-white/10 p-5 flex flex-col justify-between shadow-lg aspect-square">
+                <div className="rounded-xl bg-[#0d1425] border border-[#E2E8F0] p-5 flex flex-col justify-between shadow-lg aspect-square">
                   <div className="w-10 h-10 rounded-full bg-[#00c4cc]/10 border border-[#00c4cc]/20 flex items-center justify-center text-xl">
                     📅
                   </div>
                   <div>
                     <div className="text-3xl font-black text-[#00c4cc] mb-1">+47%</div>
-                    <div className="text-sm font-bold text-white">Consultas agendadas</div>
-                    <div className="text-xs text-white/40 mt-1">Média das unidades ativas na rede</div>
+                    <div className="text-sm font-bold text-[#0A2540]">Consultas agendadas</div>
+                    <div className="text-xs text-[#5A667A] mt-1">Média das unidades ativas na rede</div>
                   </div>
                 </div>
-                <div className="rounded-xl bg-[#0d1425] border border-white/10 p-5 flex flex-col justify-between shadow-lg aspect-square">
+                <div className="rounded-xl bg-[#0d1425] border border-[#E2E8F0] p-5 flex flex-col justify-between shadow-lg aspect-square">
                   <div className="w-10 h-10 rounded-full bg-[#1a56db]/10 border border-[#1a56db]/20 flex items-center justify-center text-xl">
                     ⚡
                   </div>
                   <div>
                     <div className="text-3xl font-black text-[#60a5fa] mb-1">&lt;8min</div>
-                    <div className="text-sm font-bold text-white">Tempo de resposta</div>
-                    <div className="text-xs text-white/40 mt-1">Top vendedores da rede Homenz</div>
+                    <div className="text-sm font-bold text-[#0A2540]">Tempo de resposta</div>
+                    <div className="text-xs text-[#5A667A] mt-1">Top vendedores da rede Homenz</div>
                   </div>
                 </div>
               </div>
@@ -911,15 +911,15 @@ export default function HomenzLanding() {
 
       {/* Before-After Section — Clientes Reais */}
       {/* ─── DISCLAIMER ─── */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-[#060b18] border-y border-white/5">
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-[#060b18] border-y border-[#E2E8F0]">
         <div className="max-w-4xl mx-auto">
-          <div className="flex gap-4 items-start bg-white/3 border border-white/8 rounded-2xl p-5">
+          <div className="flex gap-4 items-start bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center mt-0.5">
               <Shield className="w-4 h-4 text-yellow-400" />
             </div>
             <div>
               <p className="text-yellow-400 text-xs font-bold uppercase tracking-widest mb-1">Aviso Legal — Resultados Individuais</p>
-              <p className="text-white/40 text-xs leading-relaxed">
+              <p className="text-[#5A667A] text-xs leading-relaxed">
                 As imagens e resultados apresentados nesta página são ilustrativos e baseados em casos reais de pacientes atendidos pela rede Homenz. Os resultados podem variar de acordo com o perfil capilar, histórico clínico, protocolo aplicado e adesão ao tratamento de cada paciente. As transformações capilares exibidas foram realizadas por profissionais habilitados em unidades credenciadas da rede. O Homenz IA é um sistema de captação, qualificação e gestão de leads — não substitui a avaliação médica ou tricológica presencial. Antes de iniciar qualquer protocolo, o paciente deve ser avaliado por um profissional de saúde qualificado.
               </p>
             </div>
@@ -938,7 +938,7 @@ export default function HomenzLanding() {
               <br />
               <span className="text-[#00c4cc]">ISSO É O QUE VOCÊ VENDE.</span>
             </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto">
+            <p className="text-lg text-[#5A667A] max-w-2xl mx-auto">
               Cada lead que entra no funil Homenz IA recebe um diagnóstico personalizado — e sai com clareza sobre o protocolo ideal. Veja o que acontece quando o lead certo encontra a clínica certa.
             </p>
           </div>
@@ -983,7 +983,7 @@ export default function HomenzLanding() {
                 tagColor: "bg-yellow-500/20 text-yellow-400",
               },
             ].map((p) => (
-              <div key={p.name} className="bg-[#0d1425] border border-white/8 rounded-3xl overflow-hidden flex flex-col">
+              <div key={p.name} className="bg-[#0d1425] border border-[#E2E8F0] rounded-3xl overflow-hidden flex flex-col">
                 {/* Before/After visual */}
                 <div className="grid grid-cols-2 h-52 relative">
                   {/* Before — calvície */}
@@ -1024,7 +1024,7 @@ export default function HomenzLanding() {
                       {/* Boca triste */}
                       <path d="M34 56 Q40 53 46 56" stroke="#8a5030" strokeWidth="1.5" fill="none" />
                     </svg>
-                    <p className="text-[10px] text-white/40 text-center leading-tight mt-1">{p.beforeDesc}</p>
+                    <p className="text-[10px] text-[#5A667A] text-center leading-tight mt-1">{p.beforeDesc}</p>
                   </div>
                   {/* Divider arrow */}
                   <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[#0d1425] border border-white/20 flex items-center justify-center shadow-lg">
@@ -1091,7 +1091,7 @@ export default function HomenzLanding() {
                     </div>
                     <div>
                       <span className="font-bold text-white text-xs">{p.name}</span>
-                      <span className="text-white/30 text-xs"> · {p.city}</span>
+                      <span className="text-[#A0AABB] text-xs"> · {p.city}</span>
                     </div>
                   </div>
                 </div>
@@ -1100,9 +1100,9 @@ export default function HomenzLanding() {
           </div>
 
           {/* CTA bar */}
-          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-white/8 rounded-2xl p-6 text-center">
-            <p className="text-white/60 text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
-            <p className="font-bold text-white">Ele chega pronto. A sua clínica só precisa confirmar o agendamento.</p>
+          <div className="bg-gradient-to-r from-[#1a56db]/20 via-[#0d1425] to-[#00c4cc]/20 border border-[#E2E8F0] rounded-2xl p-6 text-center">
+            <p className="text-[#5A667A] text-sm mb-2">Cada lead que entra no funil Homenz IA passa por um diagnóstico personalizado antes de chegar na sua equipe.</p>
+            <p className="font-bold text-[#0A2540]">Ele chega pronto. A sua clínica só precisa confirmar o agendamento.</p>
           </div>
         </div>
       </section>
@@ -1119,7 +1119,7 @@ export default function HomenzLanding() {
               O ANTES E DEPOIS<br />
               <span className="text-[#00c4cc]">QUE IMPORTA DE VERDADE.</span>
             </h2>
-            <p className="text-lg text-white/50 max-w-2xl mx-auto">
+            <p className="text-lg text-[#5A667A] max-w-2xl mx-auto">
               Não é só o cabelo que muda. É o resultado da sua clínica.
             </p>
           </div>
@@ -1238,29 +1238,29 @@ export default function HomenzLanding() {
                 className={`relative rounded-3xl p-7 flex flex-col ${
                   plan.highlight
                     ? "bg-[#1a56db] border border-[#1a56db]"
-                    : "bg-white/3 border border-white/8"
+                    : "bg-[#F8FAFC] border border-[#E2E8F0]"
                 }`}
               >
                 {plan.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap ${plan.highlight ? "bg-[#00c4cc] text-[#0a0f1e]" : "bg-white/10 text-white/70"}`}>
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap ${plan.highlight ? "bg-[#00c4cc] text-[#0a0f1e]" : "bg-[#EBF4FF] text-white/70"}`}>
                     {plan.badge}
                   </div>
                 )}
                 <div className="mb-5">
-                  <div className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-2">{plan.name}</div>
+                  <div className="text-xs font-semibold text-[#5A667A] uppercase tracking-widest mb-2">{plan.name}</div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-white">{plan.price}</span>
-                    <span className="text-white/50 text-sm">{plan.period}</span>
+                    <span className="text-3xl font-black text-[#0A2540]">{plan.price}</span>
+                    <span className="text-[#5A667A] text-sm">{plan.period}</span>
                   </div>
-                  <div className="text-xs text-white/50 mt-2">{plan.desc}</div>
-                  <div className={`mt-3 text-[10px] font-bold px-2 py-1 rounded-lg inline-block ${plan.highlight ? "bg-white/20 text-white" : "bg-white/5 text-white/50"}`}>
+                  <div className="text-xs text-[#5A667A] mt-2">{plan.desc}</div>
+                  <div className={`mt-3 text-[10px] font-bold px-2 py-1 rounded-lg inline-block ${plan.highlight ? "bg-white/20 text-[#0A2540]" : "bg-white text-[#5A667A]"}`}>
                     {plan.limit}
                   </div>
                 </div>
                 <div className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-2">
-                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-white" : "text-[#00c4cc]"}`} />
+                      <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${plan.highlight ? "text-[#0A2540]" : "text-[#00c4cc]"}`} />
                       <span className="text-xs text-white/80">{feature}</span>
                     </div>
                   ))}
@@ -1270,7 +1270,7 @@ export default function HomenzLanding() {
                   className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${
                     plan.highlight
                       ? "bg-white text-[#1a56db] hover:bg-white/90"
-                      : "bg-white/5 hover:bg-white/10 border border-white/10 text-white"
+                      : "bg-white hover:bg-[#EBF4FF] border border-[#E2E8F0] text-[#0A2540]"
                   }`}
                 >
                   {plan.cta}
@@ -1280,7 +1280,7 @@ export default function HomenzLanding() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-[#5A667A]">
               Todos os planos incluem <span className="text-[#00c4cc] font-semibold">15 dias grátis</span>. Sem cartão de crédito. Cancele quando quiser.
             </p>
           </div>
@@ -1307,20 +1307,20 @@ export default function HomenzLanding() {
             <br />
             <span className="text-[#00c4cc]">O MELHOR SISTEMA.</span>
           </h2>
-          <p className="text-lg text-white/50 mb-10">
+          <p className="text-lg text-[#5A667A] mb-10">
             Ative o Homenz IA na sua unidade hoje. Configure em 5 minutos, gere seu link exclusivo e comece a converter tráfego pago em consultas agendadas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate("/cadastro")}
-              className="group flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-[#1a56db] hover:bg-[#1a56db]/90 text-white font-black text-lg transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(26,86,219,0.5)]"
+              className="group flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-[#1a56db] hover:bg-[#1a56db]/90 text-[#0A2540] font-black text-lg transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(26,86,219,0.5)]"
             >
               Ativar minha unidade grátis
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             <button
               onClick={() => navigate("/c/demo")}
-              className="flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-lg transition-all"
+              className="flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-white hover:bg-[#EBF4FF] border border-[#E2E8F0] text-[#0A2540] font-semibold text-lg transition-all"
             >
               <Play className="w-5 h-5 text-[#00c4cc]" />
               Ver demo primeiro
@@ -1330,23 +1330,23 @@ export default function HomenzLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="border-t border-[#E2E8F0] py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <span className="text-lg font-black text-white">HOMENZ</span>
+                <span className="text-lg font-black text-[#0A2540]">HOMENZ</span>
                 <span className="text-lg font-black text-[#00c4cc]"> IA</span>
               </div>
 
             </div>
-            <div className="flex items-center gap-8 text-sm text-white/30">
+            <div className="flex items-center gap-8 text-sm text-[#A0AABB]">
               <a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a>
               <a href="#funcionalidades" className="hover:text-white transition-colors">Funcionalidades</a>
               <a href="#precos" className="hover:text-white transition-colors">Planos</a>
               <a href="/c/demo" className="hover:text-white transition-colors">Demo</a>
             </div>
-            <p className="text-xs text-white/20">
+            <p className="text-xs text-[#C0CADB]">
               © 2026 Homenz IA. Todos os direitos reservados.
             </p>
           </div>
