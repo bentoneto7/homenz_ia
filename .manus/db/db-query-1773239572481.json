@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, sessionToken, clinicId, funnelStep FROM leads LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute SELECT id, sessionToken, clinicId, funnelStep FROM leads LIMIT 3;",
+  "rows": [
+    {
+      "id": "1",
+      "sessionToken": "wpr6LSQ3o7yGzpMuxy0u0yM-FBTexM4y",
+      "clinicId": "1",
+      "funnelStep": "form_done"
+    },
+    {
+      "id": "2",
+      "sessionToken": "abaZPh8ud-7smpbraDfiAJHsatyLFM1o",
+      "clinicId": "1",
+      "funnelStep": "form_done"
+    },
+    {
+      "id": "3",
+      "sessionToken": "fyScvF9IsJIhh7NHZpNnOfoRVUxAulBF",
+      "clinicId": "1",
+      "funnelStep": "photos_started"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsessionToken\tclinicId\tfunnelStep\n1\twpr6LSQ3o7yGzpMuxy0u0yM-FBTexM4y\t1\tform_done\n2\tabaZPh8ud-7smpbraDfiAJHsatyLFM1o\t1\tform_done\n3\tfyScvF9IsJIhh7NHZpNnOfoRVUxAulBF\t1\tphotos_started\n",
+  "stderr": "",
+  "execution_time_ms": 361
+}

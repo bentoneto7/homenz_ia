@@ -488,3 +488,9 @@
 - [ ] HomenzLanding: verificar se há referências femininas nos textos
 - [ ] Routers/schema: remover enum "female" do campo gender nos leads
 - [ ] Disclaimer do sistema de análise de fotos capilares (documentar o que a IA considera)
+
+## Bug — Erro React #310 no FunnelPhotos (Mar 2026 — v16)
+- [x] Investigar erro React #310 na tela de envio de fotos do funil /c/:slug
+- [x] FunnelPhotos funciona corretamente no dev — erro era da versão publicada anterior
+- [x] Adicionado resolve.dedupe no vite.config.ts para evitar duplicação de React no bundle de produção
+- [x] Publicar nova versão para corrigir o erro em homenzadvanced.com

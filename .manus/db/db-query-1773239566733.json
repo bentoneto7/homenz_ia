@@ -1,0 +1,266 @@
+{
+  "query": "DESCRIBE leads;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute DESCRIBE leads;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "clinicId",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "phone",
+      "Type": "varchar(20)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "email",
+      "Type": "varchar(320)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "region",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "utmSource",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "utmMedium",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "utmCampaign",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "utmContent",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "utmTerm",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "referrer",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "gender",
+      "Type": "enum('male','female','other')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "age",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "hairProblem",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "hairLossType",
+      "Type": "enum('frontal','vertex','total','diffuse','temporal','other')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "hairLossTime",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "previousTreatments",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "expectations",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "howDidYouHear",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "chatAnswers",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "funnelStep",
+      "Type": "enum('landing','form_started','form_done','chat_started','chat_done','photos_started','photos_done','ai_processing','ai_done','schedule_started','scheduled','confirmed','completed','cancelled')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "landing",
+      "Extra": ""
+    },
+    {
+      "Field": "abandonedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastActivityAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "leadScore",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "leadScoreBreakdown",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "priority",
+      "Type": "enum('low','medium','high','urgent')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "medium",
+      "Extra": ""
+    },
+    {
+      "Field": "sessionToken",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "lastAlertSentAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastAlertTemperature",
+      "Type": "enum('hot','warm','cold','lost')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nclinicId\tint\tNO\t\tNULL\t\nname\tvarchar(255)\tNO\t\tNULL\t\nphone\tvarchar(20)\tNO\t\tNULL\t\nemail\tvarchar(320)\tYES\t\tNULL\t\nregion\tvarchar(255)\tYES\t\tNULL\t\nutmSource\tvarchar(100)\tYES\t\tNULL\t\nutmMedium\tvarchar(100)\tYES\t\tNULL\t\nutmCampaign\tvarchar(255)\tYES\t\tNULL\t\nutmContent\tvarchar(255)\tYES\t\tNULL\t\nutmTerm\tvarchar(255)\tYES\t\tNULL\t\nreferrer\ttext\tYES\t\tNULL\t\ngender\tenum('male','female','other')\tYES\t\tNULL\t\nage\tint\tYES\t\tNULL\t\nhairProblem\ttext\tYES\t\tNULL\t\nhairLossType\tenum('frontal','vertex','total','diffuse','temporal','other')\tYES\t\tNULL\t\nhairLossTime\tvarchar(100)\tYES\t\tNULL\t\npreviousTreatments\ttext\tYES\t\tNULL\t\nexpectations\ttext\tYES\t\tNULL\t\nhowDidYouHear\tvarchar(255)\tYES\t\tNULL\t\nchatAnswers\tjson\tYES\t\tNULL\t\nfunnelStep\tenum('landing','form_started','form_done','chat_started','chat_done','photos_started','photos_done','ai_processing','ai_done','schedule_started','scheduled','confirmed','completed','cancelled')\tNO\t\tlanding\t\nabandonedAt\ttimestamp\tYES\t\tNULL\t\nlastActivityAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nleadScore\tint\tYES\t\tNULL\t\nleadScoreBreakdown\tjson\tYES\t\tNULL\t\npriority\tenum('low','medium','high','urgent')\tYES\t\tmedium\t\nsessionToken\tvarchar(128)\tYES\tUNI\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nlastAlertSentAt\ttimestamp\tYES\t\tNULL\t\nlastAlertTemperature\tenum('hot','warm','cold','lost')\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 449
+}
