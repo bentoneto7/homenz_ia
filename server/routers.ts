@@ -748,7 +748,7 @@ Retorne JSON com os campos especificados.`,
           let afterImageUrl = frontPhoto.s3Url;
           try {
             const imgResult = await generateImage({
-              prompt: `Photo-realistic hair optimization result for the same man in the original photo. Subtly fill, densify and beautify the existing hair in the ${(analysis.affectedAreas as string[])?.join(", ")} areas. The hair should look naturally thicker, fuller and more uniform — as if the person has been using high-quality hair fibers and scalp micropigmentation treatment. Keep the same face, same angle, same lighting, same background. Do NOT change the face, skin tone, or overall appearance. Do NOT add a full head of hair if the person is mostly bald — show a realistic, subtle improvement appropriate for ${analysis.baldnessLevel} level. Masculine, professional, photorealistic. No dramatic transformation — just a natural, believable enhancement.`,
+              prompt: `Photo-realistic hair restoration result for the same man in the original photo. Show the man with a FULL, NATURAL, WELL-STYLED head of hair — thick, dense, and well-groomed. The hairstyle should look masculine and modern, as if he has always had a full head of hair. Keep exactly the same face, facial features, skin tone, glasses (if any), beard (if any), same angle, same lighting, and same background. Only change the hair: make it full, natural, and beautifully styled. The result should look completely realistic and photographic — not illustrated or digitally altered. Masculine, confident appearance. High quality, photorealistic.`,
               originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             afterImageUrl = imgResult.url ?? frontPhoto.s3Url;

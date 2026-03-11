@@ -526,3 +526,9 @@
 - [x] Score card: substituir "Lead Quente/Morno/Frio" por linguagem de potencial capilar para o cliente
 - [x] Fotos: duas fotos lado a lado (Antes/Depois) com seta entre elas, sem slider
 - [x] Prompt da IA: focar em otimizar/preencher o cabelo existente, mais denso e bonito
+
+## FunnelResult v22 — Ajustes de Conteúdo (Mar 2026)
+- [x] Remover card "Tratamento recomendado" do FunnelResult
+- [x] Remover "Sessões estimadas" do card de Potencial de Crescimento Capilar
+- [x] Prompt IA: gerar cabelo cheio e natural no "Depois" (não apenas densificar)
+- [x] Substituir mensagem de sessões por expectativa motivacional para agendar consulta

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { ChevronRight, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Calendar } from "lucide-react";
 
 export default function FunnelResult() {
   const { slug, token } = useParams<{ slug: string; token: string }>();
@@ -204,15 +204,17 @@ export default function FunnelResult() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/60 rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Classificação capilar</p>
-              <p className="text-sm font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
-            </div>
-            <div className="bg-white/60 rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Sessões estimadas</p>
-              <p className="text-sm font-black text-[#004A9D]">{result.estimatedSessions ?? "2-3"}</p>
-            </div>
+          <div className="bg-white/60 rounded-xl p-3 text-center">
+            <p className="text-xs text-[#5A667A] mb-1">Classificação capilar</p>
+            <p className="text-sm font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
+          </div>
+
+          {/* Expectativa motivacional */}
+          <div className="mt-3 bg-white/80 border border-[#004A9D]/10 rounded-xl p-3">
+            <p className="text-xs text-[#004A9D] font-semibold mb-1">📍 Quanto antes, melhor o resultado</p>
+            <p className="text-xs text-[#5A667A] leading-relaxed">
+              O resultado da simulação acima é possível. Quanto mais cedo você iniciar, mais natural e completo será o preenchimento. Agende agora sua consulta gratuita e descubra o plano ideal para o seu caso.
+            </p>
           </div>
         </div>
 
@@ -224,17 +226,6 @@ export default function FunnelResult() {
               <h3 className="font-semibold text-sm">Análise detalhada</h3>
             </div>
             <p className="text-sm text-[#5A667A] leading-relaxed">{result.analysisText}</p>
-          </div>
-        )}
-
-        {/* Recommended treatment */}
-        {result.recommendedTreatment && (
-          <div className="bg-[#EBF4FF] border border-[#004A9D]/20 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-[#004A9D]" />
-              <h3 className="font-semibold text-sm text-[#004A9D]">Tratamento recomendado</h3>
-            </div>
-            <p className="text-sm text-[#374151] leading-relaxed">{result.recommendedTreatment}</p>
           </div>
         )}
 
