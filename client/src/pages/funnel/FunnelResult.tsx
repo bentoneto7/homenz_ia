@@ -89,8 +89,10 @@ export default function FunnelResult() {
 
   const score = result.leadScore ?? 0;
   const scoreColor = score >= 70 ? "#10b981" : score >= 40 ? "#f59e0b" : "#ef4444";
-  const scoreLabel = score >= 70 ? "Excelente candidato" : score >= 40 ? "Bom candidato" : "Requer avaliação";
-  const scoreBg = score >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : score >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
+  const scoreLabel = score >= 70 ? "🔥 Lead Quente" : score >= 40 ? "🟡 Lead Morno" : "❄️ Lead Frio";
+  const scoreSubLabel = score >= 70 ? "Follow-up em até 2 horas" : score >= 40 ? "Nutrir e retornar em 24h" : "Sequência de nutrição de longo prazo";
+  const scoreBg = score >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : score >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-blue-500/10 border-blue-500/20";
+  const totalCalvicieAreas = (result as any).totalCalvicieAreas as string[] | undefined;
 
   const handleSliderMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!isDragging) return;
@@ -123,6 +125,21 @@ export default function FunnelResult() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 -mt-8 space-y-4">
+        {/* Aviso de calvície total */}
+        {totalCalvicieAreas && totalCalvicieAreas.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-500 text-base flex-shrink-0">⚠️</span>
+              <div>
+                <p className="text-xs font-bold text-amber-800 mb-1">Regiões com calvície total identificadas</p>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  As regiões <strong>{totalCalvicieAreas.join(", ")}</strong> apresentam calvície total (densidade 0%). Nossos tratamentos trabalham com o fio existente como referência visual, o que limita o resultado visual nessas áreas específicas. Um especialista Homenz irá apresentar as melhores opções para o seu caso.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Before/After slider */}
         {result.beforeImageUrl && result.afterImageUrl ? (
           <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
@@ -165,7 +182,7 @@ export default function FunnelResult() {
             </div>
             <img src={result.afterImageUrl} alt="Resultado" className="w-full aspect-[4/3] object-cover" />
             <div className="px-4 py-3">
-              <p className="text-xs text-[#5A667A] text-center">Simulação gerada por IA com base nas suas fotos</p>
+              <p className="text-xs text-[#5A667A] text-center">⚠️ Simulação ilustrativa gerada por IA. Não garante resultado idêntico. Cada caso é único.</p>
             </div>
           </div>
         ) : null}
@@ -176,6 +193,7 @@ export default function FunnelResult() {
             <div>
               <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-1">Seu perfil capilar</p>
               <h2 className="font-bold text-lg text-[#0A2540]">{scoreLabel}</h2>
+              <p className="text-xs text-[#5A667A] mt-0.5">{scoreSubLabel}</p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-black" style={{ color: scoreColor }}>{score}</div>
@@ -193,11 +211,11 @@ export default function FunnelResult() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Escala de calvície</p>
-              <p className="text-xl font-black text-[#004A9D]">{result.baldnessScale ?? "N/A"}</p>
+              <p className="text-xs text-[#5A667A] mb-1">Escala</p>
+              <p className="text-xl font-black text-[#004A9D]">Norwood</p>
             </div>
             <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Nível</p>
+              <p className="text-xs text-[#5A667A] mb-1">Nível Norwood</p>
               <p className="text-xl font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
             </div>
             <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
@@ -270,6 +288,9 @@ export default function FunnelResult() {
           </button>
           <p className="text-xs text-[#A0AABB] text-center mt-2">
             Consulta 100% gratuita e sem compromisso
+          </p>
+          <p className="text-[10px] text-[#C0CADB] text-center mt-1">
+            ⚠️ Imagem simulada por IA — não substitui avaliação clínica presencial
           </p>
         </div>
       </div>

@@ -662,24 +662,39 @@ export const appRouter = router({
             messages: [
               {
                 role: "system",
-                content: `Você é um especialista em tricologia e preenchimento capilar masculino. O público atendido é EXCLUSIVAMENTE masculino. Analise as fotos e retorne JSON com:
-- baldnessLevel: nível na Escala de Norwood-Hamilton (I a VII), usada para alopecia androgenética masculina
-- baldnessScale: sempre "norwood"
-- affectedAreas: array com áreas afetadas (frontal, temporal, vertex, coronal, diffuse)
-- densityEstimate: estimativa de densidade capilar na área afetada (ex: "30% da densidade normal no vertex")
-- recommendedTreatment: protocolo de preenchimento capilar recomendado em português, com foco em micropigmentação ou fibras capilares
-- estimatedSessions: número de sessões estimadas (inteiro)
-- analysisText: laudo completo em português (2-3 parágrafos), com tom direto e masculino, sem referências femininas
-- leadScore: pontuação 0-100 baseada em: urgência da calvície (40pts), expectativa realista (30pts), histórico de tratamentos (30pts)
-- leadScoreBreakdown: objeto com { baldnessWeight, expectationWeight, historyWeight }
-- priority: "low", "medium", "high" ou "urgent"`,
+                content: `Você é um especialista em análise capilar da clínica Homenz Advanced. O público atendido é EXCLUSIVAMENTE masculino. Analise as fotos enviadas e retorne um relatório estruturado em JSON.
+
+REGRAS OBRIGATÓRIAS:
+- Seja objetivo, empático e direto
+- NUNCA faça diagnóstico médico ou prometa resultado clínico garantido
+- NUNCA mencione transplante como opção da clínica — a Homenz NÃO realiza transplante
+- Tom: especialista confiante, nunca vendedor
+- Qualquer grau de calvície encaminha ao time de vendas — sem exceção
+- Se densidade = 0% em alguma região, sinalizar como calvície total nessa área
+
+ESCALA DE NORWOOD-HAMILTON (referência obrigatória):
+- Norwood I: sem recessão, linha frontal intacta, cabelo saudável. Densidade 100%. Protocolo: Prevenção/Fidelização. Score base: 20-30.
+- Norwood II: leve recessão temporal, quase imperceptível. Densidade 85-95%. Protocolo: preventivo + fibras. Score base: 30-45.
+- Norwood III: recessão temporal moderada, primeiros sinais visíveis. Densidade 70-85%. Protocolo: fibras capilares + micropigmentação. Score base: 50-65.
+- Norwood IV: recessão severa + início de calvície no vertex. Densidade 50-70%. Protocolo: micropigmentação + fibras (combinado). Score base: 65-80.
+- Norwood V: área frontal e vertex separadas por faixa estreita. Densidade 30-50%. Protocolo: intensivo combinado. Score base: 75-85.
+- Norwood VI: faixa de separação desapareceu, calvície extensa. Densidade 15-30%. Protocolo: micropigmentação prioritária — fios limitados. Score base: 70-80.
+- Norwood VII: apenas coroa lateral e nuca preservadas. Densidade <15%. Protocolo: análise individual pelo especialista. Score base: 60-75.
+
+SISTEMA DE LEAD SCORE (0-100):
+- Urgência da calvície (40 pts): Norwood III-IV = 25-30 pts | V-VI = 35-40 pts | I-II = 5-15 pts
+- Expectativa realista (30 pts): quer resultado claro e rápido = 25-30 pts | indefinido = 10-15 pts
+- Histórico de tratamentos (30 pts): sem tratamento prévio = 25-30 pts | tratamentos anteriores = 10-15 pts
+- Classificação: ≥70 = QUENTE (follow-up em 2h) | 40-69 = MORNO | <40 = FRIO
+
+Retorne JSON com os campos especificados.`,
               },
               {
                 role: "user",
                 content: [
                   {
                     type: "text" as const,
-                    text: `Paciente masculino: ${lead.name}, idade: ${lead.age ?? "não informada"}. Problema relatado: ${lead.hairProblem ?? "queda capilar"}. Região afetada: ${lead.hairLossType ?? "não informada"}. Há quanto tempo: ${lead.hairLossTime ?? "não informado"}. Tratamentos anteriores: ${lead.previousTreatments ?? "nenhum"}. Expectativas: ${lead.expectations ?? "não informadas"}. Aplique obrigatoriamente a Escala de Norwood-Hamilton.`,
+                    text: `Paciente masculino: ${lead.name}, idade: ${lead.age ?? "não informada"}.\n\nDados do chat de qualificação:\n- Problema relatado: ${lead.hairProblem ?? "queda capilar"}\n- Região afetada: ${lead.hairLossType ?? "não informada"}\n- Há quanto tempo: ${lead.hairLossTime ?? "não informado"}\n- Tratamentos anteriores: ${lead.previousTreatments ?? "nenhum"}\n- Expectativas: ${lead.expectations ?? "não informadas"}\n\nAnalise as ${photos.length} fotos enviadas (frente, topo, lado esquerdo, lado direito) e aplique obrigatoriamente a Escala de Norwood-Hamilton. Se alguma região tiver calvície total (densidade 0%), sinalize no campo totalCalvicieAreas. Termine o analysisText SEMPRE com: 'Agende sua avaliação gratuita com um especialista Homenz.'`,
                   },
                   ...photoMessages,
                 ],
@@ -693,29 +708,30 @@ export const appRouter = router({
                 schema: {
                   type: "object",
                   properties: {
-                    baldnessLevel: { type: "string" },
-                    baldnessScale: { type: "string" },
-                    affectedAreas: { type: "array", items: { type: "string" } },
-                    densityEstimate: { type: "string" },
-                    recommendedTreatment: { type: "string" },
-                    estimatedSessions: { type: "number" },
-                    analysisText: { type: "string" },
-                    leadScore: { type: "number" },
+                    baldnessLevel: { type: "string", description: "Nível Norwood I a VII" },
+                    baldnessScale: { type: "string", description: "Sempre 'norwood'" },
+                    affectedAreas: { type: "array", items: { type: "string" }, description: "Areas afetadas: frontal, temporal, vertex, coronal, diffuse" },
+                    totalCalvicieAreas: { type: "array", items: { type: "string" }, description: "Areas com calvície total (densidade 0%) — array vazio se nenhuma" },
+                    densityEstimate: { type: "string", description: "Estimativa de densidade por região, ex: '30% da densidade normal no vertex'" },
+                    recommendedTreatment: { type: "string", description: "Protocolo recomendado: micropigmentação, fibras ou combinado" },
+                    estimatedSessions: { type: "number", description: "Número de sessões estimadas" },
+                    analysisText: { type: "string", description: "Laudo completo em português, terminando com 'Agende sua avaliação gratuita com um especialista Homenz.'" },
+                    leadScore: { type: "number", description: "Pontuação 0-100 conforme sistema de score do protocolo" },
                     leadScoreBreakdown: {
                       type: "object",
                       properties: {
-                        baldnessWeight: { type: "number" },
-                        expectationWeight: { type: "number" },
-                        historyWeight: { type: "number" },
+                        baldnessWeight: { type: "number", description: "Pontuação de urgência da calvície (0-40)" },
+                        expectationWeight: { type: "number", description: "Pontuação de expectativa realista (0-30)" },
+                        historyWeight: { type: "number", description: "Pontuação de histórico de tratamentos (0-30)" },
                       },
                       required: ["baldnessWeight", "expectationWeight", "historyWeight"],
                       additionalProperties: false,
                     },
-                    priority: { type: "string" },
+                    priority: { type: "string", description: "low | medium | high | urgent" },
                   },
                   required: [
-                    "baldnessLevel", "baldnessScale", "affectedAreas", "densityEstimate",
-                    "recommendedTreatment", "estimatedSessions", "analysisText",
+                    "baldnessLevel", "baldnessScale", "affectedAreas", "totalCalvicieAreas",
+                    "densityEstimate", "recommendedTreatment", "estimatedSessions", "analysisText",
                     "leadScore", "leadScoreBreakdown", "priority",
                   ],
                   additionalProperties: false,
@@ -732,7 +748,7 @@ export const appRouter = router({
           let afterImageUrl = frontPhoto.s3Url;
           try {
             const imgResult = await generateImage({
-              prompt: `Realistic male hair filling treatment result simulation. Natural-looking hair fibers covering the affected areas (${(analysis.affectedAreas as string[])?.join(", ")}). Same man, same face, masculine appearance, professional clinical result, photorealistic, high quality.`,
+              prompt: `Homenz Advanced hair treatment simulation — realistic before/after result for a male patient with ${analysis.baldnessLevel} alopecia (${(analysis.affectedAreas as string[])?.join(", ")} areas affected). Apply natural-looking micropigmentation and hair fibers to the affected areas. Same man, same face, same lighting. Masculine appearance. Professional clinical result. Photorealistic, high quality. ${(analysis.totalCalvicieAreas as string[])?.length > 0 ? `Note: areas with total baldness (${(analysis.totalCalvicieAreas as string[]).join(", ")}) have limited visual improvement — show realistic result.` : ""}`,
               originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             afterImageUrl = imgResult.url ?? frontPhoto.s3Url;

@@ -494,3 +494,17 @@
 - [x] FunnelPhotos funciona corretamente no dev — erro era da versão publicada anterior
 - [x] Adicionado resolve.dedupe no vite.config.ts para evitar duplicação de React no bundle de produção
 - [x] Publicar nova versão para corrigir o erro em homenzadvanced.com
+
+## Protocolo Análise Capilar v1.0 — Atualização (Mar 2026 — v17)
+- [x] FunnelPhotos: adicionar tela de disclaimer antes das fotos (5 pontos legais + aviso de tratamentos não-cirúrgicos)
+- [x] FunnelPhotos: atualizar instruções de cada foto com ✅ Como Fazer / ❌ Evitar / 🔬 O que a IA analisa
+- [x] FunnelPhotos: adicionar guia de iluminação (ideal/aceitável/inválido)
+- [x] FunnelPhotos: regras gerais de captura (cabelo seco, fundo neutro, câmera traseira, distância 40-60cm)
+- [x] Servidor: atualizar system prompt da IA com o prompt oficial do protocolo Homenz v1.0
+- [x] Servidor: tabela Norwood I-VII completa com densidade, protocolo e score base
+- [x] Servidor: regras obrigatórias (sem diagnóstico médico, sem transplante, CTA fixo)
+- [x] Servidor: campo totalCalvicieAreas adicionado ao JSON schema da IA
+- [x] Servidor: prompt de geração de imagem melhorado com Norwood e áreas afetadas
+- [x] FunnelResult: aviso de calvície total exibido quando totalCalvicieAreas não está vazio
+- [x] FunnelResult: labels de score atualizados (🔥 Quente / 🟡 Morno / ❄️ Frio) com sublabel de follow-up
+- [x] FunnelResult: aviso de simulação ilustrativa adicionado (conformidade CFM)
