@@ -273,7 +273,7 @@ export default function FunnelPhotos() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#004A9D] mb-3">
               <Sparkles className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-[#0A2540]">Análise Capilar com IA</h1>
+            <h1 className="text-xl font-bold text-[#0A2540]">Avaliação Capilar</h1>
             <p className="text-sm text-[#5A667A] mt-1">Antes de enviar suas fotos, leia com atenção</p>
           </div>
 
@@ -413,7 +413,7 @@ export default function FunnelPhotos() {
           <div className="flex items-center justify-between mb-2">
             <div>
               <h1 className="font-bold text-sm text-[#0A2540]">Captura de Fotos</h1>
-              <p className="text-xs text-[#5A667A]">Para análise capilar com IA</p>
+              <p className="text-xs text-[#5A667A]">Envie suas fotos para avaliação capilar</p>
             </div>
             <span className="text-sm font-bold text-[#004A9D]">{capturedCount}/4</span>
           </div>
@@ -566,7 +566,7 @@ export default function FunnelPhotos() {
                     onClick={() => fileInputRef.current?.click()}
                     className="mt-2 text-xs text-[#004A9D] font-semibold underline"
                   >
-                    📁 Enviar da galeria
+                    📁 Enviar foto da galeria
                   </button>
                 </div>
               </div>
@@ -625,7 +625,7 @@ export default function FunnelPhotos() {
                     {/* AI analysis */}
                     <div className="bg-[#EBF4FF] rounded-lg p-2.5">
                       <p className="text-[10px] font-bold text-[#004A9D] mb-1.5 flex items-center gap-1">
-                        🔬 O que a IA analisa nesta foto
+                        🔬 O que será avaliado nesta foto
                       </p>
                       <div className="space-y-1">
                         {currentStep.aiAnalysis.map((item, i) => (
@@ -657,12 +657,12 @@ export default function FunnelPhotos() {
                 {triggerAI.isPending ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Processando com IA...
+                    Enviando...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5" />
-                    Gerar minha análise 3D com IA
+                    <ChevronRight className="w-5 h-5" />
+                    Enviar fotos
                     <ChevronRight className="w-5 h-5" />
                   </>
                 )}
@@ -677,7 +677,7 @@ export default function FunnelPhotos() {
                   {uploading ? (
                     <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Enviando...</>
                   ) : (
-                    <><Camera className="w-5 h-5" /> Fotografar: {currentStep.label}</>
+                    <><Camera className="w-5 h-5" /> Tirar foto: {currentStep.label}</>
                   )}
                 </button>
                 <button
@@ -685,7 +685,7 @@ export default function FunnelPhotos() {
                   disabled={uploading}
                   className="w-full bg-white border border-[#E2E8F0] text-[#5A667A] font-medium py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#F8FAFC] transition-colors disabled:opacity-60"
                 >
-                  📁 Enviar da galeria
+                  📁 Enviar foto da galeria
                 </button>
               </div>
             )}
@@ -694,7 +694,7 @@ export default function FunnelPhotos() {
             <div className="flex items-center justify-center gap-2 mt-4">
               <Lock className="w-3.5 h-3.5 text-[#A0AABB]" />
               <p className="text-xs text-[#A0AABB]">
-                Suas fotos são criptografadas e usadas apenas para análise capilar
+                Suas fotos são criptografadas e usadas apenas para sua avaliação
               </p>
             </div>
           </>

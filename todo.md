@@ -514,3 +514,10 @@
 - [x] Adicionado botão '📁 Enviar da galeria' como fallback quando câmera não está disponível
 - [x] Erro de câmera agora mostra link para galeria em vez de mensagem de erro simples
 - [ ] Gerar documento PDF do Protocolo de Análise Capilar Homenz v1.0
+
+## Bug — Hooks Condicionais FunnelResult + Texto Botão (Mar 2026 — v19)
+- [x] Corrigir hooks condicionais no FunnelResult.tsx (useEffect movido para antes dos returns condicionais)
+- [x] Simplificar texto do botão de envio: 'Enviar fotos' (sem menção à IA)
+- [x] Simplificar textos gerais: 'Avaliação Capilar' (sem 'com IA'), 'O que será avaliado' (sem 'IA analisa')
+- [x] FunnelResult: removido badge 'Análise personalizada por IA' do hero header
+- [x] FunnelResult: rodapé simplificado para 'Imagem simulada' (sem 'por IA')

@@ -21,6 +21,13 @@ export default function FunnelResult() {
     }
   );
 
+  // Garantir tema claro no funil público (DEVE ficar antes de qualquer return condicional)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   // Loading / Processing state
   if (isLoading || result?.processingStatus === "processing" || result?.processingStatus === "pending") {
     const steps = [
@@ -102,23 +109,12 @@ export default function FunnelResult() {
     setSliderPos(pos);
   };
 
-  // Garantir tema claro no funil público (remove dark mode se ativo)
-  useEffect(() => {
-    document.documentElement.classList.remove("dark");
-    localStorage.removeItem("theme");
-    return () => {};
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540] pb-32">
       {/* Hero header */}
       <div className="relative px-4 pt-10 pb-16 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#004A9D]/5 to-transparent pointer-events-none" />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EBF4FF] border border-[#004A9D]/20 text-[#004A9D] text-xs font-semibold mb-4">
-            <Sparkles className="w-3 h-3" />
-            Análise personalizada por IA
-          </div>
           <h1 className="text-3xl font-bold text-[#0A2540] mb-2">Seu resultado está pronto!</h1>
           <p className="text-[#5A667A] text-sm">Veja como você ficará após o preenchimento capilar</p>
         </div>
@@ -290,7 +286,7 @@ export default function FunnelResult() {
             Consulta 100% gratuita e sem compromisso
           </p>
           <p className="text-[10px] text-[#C0CADB] text-center mt-1">
-            ⚠️ Imagem simulada por IA — não substitui avaliação clínica presencial
+            ⚠️ Imagem simulada — não substitui avaliação clínica presencial
           </p>
         </div>
       </div>
