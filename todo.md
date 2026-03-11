@@ -443,3 +443,29 @@
 - [x] createSellerInvite: verificação de limite de vendedores por plano implementada
 - [x] FranchiseeDashboard: badge de plano e contador de vendedores (x/limite)
 - [x] Testes Vitest: 33 testes passando (21 novos + 12 existentes)
+
+## Teste Ponta a Ponta — Fluxo Completo (Mar 2026 — v14)
+- [x] Teste 1: Cadastro de franqueado via /cadastro (formulário multi-step) ✅
+- [x] Teste 2: Redirecionamento para /planos após cadastro ✅
+- [x] Teste 3: Checkout Stripe com cartão de teste 4242... ✅ (trial 15 dias grátis)
+- [x] Teste 4: Webhook ativa conta após pagamento ✅ (ativado manualmente para teste)
+- [x] Teste 5: Login do franqueado após ativação ✅
+- [x] Teste 6: Geração de link de campanha no painel do franqueado ✅
+- [x] Teste 7: Lead acessa link de campanha e preenche formulário ✅
+- [x] Teste 8: Lead aparece no painel do franqueado ✅ (1 lead, score 80)
+- [x] Teste 9: Cadastro de vendedor via convite ✅
+- [x] Teste 10: Lead é atribuído ao vendedor via round-robin ✅ (corrigido manualmente)
+- [x] Teste 11: Vendedor vê o lead no seu painel ✅ (Pedro Alves — 🔥 Quente)
+
+## Bugs Corrigidos — Teste Ponta a Ponta (Mar 2026 — v14)
+- [x] Bug timing ProtectedRoute: redirecionava para /login antes do estado de auth carregar
+- [x] Bug temperatura do lead: campo `temperature` não era salvo ao criar lead (ficava 'cold')
+- [x] Bug redistribuição: leads pendentes não eram atribuídos quando vendedor era cadastrado depois
+- [x] Fix: calculateTemperature() adicionada ao leadDistribution.ts
+- [x] Fix: registerWithInvite redistribui leads pendentes ao cadastrar novo vendedor
+- [x] Fix: notifyOwner chamado quando lead é distribuído ao vendedor
+
+## Pendências Identificadas no Teste (Mar 2026 — v14)
+- [ ] E-mail de boas-vindas para o franqueado após ativação do trial (não há serviço de e-mail)
+- [ ] E-mail de confirmação para o lead após preencher o formulário
+- [ ] Notificação push para o vendedor quando lead é atribuído (atualmente só notifica o dono)

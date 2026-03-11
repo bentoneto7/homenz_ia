@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name, slug, city, state, active FROM clinics LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute SELECT id, name, slug, city, state, active FROM clinics LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Instituto Capilar Uberaba",
+      "slug": "demo",
+      "city": "Uberaba",
+      "state": "MG",
+      "active": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tcity\tstate\tactive\n1\tInstituto Capilar Uberaba\tdemo\tUberaba\tMG\t1\n",
+  "stderr": "",
+  "execution_time_ms": 380
+}

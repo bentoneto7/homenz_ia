@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, name, email, role, active, plan_id, created_at FROM profiles WHERE email = 'joao.teste@homenz.com.br' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute SELECT id, name, email, role, active, plan_id, created_at FROM profiles WHERE email = 'joao.teste@homenz.com.br' LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'cc4dlwylaks57xa8r6kgev.profiles' doesn't exist"
+  ]
+}

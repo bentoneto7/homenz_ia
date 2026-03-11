@@ -157,6 +157,37 @@ export const homenzRouter = router({
         .update({ uses: invite.uses + 1 })
         .eq("id", invite.id);
 
+      // Se for vendedor, redistribuir leads pendentes da franquia para ele
+      if (invite.role === "seller" && invite.franchise_id) {
+        try {
+          const { data: pendingLeads } = await supabaseAdmin
+            .from("leads")
+            .select("id")
+            .eq("franchise_id", invite.franchise_id)
+            .eq("distribution_status", "pending")
+            .is("assigned_to", null);
+
+          if (pendingLeads && pendingLeads.length > 0) {
+            // Atribuir todos os leads pendentes ao novo vendedor
+            await supabaseAdmin
+              .from("leads")
+              .update({
+                assigned_to: newUser.id,
+                distribution_status: "assigned",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("franchise_id", invite.franchise_id)
+              .eq("distribution_status", "pending")
+              .is("assigned_to", null);
+
+            console.log(`[registerWithInvite] Redistribuídos ${pendingLeads.length} leads pendentes para o novo vendedor ${newUser.name}`);
+          }
+        } catch (redistErr) {
+          // Não bloquear o cadastro se a redistribuição falhar
+          console.error("[registerWithInvite] Erro ao redistribuir leads:", redistErr);
+        }
+      }
+
       // Fazer login automático
       const loginResult = await loginUser(input.email, input.password);
       if (!loginResult) {
@@ -251,10 +282,11 @@ export const homenzRouter = router({
         maxUses: 1,
         expiresInDays: input.expiresInDays,
       });
-      const origin = (ctx.req as { headers: Record<string, string> }).headers["x-forwarded-host"] 
-        ? `https://${(ctx.req as { headers: Record<string, string> }).headers["x-forwarded-host"]}`
-        : "http://localhost:3000";
-      return { token, inviteUrl: `${origin}/join?token=${token}` };
+      const hdrs = (ctx.req as { headers: Record<string, string> }).headers;
+      const fwdH = hdrs["x-forwarded-host"];
+      const fwdP = hdrs["x-forwarded-proto"]?.split(",")[0]?.trim() ?? "https";
+      const orig = fwdH ? `${fwdP}://${fwdH}` : (hdrs["origin"] ?? "http://localhost:3000");
+      return { token, inviteUrl: `${orig}/join?token=${token}` };
     }),
 
   // ── Franqueado: visão da franquia ─────────────────────────────────────────
@@ -388,9 +420,10 @@ export const homenzRouter = router({
         expiresInDays: input.expiresInDays,
       });
 
-      const origin = (ctx.req as { headers: Record<string, string> }).headers["x-forwarded-host"]
-        ? `https://${(ctx.req as { headers: Record<string, string> }).headers["x-forwarded-host"]}`
-        : "http://localhost:3000";
+      const headers = (ctx.req as { headers: Record<string, string> }).headers;
+      const fwdHost = headers["x-forwarded-host"];
+      const fwdProto = headers["x-forwarded-proto"]?.split(",")[0]?.trim() ?? "https";
+      const origin = fwdHost ? `${fwdProto}://${fwdHost}` : (headers["origin"] ?? "http://localhost:3000");
       return { token, inviteUrl: `${origin}/join?token=${token}` };
     }),
 
@@ -561,7 +594,7 @@ export const homenzRouter = router({
           utm_source: input.utmSource,
           utm_medium: input.utmMedium,
           utm_campaign: slug,
-          is_active: true,
+          active: true,
         })
         .select()
         .single();

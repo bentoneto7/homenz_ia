@@ -64,7 +64,8 @@ export function useHomenzAuth() {
     setUser(null);
   }, []);
 
-  const loading = !!token && meQuery.isLoading;
+  // loading = true se há token mas o user ainda não foi carregado (inclui estado inicial)
+  const loading = !!token && (meQuery.isLoading || (!user && !meQuery.isError));
 
   return {
     user,

@@ -12,6 +12,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { notifyOwner } from './_core/notification';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -118,6 +119,12 @@ export async function distributeLeadRoundRobin(
         notes: `Distribuído automaticamente para ${selectedSeller.name} (posição ${nextIndex + 1} de ${sellers.length})`,
       });
 
+    // 7. Notificar o dono da plataforma sobre novo lead distribuído
+    notifyOwner({
+      title: '🔥 Novo lead distribuído!',
+      content: `Lead atribuído a ${selectedSeller.name} na franquia. Verifique o painel para acompanhar.`,
+    }).catch(() => {}); // não bloquear se falhar
+
     return {
       success: true,
       sellerId: selectedSeller.id,
@@ -178,10 +185,10 @@ export async function createAndDistributeLead(
       utm_source: utmSource || null,
       utm_medium: utmMedium || null,
       utm_campaign: utmCampaign || null,
-      chat_summary: chatSummary || null,
-      status: 'new',
+      chat_answers: chatSummary ? { summary: chatSummary } : null,
       distribution_status: 'pending',
-      score: calculateInitialScore({ age, hairProblem, photoUrl, chatSummary }),
+      lead_score: calculateInitialScore({ age, hairProblem, photoUrl, chatSummary }),
+      temperature: calculateTemperature(calculateInitialScore({ age, hairProblem, photoUrl, chatSummary })),
     })
     .select('id')
     .single();
@@ -214,6 +221,15 @@ export async function createAndDistributeLead(
   });
 
   return { leadId: lead.id, distribution };
+}
+
+/**
+ * Calcula temperatura do lead baseado no score
+ */
+function calculateTemperature(score: number): 'hot' | 'warm' | 'cold' {
+  if (score >= 75) return 'hot';
+  if (score >= 50) return 'warm';
+  return 'cold';
 }
 
 /**

@@ -22,10 +22,9 @@ type LandingPage = {
   slug: string;
   title: string;
   procedure: string;
-  is_active: boolean;
-  views: number;
-  leads_generated: number;
-  conversion_rate: number;
+  active: boolean;
+  total_views: number;
+  total_leads: number;
   created_at: string;
 };
 
@@ -51,6 +50,14 @@ function LandingPagesTab() {
   });
 
   const pages = pagesQuery.data ?? [];
+
+  const toggleMutation = trpc.distribution.toggleLandingPage.useMutation({
+    onSuccess: () => {
+      utils.homenz.getLandingPages.invalidate();
+      toast.success("Status atualizado!");
+    },
+    onError: (err) => toast.error(err.message || "Erro ao atualizar status"),
+  });
 
   const createPage = () => {
     if (!newTitle.trim()) { toast.error("Dê um nome para a landing page"); return; }
@@ -124,9 +131,12 @@ function LandingPagesTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h5 className="text-[#0A2540] font-bold">{page.title}</h5>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      page.is_active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-white text-[#A0AABB] border border-[#E2E8F0]"
-                    }`}>{page.is_active ? "Ativa" : "Inativa"}</span>
+                    <button
+                      onClick={() => toggleMutation.mutate({ landingPageId: page.id, active: !page.active })}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full cursor-pointer transition-all ${
+                        page.active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/25" : "bg-white text-[#A0AABB] border border-[#E2E8F0] hover:bg-[#F0F4F8]"
+                      }`}
+                    >{page.active ? "Ativa" : "Inativa"}</button>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <Link2 className="w-3.5 h-3.5 text-[#A0AABB]" />
@@ -136,15 +146,15 @@ function LandingPagesTab() {
                 {/* Métricas */}
                 <div className="flex items-center gap-5">
                   <div className="text-center">
-                    <p className="text-[#0A2540] font-black text-sm">{page.views ?? 0}</p>
+                    <p className="text-[#0A2540] font-black text-sm">{page.total_views ?? 0}</p>
                     <p className="text-[#A0AABB] text-[10px]">visualiz.</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-emerald-400 font-black text-sm">{page.leads_generated ?? 0}</p>
+                    <p className="text-emerald-400 font-black text-sm">{page.total_leads ?? 0}</p>
                     <p className="text-[#A0AABB] text-[10px]">leads</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-amber-400 font-black text-sm">{page.conversion_rate ?? 0}%</p>
+                    <p className="text-amber-400 font-black text-sm">{page.total_views ? Math.round((page.total_leads / page.total_views) * 100) : 0}%</p>
                     <p className="text-[#A0AABB] text-[10px]">conversão</p>
                   </div>
                 </div>
@@ -692,6 +702,7 @@ export default function FranchiseeDashboard() {
   const { user, isFranchisee, isOwner, loading: authLoading } = useHomenzAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(null);
   // Sincronizar aba com a rota atual
   const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing" | "calendar"> = {
     "/franqueado": "sellers",
@@ -727,10 +738,9 @@ export default function FranchiseeDashboard() {
 
   const createInviteMutation = trpc.homenz.createSellerInvite.useMutation({
     onSuccess: (data) => {
+      setGeneratedInviteUrl(data.inviteUrl);
       navigator.clipboard.writeText(data.inviteUrl).catch(() => {});
-      toast.success("Link de convite copiado!");
-      setShowInviteModal(false);
-      setInviteEmail("");
+      toast.success("Link de convite gerado! Copie e envie ao vendedor.");
     },
     onError: (err) => toast.error(err.message),
   });
@@ -955,34 +965,69 @@ export default function FranchiseeDashboard() {
               <p className="text-[#5A667A] text-sm mb-6">
                 Gere um link de convite para adicionar um vendedor à sua equipe
               </p>
-              <div className="mb-4">
-                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">
-                  Email do vendedor (opcional)
-                </label>
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="vendedor@email.com"
-                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { setShowInviteModal(false); setInviteEmail(""); }}
-                  className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => createInviteMutation.mutate({ email: inviteEmail || undefined, expiresInDays: 7 })}
-                  disabled={createInviteMutation.isPending}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-[#0A2540] font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  {createInviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
-                  Gerar Link
-                </button>
-              </div>
+
+              {generatedInviteUrl ? (
+                /* Exibir link gerado */
+                <div className="space-y-4">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <p className="text-emerald-700 font-semibold text-sm">Link gerado com sucesso!</p>
+                    </div>
+                    <p className="text-[#5A667A] text-xs mb-3">Copie e envie este link ao vendedor. Válido por 7 dias.</p>
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2.5 flex items-center gap-2">
+                      <span className="text-[#0A2540] text-xs font-mono flex-1 break-all">{generatedInviteUrl}</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedInviteUrl);
+                          toast.success("Copiado!");
+                        }}
+                        className="flex-shrink-0 p-1.5 rounded-lg bg-[#00C1B8]/10 hover:bg-[#00C1B8]/20 transition-colors"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-[#00C1B8]" />
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setShowInviteModal(false); setInviteEmail(""); setGeneratedInviteUrl(null); }}
+                    className="w-full py-3 rounded-xl bg-[#00C1B8] text-white font-bold text-sm hover:bg-[#009E96] transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              ) : (
+                /* Formulário de geração */
+                <>
+                  <div className="mb-4">
+                    <label className="text-[#5A667A] text-sm font-medium block mb-1.5">
+                      Email do vendedor (opcional)
+                    </label>
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="vendedor@email.com"
+                      className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setShowInviteModal(false); setInviteEmail(""); setGeneratedInviteUrl(null); }}
+                      className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => createInviteMutation.mutate({ email: inviteEmail || undefined, expiresInDays: 7 })}
+                      disabled={createInviteMutation.isPending}
+                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+                    >
+                      {createInviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+                      Gerar Link
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
