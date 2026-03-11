@@ -11,7 +11,7 @@ import {
   ChevronRight, BarChart3, Clock, RefreshCw,
   AlertTriangle, CheckCircle2, XCircle, TrendingDown,
   Zap, Activity, ArrowUp, ArrowDown, Minus,
-  Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2,
+  Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2, MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -32,6 +32,9 @@ function LandingPagesTab() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newProcedure, setNewProcedure] = useState("crescimento-capilar");
+  const [newAddress, setNewAddress] = useState("");
+  const [newZipCode, setNewZipCode] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
   const baseUrl = window.location.origin;
   const utils = trpc.useUtils();
 
@@ -59,9 +62,28 @@ function LandingPagesTab() {
     onError: (err) => toast.error(err.message || "Erro ao atualizar status"),
   });
 
+  const fetchCep = async (cep: string) => {
+    const clean = cep.replace(/\D/g, "");
+    if (clean.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setNewAddress(`${data.logradouro ? data.logradouro + ", " : ""}${data.bairro ? data.bairro + ", " : ""}${data.localidade}/${data.uf}`);
+      } else {
+        toast.error("CEP não encontrado");
+      }
+    } catch {
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
   const createPage = () => {
     if (!newTitle.trim()) { toast.error("Dê um nome para a landing page"); return; }
-    createMutation.mutate({ title: newTitle, procedure: newProcedure });
+    createMutation.mutate({ title: newTitle, procedure: newProcedure, address: newAddress || undefined, zipCode: newZipCode || undefined });
   };
 
   const copyLink = (slug: string) => {
@@ -213,6 +235,37 @@ function LandingPagesTab() {
                   <option value="diagnostico">Diagnóstico Capilar Gratuito</option>
                 </select>
               </div>
+              {/* CEP + Endereço */}
+              <div>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">CEP da clínica</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={newZipCode}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 8);
+                      const masked = v.length > 5 ? v.slice(0,5) + "-" + v.slice(5) : v;
+                      setNewZipCode(masked);
+                      if (v.length === 8) fetchCep(v);
+                    }}
+                    placeholder="00000-000"
+                    className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all pr-10"
+                  />
+                  {cepLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3.5 text-[#00C1B8]" />}
+                  {!cepLoading && newZipCode.replace(/\D/g,"").length === 8 && <MapPin className="w-4 h-4 absolute right-3 top-3.5 text-[#00C1B8]" />}
+                </div>
+              </div>
+              <div>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Endereço completo</label>
+                <input
+                  type="text"
+                  value={newAddress}
+                  onChange={(e) => setNewAddress(e.target.value)}
+                  placeholder="Rua, número, bairro, cidade/UF"
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
+                />
+                <p className="text-[10px] text-[#A0AABB] mt-1">Preenchido automaticamente pelo CEP. Edite se necessitar.</p>
+              </div>
               {newTitle && (
                 <div className="bg-white rounded-xl p-3">
                   <p className="text-[#5A667A] text-xs mb-1">URL que será gerada:</p>
@@ -224,7 +277,7 @@ function LandingPagesTab() {
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => { setShowCreate(false); setNewTitle(""); }}
+                onClick={() => { setShowCreate(false); setNewTitle(""); setNewAddress(""); setNewZipCode(""); }}
                 className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
               >
                 Cancelar

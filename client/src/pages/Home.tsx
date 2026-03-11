@@ -43,15 +43,15 @@ export default function Home() {
         <div className="container text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
             <Zap className="w-3.5 h-3.5" />
-            Funil de captação com IA para clínicas capilares
+            15 dias grátis — sem cartão de crédito
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            Transforme visitantes em{" "}
-            <span className="text-gradient-gold">consultas agendadas</span>{" "}
+            Transforme visitantes em{"\ "}
+            <span className="text-gradient-gold">consultas agendadas</span>{"\ "}
             com IA
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Funil completo: chat conversacional, análise capilar por IA, visualização 3D do resultado e agendamento automático — tudo em um link para seus anúncios.
+            Funil completo com IA para clínicas capilares. Experimente grátis por 15 dias — sem cartão, sem compromisso. Configure em 5 minutos e comece a captar leads hoje.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
@@ -59,7 +59,7 @@ export default function Home() {
               onClick={() => navigate("/cadastro")}
               className="gradient-gold text-white border-0 text-base px-8 pulse-gold"
             >
-              Criar minha clínica grátis
+              Começar 15 dias grátis
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
             <Button
@@ -71,7 +71,7 @@ export default function Home() {
               Ver demo do funil
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-4">Plano gratuito com 50 leads/mês. Sem cartão de crédito.</p>
+          <p className="text-xs text-muted-foreground mt-4">Sem cartão de crédito. Cancele quando quiser.</p>
         </div>
       </section>
 
@@ -162,18 +162,19 @@ export default function Home() {
       {/* CTA Final */}
       <section className="py-20 px-4">
         <div className="container max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Pronto para começar?</h2>
+          <h2 className="text-3xl font-bold mb-4">15 dias grátis. Sem cartão. Sem risco.</h2>
           <p className="text-muted-foreground mb-8">
-            Cadastre sua clínica, gere seu link e comece a captar leads hoje mesmo.
+            Cadastre sua clínica agora e experimente o funil completo por 15 dias sem cobrar nada.
           </p>
           <Button
             size="lg"
             onClick={() => navigate("/cadastro")}
             className="gradient-gold text-white border-0 text-base px-10"
           >
-            Criar minha clínica grátis
+            Começar 15 dias grátis
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
+          <p className="text-xs text-muted-foreground mt-3">Sem cartão de crédito. Cancele quando quiser.</p>
         </div>
       </section>
 

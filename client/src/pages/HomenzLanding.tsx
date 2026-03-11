@@ -120,7 +120,7 @@ const PLANS = [
   {
     name: "Grátis",
     price: "R$ 0",
-    period: "/sempre",
+    period: "",
     desc: "Para começar a testar o sistema sem risco.",
     limit: "1 vendedor · 30 leads/mês",
     features: ["1 vendedor na equipe", "30 leads por mês", "Funil com IA básico", "Chat qualificador", "Dashboard da unidade", "Score de leads"],

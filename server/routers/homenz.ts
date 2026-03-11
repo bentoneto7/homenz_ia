@@ -569,6 +569,8 @@ export const homenzRouter = router({
       procedure: z.string().default('crescimento-capilar'),
       utmSource: z.string().default('meta'),
       utmMedium: z.string().default('cpc'),
+      address: z.string().optional(),
+      zipCode: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const franchiseId = ctx.homenzUser.franchise_id;
@@ -582,20 +584,23 @@ export const homenzRouter = router({
       const baseSlug = franchise.slug + '-' + input.procedure;
       const timestamp = Date.now().toString(36);
       const slug = `${baseSlug}-${timestamp}`;
+      const insertData: Record<string, unknown> = {
+        franchise_id: franchiseId,
+        slug,
+        title: input.title,
+        procedure: input.procedure,
+        city: franchise.city,
+        state: franchise.state,
+        utm_source: input.utmSource,
+        utm_medium: input.utmMedium,
+        utm_campaign: slug,
+        active: true,
+      };
+      if (input.address) insertData.address = input.address;
+      if (input.zipCode) insertData.zip_code = input.zipCode;
       const { data, error } = await supabaseAdmin
         .from('franchise_landing_pages')
-        .insert({
-          franchise_id: franchiseId,
-          slug,
-          title: input.title,
-          procedure: input.procedure,
-          city: franchise.city,
-          state: franchise.state,
-          utm_source: input.utmSource,
-          utm_medium: input.utmMedium,
-          utm_campaign: slug,
-          active: true,
-        })
+        .insert(insertData)
         .select()
         .single();
       if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });

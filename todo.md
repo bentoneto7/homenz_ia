@@ -532,3 +532,21 @@
 - [x] Remover "Sessões estimadas" do card de Potencial de Crescimento Capilar
 - [x] Prompt IA: gerar cabelo cheio e natural no "Depois" (não apenas densificar)
 - [x] Substituir mensagem de sessões por expectativa motivacional para agendar consulta
+
+## Auditoria + Melhorias (Mar 2026 — v23)
+- [x] Endereço da clínica na criação da landing page (com CEP auto-complete via ViaCEP) → salvo na clínica e exibido na captação do lead
+- [x] Home page: comunicação focada em "15 dias grátis" (remover textos secundários, destacar trial)
+- [x] Remover "/sempre" da precificação nos planos
+- [ ] Carrossel hero: contador branco visível + navegação funcional
+- [ ] Máscara no campo WhatsApp do cadastro: (xx) xxxxx-xxxx
+- [ ] Botão Voltar no FunnelChat para corrigir resposta anterior
+- [ ] FunnelPhotos: botão excluir/refazer foto após captura
+- [ ] Dashboard Franqueado: botão "Dar Feedback" com ação (modal ou toast)
+
+## Landing Page Personalizada por Franquia (Mar 2026 — v24)
+- [x] Landing page /l/:slug busca dados da franquia (nome, cidade, estado, endereço, bio, logo, WhatsApp, serviços)
+- [x] Procedure getLandingPageBySlug retorna dados completos da franquia associada
+- [x] ClinicLanding usa dados reais: nome da franquia no header, cidade no badge, endereço no rodapé, WhatsApp no CTA
+- [x] Bio da franquia substitui texto genérico na seção "Sobre"
+- [x] Logo da franquia exibida no header (fallback para logo Homenz)
+- [x] Serviços da franquia listados na seção de serviços
