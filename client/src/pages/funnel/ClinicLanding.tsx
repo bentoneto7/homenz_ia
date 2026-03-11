@@ -153,7 +153,7 @@ export default function ClinicLanding() {
           </h1>
 
           <p className="text-[#5A667A] text-base mb-6 leading-relaxed">
-            Nossa IA analisa suas fotos e gera uma <strong className="text-[#004A9D]">visualização 3D real</strong> do seu resultado. Grátis, em 5 minutos, sem compromisso.
+            Faça uma <strong className="text-[#004A9D]">avaliação capilar especializada</strong> em 3D real do seu resultado. Grátis, rápido e sem compromisso.
           </p>
 
           {/* Social proof counter */}

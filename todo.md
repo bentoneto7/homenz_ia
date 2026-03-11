@@ -550,3 +550,4 @@
 - [x] Bio da franquia substitui texto genérico na seção "Sobre"
 - [x] Logo da franquia exibida no header (fallback para logo Homenz)
 - [x] Serviços da franquia listados na seção de serviços
+- [x] FranchiseLanding: atualizar subtítulo para "Faça uma avaliação capilar especializada em 3D real do seu resultado. Grátis, rápido e sem compromisso."
