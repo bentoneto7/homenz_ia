@@ -44,7 +44,7 @@ interface LeadData {
 const CHAT_FLOW = [
   {
     id: "welcome",
-    text: "Olá! Sou a assistente virtual da **Homenz**. Vou te ajudar a dar o primeiro passo para recuperar seus cabelos. 🌱\n\nPrimeiro, me conta: qual é o principal problema que você está enfrentando com seu cabelo?",
+    text: "E aí! Sou o assistente da **Homenz**. Vou te ajudar a dar o primeiro passo para recuperar seus cabelos. 💪\n\nPrimeiro, me conta: qual é o principal problema que você está enfrentando com seu cabelo?",
     type: "options" as const,
     options: [
       "Queda excessiva de cabelo",

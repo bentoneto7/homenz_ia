@@ -662,14 +662,14 @@ export const appRouter = router({
             messages: [
               {
                 role: "system",
-                content: `Você é um especialista em tricologia e preenchimento capilar. Analise as fotos e retorne JSON com:
-- baldnessLevel: nível na escala Norwood (homens: I-VII) ou Ludwig (mulheres: I-III)
-- baldnessScale: "norwood" ou "ludwig"
+                content: `Você é um especialista em tricologia e preenchimento capilar masculino. O público atendido é EXCLUSIVAMENTE masculino. Analise as fotos e retorne JSON com:
+- baldnessLevel: nível na Escala de Norwood-Hamilton (I a VII), usada para alopecia androgenética masculina
+- baldnessScale: sempre "norwood"
 - affectedAreas: array com áreas afetadas (frontal, temporal, vertex, coronal, diffuse)
-- densityEstimate: estimativa de densidade (ex: "30% da densidade normal no vertex")
-- recommendedTreatment: tratamento recomendado em português
+- densityEstimate: estimativa de densidade capilar na área afetada (ex: "30% da densidade normal no vertex")
+- recommendedTreatment: protocolo de preenchimento capilar recomendado em português, com foco em micropigmentação ou fibras capilares
 - estimatedSessions: número de sessões estimadas (inteiro)
-- analysisText: laudo completo em português (2-3 parágrafos)
+- analysisText: laudo completo em português (2-3 parágrafos), com tom direto e masculino, sem referências femininas
 - leadScore: pontuação 0-100 baseada em: urgência da calvície (40pts), expectativa realista (30pts), histórico de tratamentos (30pts)
 - leadScoreBreakdown: objeto com { baldnessWeight, expectationWeight, historyWeight }
 - priority: "low", "medium", "high" ou "urgent"`,
@@ -679,7 +679,7 @@ export const appRouter = router({
                 content: [
                   {
                     type: "text" as const,
-                    text: `Paciente: ${lead.name}, gênero: ${lead.gender ?? "não informado"}, idade: ${lead.age ?? "não informada"}. Problema: ${lead.hairProblem ?? "queda capilar"}. Tipo: ${lead.hairLossType ?? "não informado"}. Há quanto tempo: ${lead.hairLossTime ?? "não informado"}. Tratamentos anteriores: ${lead.previousTreatments ?? "nenhum"}. Expectativas: ${lead.expectations ?? "não informadas"}.`,
+                    text: `Paciente masculino: ${lead.name}, idade: ${lead.age ?? "não informada"}. Problema relatado: ${lead.hairProblem ?? "queda capilar"}. Região afetada: ${lead.hairLossType ?? "não informada"}. Há quanto tempo: ${lead.hairLossTime ?? "não informado"}. Tratamentos anteriores: ${lead.previousTreatments ?? "nenhum"}. Expectativas: ${lead.expectations ?? "não informadas"}. Aplique obrigatoriamente a Escala de Norwood-Hamilton.`,
                   },
                   ...photoMessages,
                 ],
@@ -732,7 +732,7 @@ export const appRouter = router({
           let afterImageUrl = frontPhoto.s3Url;
           try {
             const imgResult = await generateImage({
-              prompt: `Realistic hair filling treatment result simulation. Natural-looking hair fibers covering the affected areas (${(analysis.affectedAreas as string[])?.join(", ")}). Same person, same face, professional clinical result, photorealistic, high quality.`,
+              prompt: `Realistic male hair filling treatment result simulation. Natural-looking hair fibers covering the affected areas (${(analysis.affectedAreas as string[])?.join(", ")}). Same man, same face, masculine appearance, professional clinical result, photorealistic, high quality.`,
               originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             afterImageUrl = imgResult.url ?? frontPhoto.s3Url;

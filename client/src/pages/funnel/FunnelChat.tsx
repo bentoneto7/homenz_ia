@@ -12,7 +12,6 @@ type Message = {
 };
 
 type Answers = {
-  gender?: string;
   age?: string;
   hairProblem?: string;
   hairLossType?: string;
@@ -29,16 +28,6 @@ const FLOW: {
   inputType?: "text" | "number";
   placeholder?: string;
 }[] = [
-  {
-    key: "gender",
-    question: "Boa! Antes de começar, me fala: qual é o seu gênero?",
-    subtext: "Usamos isso pra aplicar a escala de calvície certa no seu diagnóstico",
-    options: [
-      { label: "Masculino", value: "male", emoji: "👨" },
-      { label: "Feminino", value: "female", emoji: "👩" },
-      { label: "Prefiro não informar", value: "other", emoji: "🙂" },
-    ],
-  },
   {
     key: "age",
     question: "Qual é a sua idade?",
@@ -163,7 +152,7 @@ export default function FunnelChat() {
     setTimeout(() => {
       addMessage({ from: "bot", text: "E aí! 👋 Sou o assistente da Homenz." });
       setTimeout(() => {
-        showBotMessage("Vou fazer 7 perguntas rápidas pra montar seu diagnóstico capilar personalizado com IA. Menos de 2 minutos! 🚀", undefined, 600);
+        showBotMessage("Vou fazer 6 perguntas rápidas pra montar seu diagnóstico capilar personalizado com IA. Menos de 2 minutos! 🚀", undefined, 600);
         setTimeout(() => {
           showBotMessage(FLOW[0].question, FLOW[0].options, 800);
         }, 1800);
@@ -206,7 +195,7 @@ export default function FunnelChat() {
               const finalAnswers = { ...answers, [step.key]: value };
               saveChatAnswers.mutate({
                 sessionToken: token ?? "",
-                gender: finalAnswers.gender as "male" | "female" | "other" | undefined,
+                gender: "male" as "male" | "female" | "other" | undefined,
                 age: finalAnswers.age ? parseInt(finalAnswers.age) : undefined,
                 hairProblem: finalAnswers.hairProblem,
                 hairLossType: finalAnswers.hairLossType as "frontal" | "vertex" | "temporal" | "diffuse" | "total" | undefined,

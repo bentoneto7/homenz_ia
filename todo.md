@@ -469,3 +469,22 @@
 - [ ] E-mail de boas-vindas para o franqueado após ativação do trial (não há serviço de e-mail)
 - [ ] E-mail de confirmação para o lead após preencher o formulário
 - [ ] Notificação push para o vendedor quando lead é atribuído (atualmente só notifica o dono)
+
+## Funil 100% Masculino (Mar 2026 — v15)
+- [x] Remover pergunta de gênero do FunnelChat (fluxo /c/:slug)
+- [x] Fixar gender="male" ao salvar respostas do chat
+- [x] Atualizar prompt da IA: escala Norwood-Hamilton exclusiva (sem Ludwig)
+- [x] Atualizar prompt de geração de imagem para "male hair filling"
+- [x] Trocar "assistente virtual" por "assistente" (neutro/masculino) no FranchiseLanding
+- [x] Remover exibição de gênero feminino no LeadJourney (admin)
+- [x] Verificar HomenzLanding, VendedorDashboard, FranqueadoDashboard — sem referências femininas
+
+## Disclaimer IA (Mar 2026 — v15)
+- [ ] Remover opção "Feminino" do campo gender no schema (manter apenas male/other ou remover o campo)
+- [ ] FranchiseLanding: remover qualquer referência a "ela", "mulher", "feminino" nos textos do chat
+- [ ] FunnelChat: remover opção "Feminino" das perguntas de gênero
+- [ ] FunnelChat: ajustar copywriting para tom exclusivamente masculino
+- [ ] ClinicLanding: revisar textos para público masculino
+- [ ] HomenzLanding: verificar se há referências femininas nos textos
+- [ ] Routers/schema: remover enum "female" do campo gender nos leads
+- [ ] Disclaimer do sistema de análise de fotos capilares (documentar o que a IA considera)

@@ -424,7 +424,7 @@ export default function LeadJourney() {
                 {lead.gender && (
                   <div className="flex justify-between">
                     <span className="text-slate-500">Gênero</span>
-                    <span className="text-slate-300 capitalize">{lead.gender === "male" ? "Masculino" : lead.gender === "female" ? "Feminino" : "Outro"}</span>
+                    <span className="text-slate-300 capitalize">Masculino</span>
                   </div>
                 )}
                 {lead.age && (
