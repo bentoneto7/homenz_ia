@@ -1,0 +1,106 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'leads' AND TABLE_SCHEMA = DATABASE() ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'leads' AND TABLE_SCHEMA = DATABASE() ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "clinicId"
+    },
+    {
+      "COLUMN_NAME": "name"
+    },
+    {
+      "COLUMN_NAME": "phone"
+    },
+    {
+      "COLUMN_NAME": "email"
+    },
+    {
+      "COLUMN_NAME": "region"
+    },
+    {
+      "COLUMN_NAME": "utmSource"
+    },
+    {
+      "COLUMN_NAME": "utmMedium"
+    },
+    {
+      "COLUMN_NAME": "utmCampaign"
+    },
+    {
+      "COLUMN_NAME": "utmContent"
+    },
+    {
+      "COLUMN_NAME": "utmTerm"
+    },
+    {
+      "COLUMN_NAME": "referrer"
+    },
+    {
+      "COLUMN_NAME": "gender"
+    },
+    {
+      "COLUMN_NAME": "age"
+    },
+    {
+      "COLUMN_NAME": "hairProblem"
+    },
+    {
+      "COLUMN_NAME": "hairLossType"
+    },
+    {
+      "COLUMN_NAME": "hairLossTime"
+    },
+    {
+      "COLUMN_NAME": "previousTreatments"
+    },
+    {
+      "COLUMN_NAME": "expectations"
+    },
+    {
+      "COLUMN_NAME": "howDidYouHear"
+    },
+    {
+      "COLUMN_NAME": "chatAnswers"
+    },
+    {
+      "COLUMN_NAME": "funnelStep"
+    },
+    {
+      "COLUMN_NAME": "abandonedAt"
+    },
+    {
+      "COLUMN_NAME": "lastActivityAt"
+    },
+    {
+      "COLUMN_NAME": "leadScore"
+    },
+    {
+      "COLUMN_NAME": "leadScoreBreakdown"
+    },
+    {
+      "COLUMN_NAME": "priority"
+    },
+    {
+      "COLUMN_NAME": "sessionToken"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    },
+    {
+      "COLUMN_NAME": "lastAlertSentAt"
+    },
+    {
+      "COLUMN_NAME": "lastAlertTemperature"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nclinicId\nname\nphone\nemail\nregion\nutmSource\nutmMedium\nutmCampaign\nutmContent\nutmTerm\nreferrer\ngender\nage\nhairProblem\nhairLossType\nhairLossTime\npreviousTreatments\nexpectations\nhowDidYouHear\nchatAnswers\nfunnelStep\nabandonedAt\nlastActivityAt\nleadScore\nleadScoreBreakdown\npriority\nsessionToken\ncreatedAt\nupdatedAt\nlastAlertSentAt\nlastAlertTemperature\n",
+  "stderr": "",
+  "execution_time_ms": 376
+}

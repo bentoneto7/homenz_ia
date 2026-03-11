@@ -151,6 +151,7 @@ export default function FunnelPhotos() {
   const [cameraError, setCameraError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadPhoto = trpc.photos.upload.useMutation();
   const updateStep = trpc.leads.updateStep.useMutation();
@@ -226,6 +227,34 @@ export default function FunnelPhotos() {
 
   const handleFinalize = () => {
     triggerAI.mutate({ sessionToken: token ?? "" });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setUploading(true);
+      try {
+        await uploadPhoto.mutateAsync({
+          sessionToken: token ?? "",
+          photoType: currentStep.type,
+          base64: dataUrl,
+        });
+        setCapturedPhotos((prev) => ({ ...prev, [currentStep.type]: dataUrl }));
+        toast.success(`✅ Foto ${currentStep.label} enviada!`);
+        if (currentPhotoIndex < PHOTO_STEPS.length - 1) {
+          setCurrentPhotoIndex((i) => i + 1);
+        }
+      } catch {
+        toast.error("Erro ao salvar foto. Tente novamente.");
+      } finally {
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -528,11 +557,17 @@ export default function FunnelPhotos() {
 
             {/* Camera error */}
             {cameraError && (
-              <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-4">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-red-400">Câmera não disponível</p>
-                  <p className="text-xs text-[#5A667A] mt-0.5">Permita o acesso à câmera nas configurações do navegador e tente novamente.</p>
+              <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
+                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-700">Câmera não disponível</p>
+                  <p className="text-xs text-[#5A667A] mt-0.5">Permita o acesso à câmera ou envie uma foto da galeria.</p>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-2 text-xs text-[#004A9D] font-semibold underline"
+                  >
+                    📁 Enviar da galeria
+                  </button>
                 </div>
               </div>
             )}
@@ -603,6 +638,15 @@ export default function FunnelPhotos() {
               </div>
             )}
 
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+
             {/* Action button */}
             {allCaptured ? (
               <button
@@ -624,13 +668,26 @@ export default function FunnelPhotos() {
                 )}
               </button>
             ) : (
-              <button
-                onClick={openCamera}
-                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
-              >
-                <Camera className="w-5 h-5" />
-                Fotografar: {currentStep.label}
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={openCamera}
+                  disabled={uploading}
+                  className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                >
+                  {uploading ? (
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Enviando...</>
+                  ) : (
+                    <><Camera className="w-5 h-5" /> Fotografar: {currentStep.label}</>
+                  )}
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full bg-white border border-[#E2E8F0] text-[#5A667A] font-medium py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#F8FAFC] transition-colors disabled:opacity-60"
+                >
+                  📁 Enviar da galeria
+                </button>
+              </div>
             )}
 
             {/* Privacy note */}

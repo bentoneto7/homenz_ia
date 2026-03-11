@@ -508,3 +508,9 @@
 - [x] FunnelResult: aviso de calvície total exibido quando totalCalvicieAreas não está vazio
 - [x] FunnelResult: labels de score atualizados (🔥 Quente / 🟡 Morno / ❄️ Frio) com sublabel de follow-up
 - [x] FunnelResult: aviso de simulação ilustrativa adicionado (conformidade CFM)
+
+## Bug — Erro ao Enviar Fotos no FunnelPhotos (Mar 2026 — v18)
+- [x] Investigar e corrigir erro ao enviar fotos no fluxo /c/:slug/fotos
+- [x] Adicionado botão '📁 Enviar da galeria' como fallback quando câmera não está disponível
+- [x] Erro de câmera agora mostra link para galeria em vez de mensagem de erro simples
+- [ ] Gerar documento PDF do Protocolo de Análise Capilar Homenz v1.0
