@@ -748,7 +748,7 @@ Retorne JSON com os campos especificados.`,
           let afterImageUrl = frontPhoto.s3Url;
           try {
             const imgResult = await generateImage({
-              prompt: `Homenz Advanced hair treatment simulation — realistic before/after result for a male patient with ${analysis.baldnessLevel} alopecia (${(analysis.affectedAreas as string[])?.join(", ")} areas affected). Apply natural-looking micropigmentation and hair fibers to the affected areas. Same man, same face, same lighting. Masculine appearance. Professional clinical result. Photorealistic, high quality. ${(analysis.totalCalvicieAreas as string[])?.length > 0 ? `Note: areas with total baldness (${(analysis.totalCalvicieAreas as string[]).join(", ")}) have limited visual improvement — show realistic result.` : ""}`,
+              prompt: `Photo-realistic hair optimization result for the same man in the original photo. Subtly fill, densify and beautify the existing hair in the ${(analysis.affectedAreas as string[])?.join(", ")} areas. The hair should look naturally thicker, fuller and more uniform — as if the person has been using high-quality hair fibers and scalp micropigmentation treatment. Keep the same face, same angle, same lighting, same background. Do NOT change the face, skin tone, or overall appearance. Do NOT add a full head of hair if the person is mostly bald — show a realistic, subtle improvement appropriate for ${analysis.baldnessLevel} level. Masculine, professional, photorealistic. No dramatic transformation — just a natural, believable enhancement.`,
               originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             afterImageUrl = imgResult.url ?? frontPhoto.s3Url;

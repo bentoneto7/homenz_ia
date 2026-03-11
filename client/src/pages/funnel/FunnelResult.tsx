@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { ChevronRight, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
@@ -6,9 +6,6 @@ import { ChevronRight, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Calenda
 export default function FunnelResult() {
   const { slug, token } = useParams<{ slug: string; token: string }>();
   const [, navigate] = useLocation();
-  const [sliderPos, setSliderPos] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
-
   const { data: result, isLoading, error } = trpc.ai.getResultByToken.useQuery(
     { sessionToken: token ?? "" },
     {
@@ -34,7 +31,7 @@ export default function FunnelResult() {
       "Detectando pontos-chave do couro cabeludo",
       "Calculando nível e padrão de calvície",
       "Gerando visualização pós-preenchimento",
-      "Calculando seu score de qualificação",
+      "Calculando seu potencial de crescimento capilar",
     ];
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] flex flex-col items-center justify-center px-4">
@@ -95,19 +92,11 @@ export default function FunnelResult() {
   if (!result) return null;
 
   const score = result.leadScore ?? 0;
-  const scoreColor = score >= 70 ? "#10b981" : score >= 40 ? "#f59e0b" : "#ef4444";
-  const scoreLabel = score >= 70 ? "🔥 Lead Quente" : score >= 40 ? "🟡 Lead Morno" : "❄️ Lead Frio";
-  const scoreSubLabel = score >= 70 ? "Follow-up em até 2 horas" : score >= 40 ? "Nutrir e retornar em 24h" : "Sequência de nutrição de longo prazo";
-  const scoreBg = score >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : score >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-blue-500/10 border-blue-500/20";
+  const scoreColor = score >= 70 ? "#10b981" : score >= 40 ? "#f59e0b" : "#004A9D";
+  const scoreLabel = score >= 70 ? "🔥 Alto Potencial" : score >= 40 ? "🟡 Potencial Moderado" : "💧 Potencial Inicial";
+  const scoreSubLabel = score >= 70 ? "Excelente candidato ao tratamento" : score >= 40 ? "Bom candidato ao tratamento" : "Avaliação presencial recomendada";
+  const scoreBg = score >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : score >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-[#EBF4FF] border-[#004A9D]/20";
   const totalCalvicieAreas = (result as any).totalCalvicieAreas as string[] | undefined;
-
-  const handleSliderMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const pos = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
-    setSliderPos(pos);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540] pb-32">
@@ -136,68 +125,78 @@ export default function FunnelResult() {
           </div>
         )}
 
-        {/* Before/After slider */}
-        {result.beforeImageUrl && result.afterImageUrl ? (
+        {/* Before/After — duas fotos separadas */}
+        {(result.beforeImageUrl || result.afterImageUrl) && (
           <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
-            <div className="px-4 pt-4 pb-2">
-              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Antes × Depois — Arraste para comparar</p>
+            <div className="px-4 pt-4 pb-3">
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Antes e depois</p>
             </div>
-            <div
-              className="relative aspect-[4/3] cursor-ew-resize select-none"
-              onMouseDown={() => setIsDragging(true)}
-              onMouseUp={() => setIsDragging(false)}
-              onMouseLeave={() => setIsDragging(false)}
-              onMouseMove={handleSliderMove}
-              onTouchStart={() => setIsDragging(true)}
-              onTouchEnd={() => setIsDragging(false)}
-              onTouchMove={handleSliderMove}
-            >
-              {/* Before image (full) */}
-              <img src={result.beforeImageUrl} alt="Antes" className="absolute inset-0 w-full h-full object-cover" />
-              {/* After image (clipped) */}
-              <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}>
-                <img src={result.afterImageUrl} alt="Depois" className="absolute inset-0 w-full h-full object-cover" />
-              </div>
-              {/* Slider line */}
-              <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ left: `${sliderPos}%` }}>
-                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M5 8H11M5 8L3 6M5 8L3 10M11 8L13 6M11 8L13 10" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+            <div className="px-4 pb-4">
+              {result.beforeImageUrl && result.afterImageUrl ? (
+                <div className="flex items-center gap-2">
+                  {/* Foto Antes */}
+                  <div className="flex-1 relative">
+                    <div className="rounded-xl overflow-hidden aspect-[3/4] bg-[#F8FAFC]">
+                      <img src={result.beforeImageUrl} alt="Antes" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full font-semibold">Antes</div>
+                  </div>
+                  {/* Seta */}
+                  <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                    <div className="w-8 h-8 rounded-full bg-[#004A9D] flex items-center justify-center shadow-md">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 8h10M9 4l4 4-4 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                  {/* Foto Depois */}
+                  <div className="flex-1 relative">
+                    <div className="rounded-xl overflow-hidden aspect-[3/4] bg-[#F8FAFC] ring-2 ring-[#004A9D]/30">
+                      <img src={result.afterImageUrl} alt="Depois" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute bottom-2 right-2 bg-[#004A9D] text-white text-xs px-2 py-0.5 rounded-full font-semibold">Depois ✨</div>
+                  </div>
                 </div>
-              </div>
-              {/* Labels */}
-              <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded-full font-semibold">Antes</div>
-              <div className="absolute bottom-3 right-3 gradient-gold text-black text-xs px-2.5 py-1 rounded-full font-semibold">Depois ✨</div>
+              ) : result.afterImageUrl ? (
+                <div className="relative">
+                  <div className="rounded-xl overflow-hidden aspect-[4/3] bg-[#F8FAFC]">
+                    <img src={result.afterImageUrl} alt="Resultado" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-[#004A9D] text-white text-xs px-2 py-0.5 rounded-full font-semibold">Resultado ✨</div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="rounded-xl overflow-hidden aspect-[4/3] bg-[#F8FAFC]">
+                    <img src={result.beforeImageUrl ?? ''} alt="Antes" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full font-semibold">Antes</div>
+                </div>
+              )}
+              <p className="text-[10px] text-[#C0CADB] text-center mt-3">
+                ⚠️ Imagem simulada — não substitui avaliação clínica presencial
+              </p>
             </div>
           </div>
-        ) : result.afterImageUrl ? (
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
-            <div className="px-4 pt-4 pb-2">
-              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Resultado simulado</p>
-            </div>
-            <img src={result.afterImageUrl} alt="Resultado" className="w-full aspect-[4/3] object-cover" />
-            <div className="px-4 py-3">
-              <p className="text-xs text-[#5A667A] text-center">⚠️ Simulação ilustrativa gerada por IA. Não garante resultado idêntico. Cada caso é único.</p>
-            </div>
-          </div>
-        ) : null}
+        )}
 
-        {/* Score card */}
+        {/* Potencial de Crescimento Capilar card */}
         <div className={`border rounded-2xl p-5 ${scoreBg}`}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-1">Seu perfil capilar</p>
+              <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-1">Potencial de Crescimento Capilar</p>
               <h2 className="font-bold text-lg text-[#0A2540]">{scoreLabel}</h2>
               <p className="text-xs text-[#5A667A] mt-0.5">{scoreSubLabel}</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-black" style={{ color: scoreColor }}>{score}</div>
-              <div className="text-xs text-[#5A667A]">/ 100 pts</div>
+              <div className="flex justify-center gap-0.5 mt-1">
+                {[1,2,3,4,5].map((i) => (
+                  <Star key={i} className={`w-5 h-5 ${i <= Math.round(score / 20) ? "fill-current" : "text-[#C0CADB]"}`} style={{ color: i <= Math.round(score / 20) ? scoreColor : undefined }} />
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Score bar */}
+          {/* Progress bar */}
           <div className="h-2 bg-[#EBF4FF] rounded-full overflow-hidden mb-4">
             <div
               className="h-full rounded-full transition-all duration-1000"
@@ -206,25 +205,13 @@ export default function FunnelResult() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Escala</p>
-              <p className="text-xl font-black text-[#004A9D]">Norwood</p>
+            <div className="bg-white/60 rounded-xl p-3 text-center">
+              <p className="text-xs text-[#5A667A] mb-1">Classificação capilar</p>
+              <p className="text-sm font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
             </div>
-            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Nível Norwood</p>
-              <p className="text-xl font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
-            </div>
-            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
+            <div className="bg-white/60 rounded-xl p-3 text-center">
               <p className="text-xs text-[#5A667A] mb-1">Sessões estimadas</p>
-              <p className="text-xl font-black text-[#004A9D]">{result.estimatedSessions ?? "2-3"}</p>
-            </div>
-            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
-              <p className="text-xs text-[#5A667A] mb-1">Potencial</p>
-              <div className="flex justify-center gap-0.5 mt-1">
-                {[1,2,3,4,5].map((i) => (
-                  <Star key={i} className={`w-4 h-4 ${i <= Math.round(score / 20) ? "text-[#004A9D] fill-[#004A9D]" : "text-[#C0CADB]"}`} />
-                ))}
-              </div>
+              <p className="text-sm font-black text-[#004A9D]">{result.estimatedSessions ?? "2-3"}</p>
             </div>
           </div>
         </div>

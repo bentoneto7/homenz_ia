@@ -521,3 +521,8 @@
 - [x] Simplificar textos gerais: 'Avaliação Capilar' (sem 'com IA'), 'O que será avaliado' (sem 'IA analisa')
 - [x] FunnelResult: removido badge 'Análise personalizada por IA' do hero header
 - [x] FunnelResult: rodapé simplificado para 'Imagem simulada' (sem 'por IA')
+
+## UX FunnelResult — Linguagem e Fotos (Mar 2026 — v20)
+- [x] Score card: substituir "Lead Quente/Morno/Frio" por linguagem de potencial capilar para o cliente
+- [x] Fotos: duas fotos lado a lado (Antes/Depois) com seta entre elas, sem slider
+- [x] Prompt da IA: focar em otimizar/preencher o cabelo existente, mais denso e bonito
