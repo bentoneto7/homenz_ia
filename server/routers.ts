@@ -134,6 +134,9 @@ export const appRouter = router({
           services: clinic.services,
           workingHours: clinic.workingHours,
           whatsapp: clinic.whatsapp,
+          address: clinic.address,
+          zipCode: clinic.zipCode,
+          phone: clinic.phone,
         };
       }),
 
@@ -756,25 +759,29 @@ Retorne JSON com os campos especificados.`,
             console.warn("[AI] Image generation failed, using original:", imgErr);
           }
 
-          // Salvar resultado
-          await db.update(aiResults).set({
-            analysisText: analysis.analysisText,
-            baldnessLevel: analysis.baldnessLevel,
-            baldnessScale: analysis.baldnessScale,
-            affectedAreas: analysis.affectedAreas,
-            densityEstimate: analysis.densityEstimate,
-            beforeImageUrl: frontPhoto.s3Url,
-            afterImageUrl,
-            recommendedTreatment: analysis.recommendedTreatment,
-            estimatedSessions: analysis.estimatedSessions,
-            leadScore: analysis.leadScore,
-            leadScoreBreakdown: analysis.leadScoreBreakdown,
-            processingStatus: "done",
-          }).where(eq(aiResults.id, resultId));
+          // Salvar resultado — usar SQL raw para evitar bug do Drizzle com TiDB em updates com campos JSON
+          console.log(`[AI] Saving result for lead ${lead.id}, resultId ${resultId}`);
+          await db.execute(sql`
+            UPDATE ai_results SET
+              analysis_text = ${analysis.analysisText},
+              baldness_level = ${analysis.baldnessLevel},
+              baldness_scale = ${analysis.baldnessScale},
+              affected_areas = ${JSON.stringify(analysis.affectedAreas)},
+              density_estimate = ${analysis.densityEstimate},
+              before_image_url = ${frontPhoto.s3Url},
+              after_image_url = ${afterImageUrl},
+              recommended_treatment = ${analysis.recommendedTreatment},
+              estimated_sessions = ${Number(analysis.estimatedSessions)},
+              lead_score = ${Number(analysis.leadScore)},
+              lead_score_breakdown = ${JSON.stringify(analysis.leadScoreBreakdown)},
+              processing_status = 'done'
+            WHERE id = ${resultId}
+          `);
+          console.log(`[AI] ai_result ${resultId} saved successfully via raw SQL`);
 
           // Atualizar lead com score e prioridade
           await db.update(leads).set({
-            leadScore: analysis.leadScore,
+            leadScore: Number(analysis.leadScore),
             leadScoreBreakdown: analysis.leadScoreBreakdown,
             priority: analysis.priority as any,
             funnelStep: "ai_done",

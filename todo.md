@@ -557,3 +557,15 @@
 - [x] Máscara WhatsApp (xx) xxxxx-xxxx nos campos de telefone do cadastro, modal de landing page e chat do funil
 - [x] Botão "Voltar" no chat do funil (FranchiseLanding) para corrigir resposta anterior sem reiniciar
 - [x] Verificar e corrigir fluxo completo: foto → análise IA → resultado Antes/Depois
+
+## Auditoria Completa (Mar 11)
+- [x] Garantir que endereço da franquia aparece na landing page /l/:slug
+- [x] Garantir que endereço é salvo no cadastro da franquia (CadastroFranqueado + ClinicOnboarding)
+- [x] Disclaimer Antes/Depois: "Imagem sugerida — resultado aproximado, não é garantia"
+- [x] Testar fluxo completo: criar franquia Acre → landing page → lead → Supabase
+- [x] Verificar se leads caem corretamente no painel do vendedor (Supabase)
+- [x] Bug crítico: getLandingPage fazia join com colunas inexistentes (whatsapp, bio) no Supabase — corrigido
+- [x] Bug crítico: processamento de IA falhava no update do ai_result (Drizzle+TiDB) — corrigido com SQL raw
+- [x] Lead 60010 preso em ai_processing — corrigido manualmente
+- [x] Corrigir tipo da franquia no FranchiseLanding (remover whatsapp/bio inexistentes)
+- [x] Zero erros TypeScript após todas as correções

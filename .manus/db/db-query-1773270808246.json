@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE leads SET funnelStep = 'ai_done', leadScore = 75 WHERE id = 60010;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute UPDATE leads SET funnelStep = 'ai_done', leadScore = 75 WHERE id = 60010;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 373
+}

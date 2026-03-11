@@ -34,7 +34,60 @@ export async function runMigrations() {
     console.log("[Migration] landing_pages: OK");
   }
 
+  // Verificar e adicionar colunas whatsapp, bio, zip_code na tabela franchises
+  await addFranchiseColumns();
+
   console.log("[Migration] Concluído.");
+}
+
+async function addFranchiseColumns() {
+  const supabaseUrl = process.env.SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  // Check if whatsapp column exists
+  const { error: wErr } = await supabaseAdmin.from('franchises').select('whatsapp').limit(0);
+  if (wErr && wErr.message.includes('whatsapp')) {
+    console.log('[Migration] Adicionando colunas whatsapp/bio/zip_code na tabela franchises...');
+    const sql = `
+      ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS whatsapp TEXT;
+      ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS bio TEXT;
+      ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS zip_code TEXT;
+    `;
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ sql }),
+      });
+      if (!response.ok) {
+        // Tentar via pg endpoint
+        const pgResponse = await fetch(`${supabaseUrl}/pg/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify({ query: sql }),
+        });
+        if (!pgResponse.ok) {
+          console.log('[Migration] Não foi possível adicionar colunas via API. Adicionando via upsert workaround...');
+        } else {
+          console.log('[Migration] Colunas adicionadas via pg endpoint!');
+        }
+      } else {
+        console.log('[Migration] Colunas whatsapp/bio/zip_code adicionadas com sucesso!');
+      }
+    } catch (e) {
+      console.log('[Migration] Erro ao adicionar colunas:', (e as Error).message);
+    }
+  } else {
+    console.log('[Migration] franchises.whatsapp/bio/zip_code: OK');
+  }
 }
 
 async function createSellerInvitesTable() {

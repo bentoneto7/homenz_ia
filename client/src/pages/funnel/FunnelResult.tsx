@@ -173,7 +173,7 @@ export default function FunnelResult() {
                 </div>
               )}
               <p className="text-[10px] text-[#C0CADB] text-center mt-3">
-                ⚠️ Imagem simulada — não substitui avaliação clínica presencial
+                💡 Imagem sugerida com base no seu perfil — resultado aproximado, não é garantia. O resultado real pode variar conforme avaliação clínica presencial.
               </p>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function FunnelResult() {
             Consulta 100% gratuita e sem compromisso
           </p>
           <p className="text-[10px] text-[#C0CADB] text-center mt-1">
-            ⚠️ Imagem simulada — não substitui avaliação clínica presencial
+            💡 Imagem sugerida — resultado aproximado, não é garantia. Varia conforme avaliação presencial.
           </p>
         </div>
       </div>

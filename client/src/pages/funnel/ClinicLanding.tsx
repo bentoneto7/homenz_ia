@@ -341,6 +341,31 @@ export default function ClinicLanding() {
         </div>
       )}
 
+      {/* ── ENDEREÇO DA CLÍNICA ── */}
+      {(clinic.address || clinic.whatsapp || clinic.phone) && (
+        <div className="px-4 py-4 bg-white border-t border-[#E2E8F0]">
+          <div className="max-w-md mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {clinic.address && (
+              <div className="flex items-center gap-1.5 text-xs text-[#5A667A]">
+                <MapPin className="w-3.5 h-3.5 text-[#004A9D] shrink-0" />
+                <span>{clinic.address}{clinic.city ? ` — ${clinic.city}/${clinic.state}` : ''}</span>
+              </div>
+            )}
+            {(clinic.whatsapp || clinic.phone) && (
+              <a
+                href={`https://wa.me/55${(clinic.whatsapp || clinic.phone || '').replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-[#00C1B8] hover:underline"
+              >
+                <Phone className="w-3.5 h-3.5 shrink-0" />
+                <span>{clinic.whatsapp || clinic.phone}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── STICKY CTA (mobile) ── */}
       {!submitted && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/95 to-transparent sm:hidden z-50">

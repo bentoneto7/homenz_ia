@@ -29,7 +29,7 @@ export const distributionRouter = router({
           id, slug, title, procedure, city, state, active,
           total_views, total_leads, utm_source, utm_medium, utm_campaign,
           franchise_id,
-          franchises!inner(id, name, slug, city, state, phone, whatsapp, address, logo_url, bio)
+          franchises!inner(id, name, slug, city, state, phone, address, logo_url)
         `)
         .eq('slug', input.slug)
         .eq('active', true)

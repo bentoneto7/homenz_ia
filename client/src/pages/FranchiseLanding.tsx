@@ -22,7 +22,7 @@ const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dL
 
 // Helper para extrair dados da franquia do objeto aninhado
 function getFranchise(lp: { franchises?: unknown }) {
-  const f = lp.franchises as { name?: string; city?: string; state?: string; phone?: string; whatsapp?: string; address?: string; logo_url?: string; bio?: string } | null;
+  const f = lp.franchises as { name?: string; city?: string; state?: string; phone?: string; address?: string; logo_url?: string } | null;
   return f || {};
 }
 
@@ -117,9 +117,9 @@ export default function FranchiseLanding() {
   const franchise = landingPage ? getFranchise(landingPage) : {};
   const franchiseName = franchise.name || `Homenz ${landingPage?.city || ''}`;
   const franchiseLogo = franchise.logo_url || LOGO_URL;
-  const franchiseWhatsapp = franchise.whatsapp || franchise.phone || '';
+  const franchiseWhatsapp = franchise.phone || '';
   const franchiseAddress = franchise.address || '';
-  const franchiseBio = franchise.bio || '';
+  const franchiseBio = '';
 
   const submitLeadMutation = trpc.distribution.submitLead.useMutation();
 
