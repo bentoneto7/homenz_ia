@@ -207,8 +207,8 @@ export default function FranchiseLanding() {
   };
 
   const handlePhotoUpload = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Foto muito grande. Máximo 5MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Foto muito grande. Máximo 10MB.");
       return;
     }
 
@@ -217,28 +217,35 @@ export default function FranchiseLanding() {
     setPhotoPreview(preview);
 
     try {
-      // Upload via tRPC/S3
       const formData = new FormData();
       formData.append("file", file);
 
-      // Usar o endpoint de upload do servidor
       const response = await fetch("/api/upload-lead-photo", {
         method: "POST",
         body: formData,
       });
 
-      let photoUrl: string | undefined;
-      if (response.ok) {
-        const result = await response.json();
-        photoUrl = result.url;
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "Erro desconhecido");
+        console.error("[upload-lead-photo] Erro HTTP:", response.status, errText);
+        throw new Error(`Upload falhou: ${response.status}`);
       }
+
+      const result = await response.json();
+      const photoUrl: string | undefined = result.url;
 
       setIsUploading(false);
       advanceToNextStep("📸 Foto enviada", { photoUrl });
-    } catch {
+    } catch (err) {
+      console.error("[upload-lead-photo] Erro:", err);
       setIsUploading(false);
-      // Continuar sem foto se upload falhar
-      advanceToNextStep("📸 Foto enviada", {});
+      setPhotoPreview(null);
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: "bot",
+        text: "Não consegui enviar a foto. Tente novamente ou clique em \"Pular por agora\".",
+        type: "text",
+      }]);
     }
   };
 
