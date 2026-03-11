@@ -29,59 +29,32 @@ type LandingPage = {
   created_at: string;
 };
 
-function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
-  const [pages, setPages] = useState<LandingPage[]>([]);
-  const [loading, setLoading] = useState(true);
+function LandingPagesTab() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newProcedure, setNewProcedure] = useState("crescimento-capilar");
-  const [creating, setCreating] = useState(false);
   const baseUrl = window.location.origin;
+  const utils = trpc.useUtils();
 
-  const loadPages = async () => {
-    if (!franchiseId) { setLoading(false); return; }
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/trpc/distribution.getFranchiseLandingPages?input=${encodeURIComponent(JSON.stringify({ json: { franchiseId } }))}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
-      });
-      const json = await res.json();
-      if (json.result?.data) setPages(json.result.data);
-      else setPages([]);
-    } catch {
-      setPages([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const pagesQuery = trpc.homenz.getLandingPages.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
 
-  useEffect(() => { loadPages(); }, [franchiseId]);
+  const createMutation = trpc.homenz.createLandingPageForFranchisee.useMutation({
+    onSuccess: () => {
+      toast.success("Landing page criada!");
+      setShowCreate(false);
+      setNewTitle("");
+      utils.homenz.getLandingPages.invalidate();
+    },
+    onError: (err) => toast.error(err.message || "Erro ao criar landing page"),
+  });
 
-  const createPage = async () => {
+  const pages = pagesQuery.data ?? [];
+
+  const createPage = () => {
     if (!newTitle.trim()) { toast.error("Dê um nome para a landing page"); return; }
-    setCreating(true);
-    try {
-      const slug = newTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-      if (!franchiseId) { toast.error("ID da franquia não encontrado"); setCreating(false); return; }
-      const res = await fetch("/api/trpc/distribution.createLandingPage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("homenz_token")}` },
-        body: JSON.stringify({ json: { title: newTitle, procedure: newProcedure, franchiseId } }),
-      });
-      const json = await res.json();
-      if (json.result?.data) {
-        toast.success("Landing page criada!");
-        setShowCreate(false);
-        setNewTitle("");
-        loadPages();
-      } else {
-        toast.error("Erro ao criar landing page");
-      }
-    } catch {
-      toast.error("Erro ao criar landing page");
-    } finally {
-      setCreating(false);
-    }
+    createMutation.mutate({ title: newTitle, procedure: newProcedure });
   };
 
   const copyLink = (slug: string) => {
@@ -89,7 +62,7 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
     toast.success("Link copiado!");
   };
 
-  if (loading) return (
+  if (pagesQuery.isLoading) return (
     <div className="flex items-center justify-center h-40">
       <Loader2 className="w-6 h-6 text-[#00C1B8] animate-spin" />
     </div>
@@ -248,10 +221,10 @@ function LandingPagesTab({ franchiseId }: { franchiseId?: string }) {
               </button>
               <button
                 onClick={createPage}
-                disabled={creating}
+                disabled={createMutation.isPending}
                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-[#0A2540] font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Criar Landing Page
               </button>
             </div>
@@ -734,9 +707,18 @@ export default function FranchiseeDashboard() {
     () => routeToTab[locationPath as string] ?? "sellers",
     [locationPath]
   );
-  const [manualTab, setManualTab] = useState<"leads" | "sellers" | "funnel" | "landing" | "calendar" | null>(null);
-  const activeTab = manualTab ?? activeTabFromRoute;
-  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing" | "calendar") => setManualTab(tab);
+  // activeTab derivado 100% da rota — menu lateral e tabs inline sincronizados
+  const activeTab = activeTabFromRoute;
+  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing" | "calendar") => {
+    const tabToRoute: Record<string, string> = {
+      sellers: "/franqueado/vendedores",
+      leads: "/franqueado/leads",
+      calendar: "/franqueado/agendamentos",
+      funnel: "/franqueado/analytics",
+      landing: "/franqueado/landing-pages",
+    };
+    navigate(tabToRoute[tab] ?? "/franqueado");
+  };
 
   const statsQuery = trpc.homenz.franchiseeStats.useQuery(undefined, {
     enabled: isFranchisee || isOwner,
@@ -790,9 +772,19 @@ export default function FranchiseeDashboard() {
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-2xl font-black text-[#0A2540]">{franchise?.name ?? "Minha Franquia"}</h2>
-            <p className="text-[#5A667A] text-sm mt-1">
-              {franchise?.city}, {franchise?.state} · {sellers.length} vendedores
-            </p>
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              <p className="text-[#5A667A] text-sm">
+                {franchise?.city}, {franchise?.state}
+              </p>
+              {franchise?.plan && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#004A9D]">
+                  Plano {(franchise.plan as string).toUpperCase()}
+                </span>
+              )}
+              <span className="text-[#5A667A] text-sm">
+                · {sellers.length}/{(() => { const p = franchise?.plan as string | undefined; return p === 'pro' ? 10 : p === 'enterprise' || p === 'network' ? '∞' : 2; })()} vendedores
+              </span>
+            </div>
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
@@ -922,7 +914,7 @@ export default function FranchiseeDashboard() {
           )}
           {/* Tab: Landing Pages */}
           {activeTab === "landing" && (
-            <LandingPagesTab franchiseId={franchise?.id} />
+            <LandingPagesTab />
           )}
 
           {/* Tab: Funil */}

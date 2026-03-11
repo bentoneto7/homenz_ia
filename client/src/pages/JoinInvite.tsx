@@ -1,161 +1,272 @@
+/**
+ * JoinInvite — Página de aceite de convite para vendedores Homenz
+ * 
+ * Fluxo:
+ * 1. Usuário acessa /join?token=xxx
+ * 2. Sistema verifica o token via trpc.homenz.getInviteInfo
+ * 3. Usuário preenche nome, email e senha
+ * 4. Sistema cria a conta via trpc.homenz.registerWithInvite
+ * 5. Usuário é redirecionado para o painel do vendedor
+ */
+
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import { useLocation } from "wouter";
-import { Crown, Shield, Building2, UserCheck, CheckCircle, XCircle, RefreshCw, LogIn } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
-
-const ROLE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string; border: string }> = {
-  admin: { label: "Administrador", icon: <Shield className="w-8 h-8" />, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-200" },
-  franchisee: { label: "Franqueado", icon: <Building2 className="w-8 h-8" />, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
-  seller: { label: "Vendedor", icon: <UserCheck className="w-8 h-8" />, color: "text-teal-600", bg: "bg-teal-50", border: "border-teal-200" },
-};
+import {
+  Building2, UserCheck, CheckCircle, XCircle, RefreshCw,
+  Eye, EyeOff, Loader2, ArrowRight,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const ROLE_ROUTES: Record<string, string> = {
-  admin: "/rede",
   franchisee: "/franqueado",
   seller: "/vendedor",
+  owner: "/homenzadm",
 };
 
 export default function JoinInvite() {
   const [, navigate] = useLocation();
-  const { user, loading } = useAuth();
+  const { login } = useHomenzAuth();
   const [token, setToken] = useState<string | null>(null);
+
+  // Form state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [accepted, setAccepted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setToken(params.get("token"));
   }, []);
 
-  const { data: inviteInfo, isLoading: checkingInvite, error: inviteError } = trpc.invite.check.useQuery(
+  // Verificar convite
+  const { data: inviteInfo, isLoading: checkingInvite, error: inviteError } = trpc.homenz.getInviteInfo.useQuery(
     { token: token! },
-    { enabled: !!token }
+    { enabled: !!token, retry: false }
   );
 
-  const acceptInvite = trpc.invite.accept.useMutation({
+  // Registrar com convite
+  const registerMutation = trpc.homenz.registerWithInvite.useMutation({
     onSuccess: (data) => {
+      login(data.token, data.user as Parameters<typeof login>[1]);
       setAccepted(true);
+      toast.success(`Bem-vindo, ${data.user.name}!`);
       setTimeout(() => {
-        navigate(ROLE_ROUTES[data.role] || "/");
-        window.location.reload();
-      }, 2000);
+        navigate(ROLE_ROUTES[data.user.role] ?? "/");
+      }, 1500);
     },
-    onError: (err) => setError(err.message),
+    onError: (err) => {
+      toast.error(err.message || "Erro ao criar conta");
+    },
   });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !name || !email || !password) return;
+    registerMutation.mutate({ token, name, email, password, phone: phone || undefined });
+  };
+
+  // ── Estados de carregamento e erro ──────────────────────────────────────────
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] to-white flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
           <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Link inválido</h1>
-          <p className="text-gray-500 text-sm mb-6">Nenhum token de convite encontrado na URL.</p>
-          <Button variant="outline" className="w-full" onClick={() => navigate("/")}>Voltar ao início</Button>
+          <h1 className="text-xl font-bold text-[#0A2540] mb-2">Link inválido</h1>
+          <p className="text-[#5A667A] text-sm mb-6">Nenhum token de convite encontrado na URL.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+          >
+            Voltar ao início
+          </button>
         </div>
       </div>
     );
   }
 
-  if (checkingInvite || loading) {
+  if (checkingInvite) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] to-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00C1B8]" />
       </div>
     );
   }
 
   if (inviteError || !inviteInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] to-white flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
           <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Convite inválido</h1>
-          <p className="text-gray-500 text-sm mb-6">{inviteError?.message || "Este convite não existe, expirou ou já foi utilizado."}</p>
-          <Button variant="outline" className="w-full" onClick={() => navigate("/")}>Voltar ao início</Button>
+          <h1 className="text-xl font-bold text-[#0A2540] mb-2">Convite inválido</h1>
+          <p className="text-[#5A667A] text-sm mb-6">
+            {inviteError?.message || "Este convite não existe, expirou ou já foi utilizado."}
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+          >
+            Voltar ao início
+          </button>
         </div>
       </div>
     );
   }
-
-  const roleConfig = ROLE_CONFIG[inviteInfo.role] || ROLE_CONFIG.seller;
 
   if (accepted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] to-white flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
-          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Acesso concedido!</h1>
-          <p className="text-gray-500 text-sm mb-2">Você agora tem acesso como <strong>{roleConfig.label}</strong>.</p>
-          <p className="text-gray-400 text-xs">Redirecionando para o painel...</p>
+          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-[#0A2540] mb-2">Conta criada!</h1>
+          <p className="text-[#5A667A] text-sm mb-2">
+            Você agora tem acesso como <strong>{inviteInfo.role === "seller" ? "Vendedor" : "Franqueado"}</strong>.
+          </p>
+          <p className="text-[#A0AABB] text-xs">Redirecionando para o painel...</p>
         </div>
       </div>
     );
   }
 
+  const isSellerInvite = inviteInfo.role === "seller";
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#EBF4FF] flex items-center justify-center mx-auto mb-4">
-            <Crown className="w-7 h-7 text-[#00d4c8]" />
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <div className="w-12 h-12 rounded-xl bg-[#004A9D] flex items-center justify-center shadow-lg">
+            <span className="text-white font-black text-xl">H</span>
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Convite Homenz IA</h1>
-          <p className="text-gray-500 text-sm mt-1">Você foi convidado para acessar o sistema</p>
+          <div className="text-left">
+            <span className="text-[#004A9D] font-black text-2xl leading-none block">HOMENZ</span>
+            <span className="text-[#00C1B8] text-[10px] font-semibold tracking-widest uppercase leading-none">Plataforma</span>
+          </div>
         </div>
 
-        {/* Card do nível */}
-        <div className={`rounded-xl border-2 p-5 mb-6 text-center ${roleConfig.bg} ${roleConfig.border}`}>
-          <div className={`flex justify-center mb-3 ${roleConfig.color}`}>{roleConfig.icon}</div>
-          <p className="text-sm text-gray-500 mb-1">Nível de acesso</p>
-          <p className={`text-xl font-bold ${roleConfig.color}`}>{roleConfig.label}</p>
-          {inviteInfo.label && (
-            <p className="text-sm text-gray-500 mt-1">{inviteInfo.label}</p>
-          )}
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-600 text-center">
-            {error}
-          </div>
-        )}
-
-        {!user ? (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500 text-center">Faça login para aceitar o convite e acessar o painel.</p>
-            <Button
-              className="w-full bg-[#EBF4FF] hover:bg-[#DBEAFE] text-[#0A2540]"
-              onClick={() => {
-                sessionStorage.setItem("invite_token", token || "");
-              window.location.href = getLoginUrl();
-              }}
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Fazer login e aceitar convite
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500 text-center">
-              Logado como <strong>{user.name}</strong>. Clique para aceitar o convite.
+        {/* Card principal */}
+        <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-xl p-8">
+          {/* Header do convite */}
+          <div className="text-center mb-6">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+              isSellerInvite ? "bg-teal-50" : "bg-blue-50"
+            }`}>
+              {isSellerInvite
+                ? <UserCheck className="w-8 h-8 text-[#007A75]" />
+                : <Building2 className="w-8 h-8 text-[#004A9D]" />
+              }
+            </div>
+            <h1 className="text-2xl font-black text-[#0A2540] mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Você foi convidado!
+            </h1>
+            <p className="text-[#5A667A] text-sm">
+              Para se tornar <strong>{isSellerInvite ? "Vendedor" : "Franqueado"}</strong>
+              {inviteInfo.franchiseName && ` da franquia ${inviteInfo.franchiseName}`}
             </p>
-            <Button
-              className="w-full bg-[#EBF4FF] hover:bg-[#DBEAFE] text-[#0A2540]"
-              onClick={() => acceptInvite.mutate({ token: token! })}
-              disabled={acceptInvite.isPending}
-            >
-              {acceptInvite.isPending ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <CheckCircle className="w-4 h-4 mr-2" />
-              )}
-              Aceitar convite e acessar painel
-            </Button>
           </div>
-        )}
+
+          {/* Formulário de cadastro */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-[#5A667A] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+                Nome completo *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Seu nome completo"
+                required
+                className="w-full border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] text-sm placeholder-[#C0CADB] focus:outline-none focus:border-[#004A9D] focus:ring-2 focus:ring-[#004A9D]/10 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-[#5A667A] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+                Email *
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                required
+                className="w-full border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] text-sm placeholder-[#C0CADB] focus:outline-none focus:border-[#004A9D] focus:ring-2 focus:ring-[#004A9D]/10 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-[#5A667A] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+                WhatsApp
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(11) 99999-9999"
+                className="w-full border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] text-sm placeholder-[#C0CADB] focus:outline-none focus:border-[#004A9D] focus:ring-2 focus:ring-[#004A9D]/10 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-[#5A667A] text-xs font-semibold uppercase tracking-wider block mb-1.5">
+                Senha *
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  minLength={6}
+                  className="w-full border border-[#E2E8F0] rounded-xl px-4 py-3 pr-12 text-[#0A2540] text-sm placeholder-[#C0CADB] focus:outline-none focus:border-[#004A9D] focus:ring-2 focus:ring-[#004A9D]/10 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#C0CADB] hover:text-[#5A667A] transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={registerMutation.isPending || !name || !email || !password}
+              className="w-full bg-[#004A9D] hover:bg-[#003580] text-white font-bold py-3.5 rounded-full transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm mt-2 active:scale-[0.98] shadow-lg shadow-blue-200"
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Criando conta...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Criar conta e acessar
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-center text-[#A0AABB] text-xs mt-4">
+            Já tem uma conta?{" "}
+            <button
+              onClick={() => navigate("/login")}
+              className="text-[#004A9D] font-semibold hover:underline"
+            >
+              Fazer login
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

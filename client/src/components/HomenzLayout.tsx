@@ -16,11 +16,11 @@ interface NavItem {
 
 const NAV_BY_ROLE: Record<string, NavItem[]> = {
   owner: [
-    { label: "Visão Geral", href: "/rede", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { label: "Franquias", href: "/rede/franquias", icon: <Building2 className="w-4 h-4" /> },
-    { label: "Vendedores", href: "/rede/vendedores", icon: <Users className="w-4 h-4" /> },
-    { label: "Analytics", href: "/rede/analytics", icon: <BarChart3 className="w-4 h-4" /> },
-    { label: "Configurações", href: "/rede/configuracoes", icon: <Settings className="w-4 h-4" /> },
+    { label: "Visão Geral", href: "/homenzadm", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { label: "Franquias", href: "/homenzadm/franquias", icon: <Building2 className="w-4 h-4" /> },
+    { label: "Vendedores", href: "/homenzadm/vendedores", icon: <Users className="w-4 h-4" /> },
+    { label: "Analytics", href: "/homenzadm/analytics", icon: <BarChart3 className="w-4 h-4" /> },
+    { label: "Configurações", href: "/homenzadm/configuracoes", icon: <Settings className="w-4 h-4" /> },
   ],
   franchisee: [
     { label: "Dashboard", href: "/franqueado", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -43,6 +43,9 @@ const ROLE_LABELS: Record<string, { label: string; color: string; bg: string }> 
   franchisee: { label: "Franqueado", color: "text-[#004A9D]", bg: "bg-blue-50" },
   seller: { label: "Vendedor", color: "text-[#007A75]", bg: "bg-teal-50" },
 };
+
+// Root paths that require exact match (not startsWith)
+const ROOT_PATHS = ["/homenzadm", "/franqueado", "/vendedor"];
 
 interface SidebarContentProps {
   navItems: NavItem[];
@@ -97,9 +100,8 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           // Verificar se é a rota ativa: exata para raiz, startsWith para sub-rotas
-          const rootPaths = ["/rede", "/franqueado", "/vendedor"];
           const isActive = location === item.href ||
-            (!rootPaths.includes(item.href) && location.startsWith(item.href));
+            (!ROOT_PATHS.includes(item.href) && location.startsWith(item.href));
 
           return (
             <Link key={item.href} href={item.href} onClick={onClose}>

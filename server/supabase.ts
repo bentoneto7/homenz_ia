@@ -101,12 +101,11 @@ export async function loginUser(email: string, password: string): Promise<{
   user: Profile;
   token: string;
 } | null> {
-  // Buscar usuário pelo email
+  // Buscar usuário pelo email (inclui inativos para franqueados aguardando pagamento)
   const { data: user, error } = await supabaseAdmin
     .from("profiles")
     .select("*")
     .eq("email", email.toLowerCase().trim())
-    .eq("active", true)
     .single();
 
   if (error || !user) return null;
@@ -142,11 +141,11 @@ export async function verifyToken(token: string): Promise<Profile | null> {
       franchiseId?: string;
     };
 
+    // Buscar perfil sem filtrar por active (franqueados inativos ainda podem ter token)
     const { data: user, error } = await supabaseAdmin
       .from("profiles")
       .select("id, name, email, role, phone, avatar_url, franchise_id, active, created_at, updated_at")
       .eq("id", payload.userId)
-      .eq("active", true)
       .single();
 
     if (error || !user) return null;
@@ -310,10 +309,10 @@ export async function createInvite(data: {
 }
 
 export async function getNetworkStats() {
+  // Retorna todas as franquias (ativas e inativas) para o dono da rede
   const { data: franchises } = await supabaseAdmin
     .from("franchises")
-    .select("*")
-    .eq("active", true);
+    .select("*");
 
   const { data: leads } = await supabaseAdmin
     .from("leads")

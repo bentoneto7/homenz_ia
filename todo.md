@@ -364,3 +364,82 @@
 - [x] FranchiseeDashboard: legenda de métricas com bg-white/[0.02] + border-white/6 — corrigido para bg-[#F8FAFC]
 - [x] FranchiseeDashboard: iniciais do lead com text-white sobre fundo claro — corrigido para text-[#004A9D]
 - [x] FranchiseeDashboard: TeamHealthPanel com bg-white/[0.03] — corrigido para bg-[#F8FAFC]
+
+## Agendamentos Demo + Bug tRPC (Março 2026 — v8)
+
+- [ ] Inserir agendamentos demo no banco para o acesso de demonstração (franqueado/vendedor)
+- [ ] Corrigir erro tRPC "Unexpected token '<'" na página /login (resposta HTML ao invés de JSON)
+
+## Dados Demo + Bugs (Março 2026 — v8)
+
+- [ ] Corrigir erro tRPC "Unexpected token '<'" na página /login (resposta HTML ao invés de JSON)
+- [ ] Corrigir bug de criação de landing page no painel do franqueado demo
+- [ ] Inserir agendamentos demo no banco (vários status: pendente, confirmado, realizado, cancelado)
+- [ ] Inserir landing page demo já criada para a franquia demo
+- [ ] Garantir que leads demo aparecem no painel do franqueado/vendedor
+
+## Correções Visuais Funil (Março 2026 — v9)
+
+- [ ] FunnelChat: fundo escuro (#0a0a0a) com texto invisível nas bolhas — converter para tema claro Homenz
+- [ ] FunnelChat: bolhas do bot com texto branco sobre fundo branco — corrigir para text-[#0A2540]
+- [ ] FunnelChat: opções de resposta com texto invisível — corrigir cores
+- [ ] Verificar demais páginas do funil (FunnelPhotos, FunnelResult, FunnelSchedule) por tema escuro
+
+## Stripe + Correções (Março 2026 — v10)
+- [ ] Corrigir endpoints getLandingPages e createLandingPage (migrar para franchiseeProcedure Homenz)
+- [ ] Atualizar LandingPagesTab para usar trpc.homenz.getLandingPages/createLandingPage
+- [ ] Adicionar Stripe ao projeto (webdev_add_feature)
+- [ ] Criar tabela subscriptions no banco Supabase
+- [ ] Criar router stripe com checkout session e webhook
+- [ ] Criar página de planos (/planos) com cards de assinatura
+- [ ] Integrar botão "Assinar" na HomenzLanding e no painel do franqueado
+- [ ] Webhook Stripe para ativar plano após pagamento confirmado
+
+## Bugs Menu Lateral (Março 2026 — v10)
+- [ ] FranchiseeDashboard: menu lateral não navega entre abas (clique não funciona)
+- [ ] FranchiseeDashboard: menu lateral não associado à sessão (não reflete aba ativa)
+- [ ] LandingPagesTab: migrar para trpc.homenz.getLandingPages/createLandingPageForFranchisee
+
+## Correção Visual FunnelChat — Tema Claro (Março 2026 — v11)
+- [ ] FunnelChat: fundo escuro #0d1425 ainda presente — corrigir para tema claro Homenz (branco/azul-claro, sem sobreposição de cores)
+
+## Cadastro Próprio via Supabase (Março 2026 — v12)
+- [ ] Remover OAuth Manus da rota /cadastro
+- [ ] Criar endpoint homenz.register com campos: nome, email, senha, whatsapp, endereço, instagram
+- [ ] Adicionar colunas whatsapp, address, instagram_handle na tabela profiles do Supabase
+- [ ] Criar página /cadastro com formulário multi-step (dados pessoais + dados da clínica)
+- [ ] Salvar dados no Supabase profiles após cadastro
+- [ ] Redirecionar para /login após cadastro bem-sucedido com toast de confirmação
+- [ ] Adicionar link "Cadastre-se" na página de login
+
+## Modelo de Negócio Revisado (Mar 2026)
+- [x] Migrar colunas Supabase: instagram_handle, address, stripe_customer_id, plan_id em profiles
+- [x] Endpoint registerFranchisee: cria franquia + perfil franqueado (inativo até pagamento)
+- [x] Página /cadastro: formulário completo (nome, email, senha, whatsapp, instagram, endereço, nome da clínica, cidade, estado)
+- [x] Franqueado convida vendedores via link (já existe sistema de convites)
+- [x] Único ADM via /homenzadm (já implementado)
+- [x] Webhook Stripe /api/stripe/webhook: ativar plano após checkout.session.completed
+- [x] stripe.ts: createCheckout aceita email para novos cadastros sem login
+- [x] Página /planos: cards Starter/Pro/Network com CTA "Começar 15 dias grátis"
+- [x] Limitar vendedores por plano: starter=2, pro=10, network=ilimitado
+
+## Fluxo Cadastro → Pagamento → Acesso
+- [x] Campo `active` em profiles: false no cadastro, true após pagamento Stripe
+- [x] registerFranchisee cria conta com active=false e redireciona para /planos?email=...
+- [x] Página /planos: exibe planos e botão "Assinar" chama createCheckout com email pré-preenchido
+- [x] Webhook Stripe checkout.session.completed: ativa profile (active=true) e atualiza plan_id
+- [x] ProtectedRoute: se role=franchisee e active=false → redireciona para /aguardando-pagamento
+- [x] Página /aguardando-pagamento: instrução para completar o pagamento + link para /planos
+- [x] Login: redireciona para /aguardando-pagamento se active=false
+
+## Auditoria e Correções (Mar 2026 — v13)
+- [x] JoinInvite: migrar para sistema Homenz (trpc.homenz.getInviteInfo + registerWithInvite)
+- [x] leadDistribution.ts: corrigir full_name → name na query de vendedores
+- [x] distribution.ts: corrigir full_name → name
+- [x] supabase.ts: loginUser e verifyToken permitem usuários inativos (para redirecionamento)
+- [x] getNetworkStats: retorna todas as franquias (ativas e inativas) para o dono da rede
+- [x] NetworkDashboardSupabase: badge de plano e status (ativa/inativa) em cada franquia
+- [x] stripeWebhook.ts: PLAN_MAP corrigido (starter→starter, pro→pro, network→network)
+- [x] createSellerInvite: verificação de limite de vendedores por plano implementada
+- [x] FranchiseeDashboard: badge de plano e contador de vendedores (x/limite)
+- [x] Testes Vitest: 33 testes passando (21 novos + 12 existentes)

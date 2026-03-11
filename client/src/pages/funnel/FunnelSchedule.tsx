@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -109,21 +109,28 @@ export default function FunnelSchedule() {
 
   const selectedDayNum = selectedDateStr ? parseInt(selectedDateStr.split("-")[2]!) : null;
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540] pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3 shadow-sm">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           {step !== "calendar" && (
             <button
               onClick={() => step === "time" ? setStep("calendar") : setStep("time")}
-              className="w-8 h-8 rounded-full bg-[#EBF4FF] flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="w-8 h-8 rounded-full bg-[#EBF4FF] flex items-center justify-center hover:bg-[#DBEAFE] transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
           )}
           <div className="flex-1">
-            <p className="font-bold text-sm">Agendar Consulta Gratuita</p>
+            <p className="font-bold text-sm text-[#0A2540]">Agendar Consulta Gratuita</p>
             <p className="text-xs text-[#5A667A]">
               {step === "calendar" && "Escolha o melhor dia"}
               {step === "time" && formattedDate}
@@ -136,9 +143,9 @@ export default function FunnelSchedule() {
               <div
                 key={s}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  step === s ? "w-6 bg-[#D4A843]" :
-                  (["calendar","time","confirm"].indexOf(step) > i) ? "w-3 bg-[#D4A843]/50" :
-                  "w-3 bg-white/20"
+                  step === s ? "w-6 bg-[#004A9D]" :
+                  (["calendar","time","confirm"].indexOf(step) > i) ? "w-3 bg-[#004A9D]/40" :
+                  "w-3 bg-[#E2E8F0]"
                 }`}
               />
             ))}
@@ -152,7 +159,7 @@ export default function FunnelSchedule() {
         {step === "calendar" && (
           <>
             <div className="text-center space-y-1 pb-2">
-              <div className="inline-flex items-center gap-2 bg-[#D4A843]/10 border border-[#D4A843]/20 rounded-full px-4 py-1.5 text-[#D4A843] text-xs font-semibold">
+              <div className="inline-flex items-center gap-2 bg-[#EBF4FF] border border-[#004A9D]/20 rounded-full px-4 py-1.5 text-[#004A9D] text-xs font-semibold">
                 <Calendar className="w-3.5 h-3.5" />
                 Consulta 100% gratuita · Uberaba/MG
               </div>
@@ -194,17 +201,17 @@ export default function FunnelSchedule() {
                       onClick={() => handleDaySelect(day)}
                       className={`aspect-square rounded-lg text-sm font-medium transition-all relative ${
                         selected
-                          ? "gradient-gold text-black font-bold shadow-[0_0_12px_rgba(212,168,67,0.4)]"
+                          ? "bg-[#004A9D] text-white font-bold shadow-[0_0_12px_rgba(0,74,157,0.3)]"
                           : disabled
-                          ? "text-white/15 cursor-not-allowed"
+                          ? "text-[#C0CADB] cursor-not-allowed"
                           : isToday
-                          ? "bg-[#EBF4FF] text-white border border-[#D4A843]/40"
-                          : "hover:bg-[#EBF4FF] text-white/70 hover:text-[#0A2540]"
+                          ? "bg-[#EBF4FF] text-[#004A9D] border border-[#004A9D]/40 font-bold"
+                          : "hover:bg-[#EBF4FF] text-[#374151] hover:text-[#0A2540]"
                       }`}
                     >
                       {day}
                       {isToday && !selected && (
-                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#D4A843]" />
+                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#004A9D]" />
                       )}
                     </button>
                   );
@@ -214,8 +221,8 @@ export default function FunnelSchedule() {
 
             {/* Legenda */}
             <div className="flex items-center justify-center gap-5 text-xs text-[#5A667A]">
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded gradient-gold" /><span>Selecionado</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded border border-[#D4A843]/40 bg-[#EBF4FF]" /><span>Hoje</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#004A9D]" /><span>Selecionado</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded border border-[#004A9D]/40 bg-[#EBF4FF]" /><span>Hoje</span></div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#EBF4FF]" /><span>Indisponível</span></div>
             </div>
 
@@ -240,12 +247,12 @@ export default function FunnelSchedule() {
           <>
             <div className="text-center space-y-1">
               <p className="text-[#5A667A] text-sm">Horários disponíveis para</p>
-              <p className="font-bold text-base text-[#D4A843]">{formattedDate}</p>
+              <p className="font-bold text-base text-[#004A9D]">{formattedDate}</p>
             </div>
 
             {loadingSlots && (
               <div className="flex flex-col items-center gap-3 py-12">
-                <div className="w-10 h-10 border-2 border-[#D4A843]/30 border-t-[#D4A843] rounded-full animate-spin" />
+                <div className="w-10 h-10 border-2 border-[#004A9D]/30 border-t-[#004A9D] rounded-full animate-spin" />
                 <p className="text-[#5A667A] text-sm">Verificando disponibilidade...</p>
               </div>
             )}
@@ -255,7 +262,7 @@ export default function FunnelSchedule() {
                 <p className="text-2xl mb-2">🚫</p>
                 <p className="font-semibold text-red-400">Data indisponível</p>
                 <p className="text-sm text-[#5A667A] mt-1">{slotsData?.reason ?? "A clínica não atende neste dia."}</p>
-                <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#D4A843] underline">
+                <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#004A9D] underline">
                   Escolher outra data
                 </button>
               </div>
@@ -266,7 +273,7 @@ export default function FunnelSchedule() {
                 <p className="text-2xl mb-2">📅</p>
                 <p className="font-semibold">Sem horários disponíveis</p>
                 <p className="text-sm text-[#5A667A] mt-1">Todos os horários deste dia já foram reservados.</p>
-                <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#D4A843] underline">
+                <button onClick={() => setStep("calendar")} className="mt-4 text-sm text-[#004A9D] underline">
                   Escolher outra data
                 </button>
               </div>
@@ -288,8 +295,8 @@ export default function FunnelSchedule() {
                         !slot.available
                           ? "border-[#E2E8F0] text-[#C0CADB] cursor-not-allowed line-through"
                           : selectedSlot?.time === slot.time
-                          ? "gradient-gold text-black border-transparent shadow-[0_0_10px_rgba(212,168,67,0.3)]"
-                          : "border-[#E2E8F0] hover:border-[#D4A843]/40 text-white/70 hover:text-white bg-[#F8FAFC]"
+                          ? "bg-[#004A9D] text-white border-transparent shadow-[0_0_10px_rgba(0,74,157,0.2)]"
+                          : "border-[#E2E8F0] hover:border-[#004A9D]/40 text-[#374151] hover:text-[#0A2540] bg-[#F8FAFC]"
                       }`}
                     >
                       {slot.time}
@@ -324,23 +331,23 @@ export default function FunnelSchedule() {
         {step === "confirm" && (
           <>
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-2xl bg-[#D4A843]/10 border border-[#D4A843]/20 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 text-[#D4A843]" />
+              <div className="w-16 h-16 rounded-2xl bg-[#EBF4FF] border border-[#004A9D]/20 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-8 h-8 text-[#004A9D]" />
               </div>
               <h2 className="text-xl font-bold">Confirmar agendamento</h2>
               <p className="text-[#5A667A] text-sm">Revise os detalhes antes de confirmar</p>
             </div>
 
             {/* Resumo */}
-            <div className="bg-gradient-to-br from-[#D4A843]/10 to-[#D4A843]/5 border border-[#D4A843]/20 rounded-2xl p-5 space-y-4">
+            <div className="bg-gradient-to-br from-[#EBF4FF] to-[#F0FDF9] border border-[#004A9D]/15 rounded-2xl p-5 space-y-4">
               {[
-                { icon: <Calendar className="w-5 h-5 text-[#D4A843]" />, label: "Data", value: formattedDate },
-                { icon: <Clock className="w-5 h-5 text-[#D4A843]" />, label: "Horário", value: selectedSlot?.time },
-                { icon: <Sparkles className="w-5 h-5 text-[#D4A843]" />, label: "Tipo", value: "Avaliação Capilar Gratuita" },
-                ...(clinic ? [{ icon: <Shield className="w-5 h-5 text-[#D4A843]" />, label: "Clínica", value: clinic.name }] : []),
+                { icon: <Calendar className="w-5 h-5 text-[#004A9D]" />, label: "Data", value: formattedDate },
+                { icon: <Clock className="w-5 h-5 text-[#004A9D]" />, label: "Horário", value: selectedSlot?.time },
+                { icon: <Sparkles className="w-5 h-5 text-[#004A9D]" />, label: "Tipo", value: "Avaliação Capilar Gratuita" },
+                ...(clinic ? [{ icon: <Shield className="w-5 h-5 text-[#004A9D]" />, label: "Clínica", value: clinic.name }] : []),
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#EBF4FF] flex items-center justify-center flex-shrink-0">
                     {item.icon}
                   </div>
                   <div>
@@ -353,7 +360,7 @@ export default function FunnelSchedule() {
 
             {/* Aviso */}
             <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 text-sm text-[#5A667A]">
-              <p className="font-medium text-white/80 mb-1">⚠️ Importante</p>
+              <p className="font-medium text-[#0A2540] mb-1">⚠️ Importante</p>
               <p>Compareça com 10 minutos de antecedência. Em caso de imprevisto, entre em contato com a clínica para reagendar.</p>
             </div>
 
@@ -380,12 +387,12 @@ export default function FunnelSchedule() {
 
       {/* Fixed CTA */}
       {(step === "calendar" && selectedDateStr) || step === "time" || step === "confirm" ? (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4 shadow-[0_-4px_16px_rgba(0,74,157,0.06)]">
           <div className="max-w-lg mx-auto">
             {step === "calendar" && selectedDateStr && (
               <button
                 onClick={() => setStep("time")}
-                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2"
+                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
               >
                 Ver horários disponíveis <ChevronRight className="w-5 h-5" />
               </button>
@@ -394,7 +401,7 @@ export default function FunnelSchedule() {
               <button
                 onClick={handleConfirm}
                 disabled={createAppointment.isPending}
-                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity hover:opacity-90"
+                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
               >
                 {createAppointment.isPending ? (
                   <>

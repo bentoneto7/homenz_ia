@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { ChevronRight, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
@@ -30,18 +30,18 @@ export default function FunnelResult() {
       "Calculando seu score de qualificação",
     ];
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] flex flex-col items-center justify-center px-4">
         <div className="text-center max-w-sm w-full">
           {/* Animated orb */}
           <div className="relative w-24 h-24 mx-auto mb-8">
-            <div className="absolute inset-0 rounded-full gradient-gold opacity-20 animate-ping" />
-            <div className="absolute inset-2 rounded-full gradient-gold opacity-40 animate-pulse" />
-            <div className="relative w-24 h-24 rounded-full gradient-gold flex items-center justify-center">
-              <Sparkles className="w-10 h-10 text-black animate-spin" style={{ animationDuration: "3s" }} />
+            <div className="absolute inset-0 rounded-full bg-[#004A9D] opacity-20 animate-ping" />
+            <div className="absolute inset-2 rounded-full bg-[#004A9D] opacity-40 animate-pulse" />
+            <div className="relative w-24 h-24 rounded-full bg-[#004A9D] flex items-center justify-center">
+              <Sparkles className="w-10 h-10 text-white animate-spin" style={{ animationDuration: "3s" }} />
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mb-2">Analisando suas fotos...</h2>
+          <h2 className="text-2xl font-bold text-[#0A2540] mb-2">Analisando suas fotos...</h2>
           <p className="text-[#5A667A] text-sm mb-8">
             Nossa IA está processando suas imagens e gerando a visualização personalizada do resultado.
           </p>
@@ -50,7 +50,7 @@ export default function FunnelResult() {
             {steps.map((step, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
                 <div
-                  className="w-2 h-2 rounded-full bg-[#D4A843] flex-shrink-0"
+                  className="w-2 h-2 rounded-full bg-[#004A9D] flex-shrink-0"
                   style={{ animation: `pulse 1.5s ease-in-out ${i * 0.4}s infinite` }}
                 />
                 <span className="text-[#5A667A]">{step}</span>
@@ -67,16 +67,16 @@ export default function FunnelResult() {
   // Error state
   if (error || result?.processingStatus === "error") {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <AlertCircle className="w-14 h-14 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Erro no processamento</h2>
+          <h2 className="text-xl font-bold text-[#0A2540] mb-2">Erro no processamento</h2>
           <p className="text-[#5A667A] text-sm mb-6">
             Não foi possível processar suas fotos. Por favor, tente novamente com fotos mais nítidas.
           </p>
           <button
             onClick={() => navigate(`/c/${slug}/fotos/${token}`)}
-            className="bg-[#EBF4FF] border border-white/20 text-white px-6 py-3 rounded-xl text-sm hover:bg-white/15 transition-colors"
+            className="bg-[#004A9D] text-white px-6 py-3 rounded-xl text-sm hover:bg-[#003d85] transition-colors"
           >
             Tentar novamente
           </button>
@@ -100,17 +100,24 @@ export default function FunnelResult() {
     setSliderPos(pos);
   };
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540] pb-32">
       {/* Hero header */}
       <div className="relative px-4 pt-10 pb-16 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#D4A843]/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#004A9D]/5 to-transparent pointer-events-none" />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4A843]/10 border border-[#D4A843]/20 text-[#D4A843] text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EBF4FF] border border-[#004A9D]/20 text-[#004A9D] text-xs font-semibold mb-4">
             <Sparkles className="w-3 h-3" />
             Análise personalizada por IA
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Seu resultado está pronto!</h1>
+          <h1 className="text-3xl font-bold text-[#0A2540] mb-2">Seu resultado está pronto!</h1>
           <p className="text-[#5A667A] text-sm">Veja como você ficará após o preenchimento capilar</p>
         </div>
       </div>
@@ -185,23 +192,23 @@ export default function FunnelResult() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-black/20 rounded-xl p-3 text-center">
+            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
               <p className="text-xs text-[#5A667A] mb-1">Escala de calvície</p>
-              <p className="text-xl font-black text-[#D4A843]">{result.baldnessScale ?? "N/A"}</p>
+              <p className="text-xl font-black text-[#004A9D]">{result.baldnessScale ?? "N/A"}</p>
             </div>
-            <div className="bg-black/20 rounded-xl p-3 text-center">
+            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
               <p className="text-xs text-[#5A667A] mb-1">Nível</p>
-              <p className="text-xl font-black text-white capitalize">{result.baldnessLevel ?? "N/A"}</p>
+              <p className="text-xl font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
             </div>
-            <div className="bg-black/20 rounded-xl p-3 text-center">
+            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
               <p className="text-xs text-[#5A667A] mb-1">Sessões estimadas</p>
-              <p className="text-xl font-black text-[#D4A843]">{result.estimatedSessions ?? "2-3"}</p>
+              <p className="text-xl font-black text-[#004A9D]">{result.estimatedSessions ?? "2-3"}</p>
             </div>
-            <div className="bg-black/20 rounded-xl p-3 text-center">
+            <div className="bg-[#EBF4FF] rounded-xl p-3 text-center">
               <p className="text-xs text-[#5A667A] mb-1">Potencial</p>
               <div className="flex justify-center gap-0.5 mt-1">
                 {[1,2,3,4,5].map((i) => (
-                  <Star key={i} className={`w-4 h-4 ${i <= Math.round(score / 20) ? "text-[#D4A843] fill-[#D4A843]" : "text-[#C0CADB]"}`} />
+                  <Star key={i} className={`w-4 h-4 ${i <= Math.round(score / 20) ? "text-[#004A9D] fill-[#004A9D]" : "text-[#C0CADB]"}`} />
                 ))}
               </div>
             </div>
@@ -212,7 +219,7 @@ export default function FunnelResult() {
         {result.analysisText && (
           <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-[#D4A843]" />
+              <TrendingUp className="w-4 h-4 text-[#00C1B8]" />
               <h3 className="font-semibold text-sm">Análise detalhada</h3>
             </div>
             <p className="text-sm text-[#5A667A] leading-relaxed">{result.analysisText}</p>
@@ -221,12 +228,12 @@ export default function FunnelResult() {
 
         {/* Recommended treatment */}
         {result.recommendedTreatment && (
-          <div className="bg-[#D4A843]/10 border border-[#D4A843]/20 rounded-2xl p-5">
+          <div className="bg-[#EBF4FF] border border-[#004A9D]/20 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-4 h-4 text-[#D4A843]" />
-              <h3 className="font-semibold text-sm text-[#D4A843]">Tratamento recomendado</h3>
+              <CheckCircle2 className="w-4 h-4 text-[#004A9D]" />
+              <h3 className="font-semibold text-sm text-[#004A9D]">Tratamento recomendado</h3>
             </div>
-            <p className="text-sm text-white/80 leading-relaxed">{result.recommendedTreatment}</p>
+            <p className="text-sm text-[#374151] leading-relaxed">{result.recommendedTreatment}</p>
           </div>
         )}
 
@@ -235,15 +242,15 @@ export default function FunnelResult() {
           <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold mb-3">Resultados reais</p>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <p className="text-2xl font-black text-[#D4A843]">98%</p>
+              <p className="text-2xl font-black text-[#004A9D]">98%</p>
               <p className="text-xs text-[#5A667A] mt-0.5">satisfação</p>
             </div>
             <div>
-              <p className="text-2xl font-black text-[#D4A843]">+1.200</p>
+              <p className="text-2xl font-black text-[#004A9D]">+1.200</p>
               <p className="text-xs text-[#5A667A] mt-0.5">procedimentos</p>
             </div>
             <div>
-              <p className="text-2xl font-black text-[#D4A843]">8 anos</p>
+              <p className="text-2xl font-black text-[#004A9D]">8 anos</p>
               <p className="text-xs text-[#5A667A] mt-0.5">de experiência</p>
             </div>
           </div>
@@ -251,11 +258,11 @@ export default function FunnelResult() {
       </div>
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4 shadow-[0_-4px_16px_rgba(0,74,157,0.06)]">
         <div className="max-w-lg mx-auto">
           <button
             onClick={() => navigate(`/c/${slug}/agendar/${token}`)}
-            className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+            className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
           >
             <Calendar className="w-5 h-5" />
             Agendar consulta gratuita

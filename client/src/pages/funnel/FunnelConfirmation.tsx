@@ -17,6 +17,13 @@ export default function FunnelConfirmation() {
     { enabled: !!slug }
   );
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   useEffect(() => {
     setShowConfetti(true);
     const t = setTimeout(() => setShowConfetti(false), 3000);
@@ -26,7 +33,7 @@ export default function FunnelConfirmation() {
   const scheduledDate = appointment?.scheduledAt ? new Date(appointment.scheduledAt) : null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-start px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540] flex flex-col items-center justify-start px-4 py-10">
       {/* Confetti particles */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
@@ -37,7 +44,7 @@ export default function FunnelConfirmation() {
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `-${Math.random() * 20}px`,
-                backgroundColor: ["#D4A843", "#10b981", "#ffffff", "#f59e0b"][i % 4],
+                backgroundColor: ["#004A9D", "#10b981", "#00C1B8", "#f59e0b"][i % 4],
                 animationDelay: `${Math.random() * 1}s`,
                 animationDuration: `${1 + Math.random() * 2}s`,
                 transform: `rotate(${Math.random() * 360}deg)`,
@@ -59,7 +66,7 @@ export default function FunnelConfirmation() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-black mb-2">
+          <h1 className="text-3xl font-black mb-2 text-[#0A2540]">
             Consulta agendada! 🎉
           </h1>
           <p className="text-[#5A667A] text-sm leading-relaxed">
@@ -72,11 +79,11 @@ export default function FunnelConfirmation() {
         {scheduledDate && (
           <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 mb-4">
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#E2E8F0]">
-              <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-black" />
+              <div className="w-10 h-10 rounded-xl bg-[#004A9D] flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-bold">{clinic?.name ?? "Clínica Capilar"}</p>
+                <p className="font-bold text-[#0A2540]">{clinic?.name ?? "Clínica Capilar"}</p>
                 <p className="text-xs text-[#5A667A] flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {clinic?.city ?? "Uberaba"}/{clinic?.state ?? "MG"}
@@ -91,7 +98,7 @@ export default function FunnelConfirmation() {
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
+                <Calendar className="w-4 h-4 text-[#004A9D] flex-shrink-0" />
                 <div>
                   <p className="text-xs text-[#5A667A]">Data</p>
                   <p className="text-sm font-semibold capitalize">
@@ -100,7 +107,7 @@ export default function FunnelConfirmation() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Clock className="w-4 h-4 text-[#D4A843] flex-shrink-0" />
+                <Clock className="w-4 h-4 text-[#004A9D] flex-shrink-0" />
                 <div>
                   <p className="text-xs text-[#5A667A]">Horário</p>
                   <p className="text-sm font-semibold">
@@ -123,7 +130,7 @@ export default function FunnelConfirmation() {
               { num: "4", text: "A consulta é 100% gratuita e sem compromisso" },
             ].map((step) => (
               <div key={step.num} className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full gradient-gold text-black flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
+                <div className="w-5 h-5 rounded-full bg-[#004A9D] text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
                   {step.num}
                 </div>
                 <span className="text-sm text-[#5A667A]">{step.text}</span>
@@ -159,7 +166,7 @@ export default function FunnelConfirmation() {
           <div className="flex justify-center gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button key={star} className="group">
-                <Star className="w-7 h-7 text-[#C0CADB] group-hover:text-[#D4A843] group-hover:fill-[#D4A843] transition-colors" />
+                <Star className="w-7 h-7 text-[#C0CADB] group-hover:text-[#004A9D] group-hover:fill-[#004A9D] transition-colors" />
               </button>
             ))}
           </div>

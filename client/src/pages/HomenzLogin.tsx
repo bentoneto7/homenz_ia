@@ -4,24 +4,13 @@ import { trpc } from "@/lib/trpc";
 import { useHomenzAuth, type HomenzUser } from "@/hooks/useHomenzAuth";
 import { toast } from "sonner";
 import {
-  Eye, EyeOff, Loader2, ArrowRight, Shield, Users, BarChart3,
+  Eye, EyeOff, Loader2, ArrowRight, Shield, Users,
   ChevronRight, Lock
 } from "lucide-react";
 
+// Apenas Franqueado e Vendedor são expostos no login público.
+// O acesso de Dono da Rede é interno — disponível em /homenzadm
 const DEMO_ACCOUNTS = [
-  {
-    label: "Dono da Rede",
-    email: "admin@homenzbrasil.com.br",
-    password: "homenz2024",
-    color: "from-violet-500 to-purple-600",
-    borderColor: "border-violet-200",
-    hoverBg: "hover:bg-violet-50",
-    badge: "Owner",
-    badgeBg: "bg-violet-100 text-violet-700",
-    icon: BarChart3,
-    description: "Visão completa da rede",
-    redirect: "/rede",
-  },
   {
     label: "Franqueado",
     email: "franqueado@homenzuberaba.com.br",
@@ -61,8 +50,13 @@ export default function HomenzLogin() {
   // Redirecionar se já logado
   useEffect(() => {
     if (user) {
+      // Franqueado inativo: aguardando pagamento
+      if (user.role === "franchisee" && user.active === false) {
+        navigate("/aguardando-pagamento");
+        return;
+      }
       const redirectMap: Record<string, string> = {
-        owner: "/rede",
+        owner: "/homenzadm",
         franchisee: "/franqueado",
         seller: "/vendedor",
       };
@@ -73,11 +67,17 @@ export default function HomenzLogin() {
   const loginMutation = trpc.homenz.login.useMutation({
     onSuccess: (data) => {
       login(data.token, data.user as HomenzUser);
+      // Franqueado inativo: redirecionar para aguardando pagamento
+      if (data.user.role === "franchisee" && data.user.active === false) {
+        toast.info(`Olá, ${data.user.name}! Seu acesso está aguardando confirmação do pagamento.`);
+        setTimeout(() => navigate("/aguardando-pagamento"), 500);
+        return;
+      }
       toast.success(`Bem-vindo, ${data.user.name}!`, {
         description: "Redirecionando para o painel...",
       });
       const redirectMap: Record<string, string> = {
-        owner: "/rede",
+        owner: "/homenzadm",
         franchisee: "/franqueado",
         seller: "/vendedor",
       };
@@ -145,19 +145,19 @@ export default function HomenzLogin() {
           </div>
         </div>
 
-        {/* Níveis de acesso */}
+        {/* Níveis de acesso — apenas Franqueado e Vendedor são visíveis */}
         <div>
           <p className="text-[#A0AABB] text-xs font-semibold uppercase tracking-widest mb-3">
             Níveis de acesso
           </p>
           <div className="flex gap-2">
-            {["Dono da Rede", "Franqueado", "Vendedor"].map((role, i) => (
+            {["Franqueado", "Vendedor"].map((role, i) => (
               <div
                 key={role}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0] shadow-sm"
               >
                 <div className={`w-1.5 h-1.5 rounded-full ${
-                  i === 0 ? "bg-violet-400" : i === 1 ? "bg-[#004A9D]" : "bg-[#00C1B8]"
+                  i === 0 ? "bg-[#004A9D]" : "bg-[#00C1B8]"
                 }`} />
                 <span className="text-[#5A667A] text-xs">{role}</span>
               </div>
@@ -173,7 +173,7 @@ export default function HomenzLogin() {
           {/* Logo mobile */}
           <div className="flex lg:hidden items-center gap-2 mb-10">
             <div className="w-7 h-7 rounded-lg bg-[#004A9D] flex items-center justify-center">
-              <span className="text-[#0A2540] font-black text-xs">H</span>
+              <span className="text-white font-black text-xs">H</span>
             </div>
             <span className="text-xl font-black text-[#004A9D]">HOMENZ</span>
           </div>
@@ -256,7 +256,7 @@ export default function HomenzLogin() {
             <div className="flex-1 h-px bg-[#E2E8F0]" />
           </div>
 
-          {/* Cards de acesso demo */}
+          {/* Cards de acesso demo — apenas Franqueado e Vendedor */}
           <div className="space-y-2.5">
             {DEMO_ACCOUNTS.map((demo, idx) => {
               const Icon = demo.icon;
@@ -273,7 +273,7 @@ export default function HomenzLogin() {
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 text-white animate-spin" />
                     ) : (
-                      <Icon className="w-4 h-4 text-[#0A2540]" />
+                      <Icon className="w-4 h-4 text-white" />
                     )}
                   </div>
 
@@ -295,8 +295,19 @@ export default function HomenzLogin() {
             })}
           </div>
 
+          {/* Link de cadastro */}
+          <p className="text-center text-[#5A667A] text-sm mt-6">
+            Não tem conta?{" "}
+            <button
+              onClick={() => navigate("/cadastro")}
+              className="text-[#004A9D] font-bold hover:underline"
+            >
+              Criar conta de franqueado
+            </button>
+          </p>
+
           {/* Rodapé */}
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between">
             <button
               onClick={() => navigate("/")}
               className="text-[#A0AABB] text-xs hover:text-[#5A667A] transition-colors"

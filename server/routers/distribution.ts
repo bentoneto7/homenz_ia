@@ -253,7 +253,7 @@ export const distributionRouter = router({
       // Buscar nome do novo vendedor
       const { data: seller } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('name')
         .eq('id', input.newSellerId)
         .single();
 
@@ -275,10 +275,10 @@ export const distributionRouter = router({
           franchise_id: lead.franchise_id,
           seller_id: input.newSellerId,
           method: 'manual',
-          notes: input.reason || `Reatribuído manualmente para ${seller?.full_name}`,
+          notes: input.reason || `Reatribuído manualmente para ${seller?.name}`,
         });
 
-      return { success: true, sellerName: seller?.full_name };
+      return { success: true, sellerName: seller?.name };
     }),
 
   /**
@@ -291,7 +291,7 @@ export const distributionRouter = router({
         .from('lead_distribution_log')
         .select(`
           id, method, seller_position, notes, created_at,
-          profiles!seller_id(full_name, email)
+          profiles!seller_id(name, email)
         `)
         .eq('lead_id', input.leadId)
         .order('created_at', { ascending: false });

@@ -106,7 +106,6 @@ const FLOW: {
   },
 ];
 
-// Mensagens de reforço positivo após cada resposta
 const REINFORCEMENTS = [
   "Anotado! ✅",
   "Boa! 💪",
@@ -130,6 +129,13 @@ export default function FunnelChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   const updateStep = trpc.leads.updateStep.useMutation();
   const saveChatAnswers = trpc.leads.saveChatAnswers.useMutation({
     onSuccess: () => {
@@ -151,15 +157,11 @@ export default function FunnelChat() {
     }, delay);
   };
 
-  // Iniciar chat
   useEffect(() => {
     if (!token) return;
     updateStep.mutate({ sessionToken: token, funnelStep: "chat_started" });
     setTimeout(() => {
-      addMessage({
-        from: "bot",
-        text: "E aí! 👋 Sou o assistente da Homenz.",
-      });
+      addMessage({ from: "bot", text: "E aí! 👋 Sou o assistente da Homenz." });
       setTimeout(() => {
         showBotMessage("Vou fazer 7 perguntas rápidas pra montar seu diagnóstico capilar personalizado com IA. Menos de 2 minutos! 🚀", undefined, 600);
         setTimeout(() => {
@@ -187,7 +189,6 @@ export default function FunnelChat() {
     setReinforcementIdx((i) => i + 1);
 
     if (nextStep >= FLOW.length) {
-      // Finalizar chat
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
@@ -220,7 +221,6 @@ export default function FunnelChat() {
       }, 800);
     } else {
       setCurrentStep(nextStep);
-      // Mostrar reforço positivo antes da próxima pergunta
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
@@ -233,39 +233,36 @@ export default function FunnelChat() {
   };
 
   const progress = Math.round((Math.min(currentStep, FLOW.length) / FLOW.length) * 100);
-  const currentQuestion = FLOW[currentStep];
-
-  // As opções só aparecem quando:
-  // 1. O bot não está digitando
-  // 2. A última mensagem é do bot
-  // 3. A última mensagem do bot tem opções (ou é uma pergunta de input)
   const lastBotMessage = [...messages].reverse().find(m => m.from === "bot");
   const canShowInput = !isTyping && !done && !!lastBotMessage;
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0f1e]/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3">
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] flex flex-col">
+
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3 shadow-sm">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-[#1a56db] flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-[#0A2540]" />
+            <div className="w-9 h-9 rounded-full bg-[#004A9D] flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#00c4cc] rounded-full border-2 border-[#0a0f1e]" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#00C1B8] rounded-full border-2 border-white" />
           </div>
           <div>
-            <p className="font-semibold text-sm text-[#0A2540]">Homenz IA — Diagnóstico Capilar</p>
-            <p className="text-xs text-[#00c4cc] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00c4cc] inline-block animate-pulse" />
+            <p className="font-bold text-sm text-[#0A2540]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Homenz IA — Diagnóstico Capilar
+            </p>
+            <p className="text-xs text-[#00C1B8] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00C1B8] inline-block animate-pulse" />
               Online agora
             </p>
           </div>
           {/* Progress */}
           <div className="ml-auto flex flex-col items-end gap-1">
             <span className="text-xs text-[#5A667A]">{progress}% concluído</span>
-            <div className="w-20 h-1.5 bg-[#EBF4FF] rounded-full overflow-hidden">
+            <div className="w-20 h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#1a56db] to-[#00c4cc] transition-all duration-700 ease-out"
+                className="h-full bg-gradient-to-r from-[#004A9D] to-[#00C1B8] transition-all duration-700 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -273,7 +270,7 @@ export default function FunnelChat() {
         </div>
       </div>
 
-      {/* Messages */}
+      {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-lg mx-auto space-y-3">
           {messages.map((msg) => (
@@ -282,15 +279,15 @@ export default function FunnelChat() {
               className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
             >
               {msg.from === "bot" && (
-                <div className="w-7 h-7 rounded-full bg-[#1a56db] flex items-center justify-center flex-shrink-0 mr-2 mt-1">
-                  <Sparkles className="w-3 h-3 text-[#0A2540]" />
+                <div className="w-7 h-7 rounded-full bg-[#004A9D] flex items-center justify-center flex-shrink-0 mr-2 mt-1">
+                  <Sparkles className="w-3 h-3 text-white" />
                 </div>
               )}
               <div
                 className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.from === "bot"
-                    ? "bg-white border border-[#E2E8F0] text-white rounded-tl-sm"
-                    : "bg-[#1a56db] text-[#0A2540] font-medium rounded-tr-sm"
+                    ? "bg-white border border-[#E2E8F0] text-[#0A2540] rounded-tl-sm shadow-sm"
+                    : "bg-[#004A9D] text-white font-medium rounded-tr-sm"
                 }`}
               >
                 {msg.text}
@@ -301,15 +298,15 @@ export default function FunnelChat() {
           {/* Typing indicator */}
           {isTyping && (
             <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-200">
-              <div className="w-7 h-7 rounded-full bg-[#1a56db] flex items-center justify-center flex-shrink-0 mr-2 mt-1">
-                <Sparkles className="w-3 h-3 text-[#0A2540]" />
+              <div className="w-7 h-7 rounded-full bg-[#004A9D] flex items-center justify-center flex-shrink-0 mr-2 mt-1">
+                <Sparkles className="w-3 h-3 text-white" />
               </div>
-              <div className="bg-white border border-[#E2E8F0] px-4 py-3 rounded-2xl rounded-tl-sm">
+              <div className="bg-white border border-[#E2E8F0] px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
                 <div className="flex gap-1 items-center h-4">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-[#004A9D]/40 animate-bounce"
                       style={{ animationDelay: `${i * 0.15}s` }}
                     />
                   ))}
@@ -321,9 +318,9 @@ export default function FunnelChat() {
           {/* Done state */}
           {done && (
             <div className="flex justify-center py-4 animate-in fade-in duration-500">
-              <div className="flex items-center gap-2 bg-[#00c4cc]/10 border border-[#00c4cc]/20 rounded-full px-4 py-2">
-                <Sparkles className="w-4 h-4 text-[#00c4cc]" />
-                <span className="text-sm text-[#00c4cc]">Redirecionando para captura de fotos...</span>
+              <div className="flex items-center gap-2 bg-[#00C1B8]/10 border border-[#00C1B8]/30 rounded-full px-4 py-2">
+                <Sparkles className="w-4 h-4 text-[#00C1B8]" />
+                <span className="text-sm text-[#00C1B8] font-medium">Redirecionando para captura de fotos...</span>
               </div>
             </div>
           )}
@@ -332,47 +329,49 @@ export default function FunnelChat() {
         </div>
       </div>
 
-      {/* Input area — só aparece após o bot terminar de digitar */}
+      {/* ── Input area ── */}
       {canShowInput && (
-        <div className="sticky bottom-0 bg-[#0a0f1e]/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4 animate-in slide-in-from-bottom-3 duration-300">
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-[#E2E8F0] px-4 py-4 animate-in slide-in-from-bottom-3 duration-300 shadow-[0_-4px_16px_rgba(0,74,157,0.06)]">
           <div className="max-w-lg mx-auto">
-            {/* Subtext hint da última mensagem do bot */}
-            {currentQuestion?.subtext && lastBotMessage?.options && (
-              <p className="text-xs text-[#A0AABB] mb-2 text-center">{currentQuestion.subtext}</p>
+            {/* Subtext hint */}
+            {lastBotMessage?.options && (
+              <p className="text-xs text-[#5A667A] mb-3 text-center">
+                {FLOW[currentStep]?.subtext ?? ""}
+              </p>
             )}
 
-            {/* Se a última mensagem do bot tem opções, mostra os botões */}
+            {/* Opções de resposta */}
             {lastBotMessage?.options ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {lastBotMessage.options.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => handleAnswer(opt.value, opt.label)}
-                    className="flex items-center gap-2 bg-white hover:bg-[#1a56db]/20 border border-[#E2E8F0] hover:border-[#1a56db]/50 rounded-xl px-4 py-3 text-sm text-white text-left transition-all duration-200 active:scale-[0.98]"
+                    className="flex items-center gap-2 bg-white hover:bg-[#EBF4FF] border border-[#E2E8F0] hover:border-[#004A9D]/40 rounded-xl px-4 py-3 text-sm text-[#0A2540] text-left transition-all duration-200 active:scale-[0.98] shadow-sm"
                   >
                     {opt.emoji && <span className="text-base flex-shrink-0">{opt.emoji}</span>}
-                    <span>{opt.label}</span>
+                    <span className="font-medium">{opt.label}</span>
                   </button>
                 ))}
               </div>
             ) : (
-              /* Se não tem opções na última mensagem, mostra o input de texto */
-              currentQuestion && !currentQuestion.options ? (
+              /* Input de texto livre */
+              FLOW[currentStep] && !FLOW[currentStep].options ? (
                 <div className="flex gap-2">
                   <input
                     ref={inputRef}
-                    type={currentQuestion?.inputType ?? "text"}
+                    type={FLOW[currentStep]?.inputType ?? "text"}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && inputValue.trim() && handleAnswer(inputValue.trim())}
-                    placeholder={currentQuestion?.placeholder ?? "Digite sua resposta..."}
-                    className="flex-1 bg-white border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#1a56db]/60 transition-colors"
+                    placeholder={FLOW[currentStep]?.placeholder ?? "Digite sua resposta..."}
+                    className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm text-[#0A2540] placeholder-[#A0AABB] outline-none focus:border-[#004A9D] transition-colors"
                     autoFocus
                   />
                   <button
                     onClick={() => inputValue.trim() && handleAnswer(inputValue.trim())}
                     disabled={!inputValue.trim()}
-                    className="bg-[#1a56db] hover:bg-[#1a56db]/90 text-white px-4 rounded-xl disabled:opacity-40 transition-opacity"
+                    className="bg-[#004A9D] hover:bg-[#003d85] text-white px-4 rounded-xl disabled:opacity-40 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>

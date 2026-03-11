@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -137,17 +137,24 @@ export default function FunnelPhotos() {
     triggerAI.mutate({ sessionToken: token ?? "" });
   };
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#0A2540]">
+    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3 shadow-sm">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="font-bold text-sm">Captura de Fotos</h1>
+              <h1 className="font-bold text-sm text-[#0A2540]">Captura de Fotos</h1>
               <p className="text-xs text-[#5A667A]">Para análise capilar com IA</p>
             </div>
-            <span className="text-sm font-bold text-[#D4A843]">{capturedCount}/4</span>
+            <span className="text-sm font-bold text-[#004A9D]">{capturedCount}/4</span>
           </div>
           <div className="flex gap-1.5">
             {PHOTO_STEPS.map((s, i) => (
@@ -157,8 +164,8 @@ export default function FunnelPhotos() {
                   capturedPhotos[s.type]
                     ? "bg-emerald-500"
                     : i === currentPhotoIndex
-                    ? "bg-[#D4A843]"
-                    : "bg-[#EBF4FF]"
+                    ? "bg-[#004A9D]"
+                    : "bg-[#E2E8F0]"
                 }`}
               />
             ))}
@@ -228,7 +235,7 @@ export default function FunnelPhotos() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={closeCamera}
-                className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E2E8F0] rounded-xl py-3.5 text-sm text-white hover:bg-[#EBF4FF] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E2E8F0] rounded-xl py-3.5 text-sm text-[#5A667A] hover:bg-[#EBF4FF] transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
                 Cancelar
@@ -236,7 +243,7 @@ export default function FunnelPhotos() {
               <button
                 onClick={capturePhoto}
                 disabled={uploading}
-                className="flex-1 flex items-center justify-center gap-2 gradient-gold text-black font-bold rounded-xl py-3.5 text-sm disabled:opacity-60 transition-opacity"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#004A9D] hover:bg-[#003d85] text-white font-bold rounded-xl py-3.5 text-sm disabled:opacity-60 transition-colors"
               >
                 {uploading ? (
                   <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -266,7 +273,7 @@ export default function FunnelPhotos() {
                     capturedPhotos[step.type]
                       ? "border-emerald-500"
                       : i === currentPhotoIndex
-                      ? "border-[#D4A843] border-dashed shadow-[0_0_12px_rgba(212,168,67,0.2)]"
+                      ? "border-[#004A9D] border-dashed shadow-[0_0_12px_rgba(0,74,157,0.15)]"
                       : "border-[#E2E8F0]"
                   }`}
                 >
@@ -285,11 +292,11 @@ export default function FunnelPhotos() {
                       </div>
                     </>
                   ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#D4A843]/5" : "bg-[#F8FAFC]"}`}>
+                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#EBF4FF]" : "bg-[#F8FAFC]"}`}>
                       <span className="text-3xl">{step.icon}</span>
-                      <p className="text-xs font-medium text-center px-2 text-white/70">{step.label}</p>
+                      <p className="text-xs font-medium text-center px-2 text-[#5A667A]">{step.label}</p>
                       {i === currentPhotoIndex && (
-                        <span className="text-[10px] text-[#D4A843] font-semibold animate-pulse">Toque para fotografar</span>
+                        <span className="text-[10px] text-[#004A9D] font-semibold animate-pulse">Toque para fotografar</span>
                       )}
                     </div>
                   )}
@@ -324,7 +331,7 @@ export default function FunnelPhotos() {
               <button
                 onClick={handleFinalize}
                 disabled={triggerAI.isPending}
-                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
+                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
               >
                 {triggerAI.isPending ? (
                   <>
@@ -342,7 +349,7 @@ export default function FunnelPhotos() {
             ) : (
               <button
                 onClick={openCamera}
-                className="w-full gradient-gold text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
               >
                 <Camera className="w-5 h-5" />
                 Fotografar: {currentStep.label}

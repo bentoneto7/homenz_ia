@@ -5,7 +5,7 @@ import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import HomenzLayout from "@/components/HomenzLayout";
 import {
   Building2, Users, Target, Calendar,
-  Award, Copy, Plus, Loader2,
+  Award, Copy, Plus, Loader2, CheckCircle, XCircle, Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -138,6 +138,27 @@ export default function NetworkDashboardSupabase() {
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <p className="text-[#0A2540] font-bold">{f.name}</p>
                           <span className="text-[#A0AABB] text-xs">{f.city}, {f.state}</span>
+                          {/* Badge de plano */}
+                          {(f as any).plan && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                              (f as any).plan === 'network' ? 'bg-violet-100 text-violet-700' :
+                              (f as any).plan === 'pro' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {(f as any).plan === 'network' && <Crown className="w-3 h-3" />}
+                              {String((f as any).plan).toUpperCase()}
+                            </span>
+                          )}
+                          {/* Badge de status */}
+                          {(f as any).active === false ? (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 flex items-center gap-1">
+                              <XCircle className="w-3 h-3" /> Inativa
+                            </span>
+                          ) : (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" /> Ativa
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-[#5A667A] flex-wrap">
                           <span>{f.totalLeads} leads</span>

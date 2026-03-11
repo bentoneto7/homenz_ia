@@ -6,7 +6,7 @@ import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 type AllowedRole = "owner" | "franchisee" | "seller";
 
 const ROLE_REDIRECT: Record<AllowedRole, string> = {
-  owner: "/rede",
+  owner: "/homenzadm",
   franchisee: "/franqueado",
   seller: "/vendedor",
 };
@@ -36,6 +36,12 @@ export function ProtectedRoute({ allowedRoles = [], children }: ProtectedRoutePr
       return;
     }
 
+    // Franqueado com conta inativa (pagamento pendente)
+    if (user.role === "franchisee" && user.active === false) {
+      navigate("/aguardando-pagamento");
+      return;
+    }
+
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
       navigate(ROLE_REDIRECT[user.role] ?? "/login");
     }
@@ -52,6 +58,7 @@ export function ProtectedRoute({ allowedRoles = [], children }: ProtectedRoutePr
 
   // Don't render children if user is not allowed (redirect is in-flight)
   if (!user) return null;
+  if (user.role === "franchisee" && user.active === false) return null;
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) return null;
 
   return <>{children}</>;

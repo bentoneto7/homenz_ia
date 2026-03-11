@@ -53,6 +53,13 @@ export default function ClinicLanding() {
     onError: (err) => toast.error(err.message),
   });
 
+  // Garantir tema claro no funil público (remove dark mode se ativo)
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    localStorage.removeItem("theme");
+    return () => {};
+  }, []);
+
   useEffect(() => {
     const t = setInterval(() => setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length), 4000);
     return () => clearInterval(t);

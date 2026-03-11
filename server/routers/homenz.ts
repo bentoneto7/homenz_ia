@@ -345,6 +345,40 @@ export const homenzRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Franquia não encontrada" });
       }
 
+      // ── Verificar limite de vendedores por plano ──────────────────────────
+      const SELLER_LIMITS: Record<string, number> = {
+        free: 2,
+        starter: 2,
+        pro: 10,
+        enterprise: -1,
+        network: -1,
+      };
+
+      const { data: franchise } = await supabaseAdmin
+        .from("franchises")
+        .select("plan")
+        .eq("id", franchiseId)
+        .single();
+
+      const plan = (franchise?.plan as string) ?? "free";
+      const maxSellers = SELLER_LIMITS[plan] ?? 2;
+
+      if (maxSellers !== -1) {
+        const { count: currentSellers } = await supabaseAdmin
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .eq("franchise_id", franchiseId)
+          .eq("role", "seller");
+
+        if ((currentSellers ?? 0) >= maxSellers) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Limite de vendedores atingido para o plano ${plan.toUpperCase()} (máx: ${maxSellers}). Faça upgrade do plano para adicionar mais vendedores.`,
+          });
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
       const token = await createInvite({
         franchiseId,
         invitedBy: ctx.homenzUser.id,
@@ -481,8 +515,159 @@ export const homenzRouter = router({
       return { success: true };
     }),
 
-  // ── Verificar convite ─────────────────────────────────────────────────────
+  // ── Landing Pages da Franquia ───────────────────────────────────────────
 
+  getLandingPages: franchiseeProcedure
+    .query(async ({ ctx }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      const { data, error } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('*')
+        .eq('franchise_id', franchiseId)
+        .order('created_at', { ascending: false });
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data ?? [];
+    }),
+
+  createLandingPageForFranchisee: franchiseeProcedure
+    .input(z.object({
+      title: z.string().min(3),
+      procedure: z.string().default('crescimento-capilar'),
+      utmSource: z.string().default('meta'),
+      utmMedium: z.string().default('cpc'),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      const { data: franchise } = await supabaseAdmin
+        .from('franchises')
+        .select('slug, city, state')
+        .eq('id', franchiseId)
+        .single();
+      if (!franchise) throw new TRPCError({ code: 'NOT_FOUND', message: 'Franquia não encontrada' });
+      const baseSlug = franchise.slug + '-' + input.procedure;
+      const timestamp = Date.now().toString(36);
+      const slug = `${baseSlug}-${timestamp}`;
+      const { data, error } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .insert({
+          franchise_id: franchiseId,
+          slug,
+          title: input.title,
+          procedure: input.procedure,
+          city: franchise.city,
+          state: franchise.state,
+          utm_source: input.utmSource,
+          utm_medium: input.utmMedium,
+          utm_campaign: slug,
+          is_active: true,
+        })
+        .select()
+        .single();
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data;
+    }),
+
+  // ── Registro público de franqueado ─────────────────────────────────────────
+  registerFranchisee: publicProcedure
+    .input(z.object({
+      name: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
+      email: z.string().email("Email inválido"),
+      password: z.string().min(6, "Senha deve ter ao menos 6 caracteres"),
+      whatsapp: z.string().min(10, "WhatsApp inválido"),
+      instagram: z.string().optional(),
+      address: z.string().optional(),
+      franchiseName: z.string().min(2, "Nome da clínica obrigatório"),
+      city: z.string().min(2, "Cidade obrigatória"),
+      state: z.string().length(2, "Estado deve ter 2 letras"),
+    }))
+    .mutation(async ({ input }) => {
+      // Verificar se email já existe
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("email", input.email.toLowerCase())
+        .single();
+
+      if (existing) {
+        throw new TRPCError({ code: "CONFLICT", message: "Email já cadastrado" });
+      }
+
+      // Criar slug único para a franquia
+      const baseSlug = input.franchiseName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+      // Criar a franquia (inativa até pagamento)
+      const franchiseInsert: Record<string, unknown> = {
+        name: input.franchiseName,
+        slug,
+        city: input.city,
+        state: input.state.toUpperCase(),
+        plan: "free",
+        active: false, // Ativa após pagamento
+      };
+      // Adicionar address apenas se a coluna existir (migration pendente)
+      if (input.address) {
+        franchiseInsert.address = input.address;
+      }
+
+      const { data: franchise, error: franchiseErr } = await supabaseAdmin
+        .from("franchises")
+        .insert(franchiseInsert)
+        .select("id")
+        .single();
+
+      if (franchiseErr || !franchise) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao criar franquia: ${franchiseErr?.message}` });
+      }
+
+      // Criar o perfil do franqueado (inativo até pagamento)
+      const passwordHash = await hashPassword(input.password);
+      const profileInsert: Record<string, unknown> = {
+        name: input.name,
+        email: input.email.toLowerCase(),
+        password_hash: passwordHash,
+        role: "franchisee" as UserRole,
+        franchise_id: franchise.id,
+        phone: input.whatsapp,
+        active: false, // Ativa após pagamento Stripe
+      };
+
+      const { data: newUser, error: userErr } = await supabaseAdmin
+        .from("profiles")
+        .insert(profileInsert)
+        .select("id, name, email, role, franchise_id, phone, avatar_url, active, created_at, updated_at")
+        .single();
+
+      if (userErr || !newUser) {
+        // Rollback: deletar franquia criada
+        await supabaseAdmin.from("franchises").delete().eq("id", franchise.id);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao criar usuário: ${userErr?.message}` });
+      }
+
+      // Atualizar owner_id da franquia
+      await supabaseAdmin
+        .from("franchises")
+        .update({ owner_id: newUser.id })
+        .eq("id", franchise.id);
+
+      // Não fazer login automático — conta inativa até pagamento
+      // Retornar dados para redirecionar para /planos
+      return {
+        email: input.email.toLowerCase(),
+        franchiseId: franchise.id,
+        franchiseSlug: slug,
+        message: "Conta criada! Complete o pagamento para ativar o acesso.",
+      };
+    }),
+
+  // ── Verificar convite ─────────────────────────────────────────────────────
   getInviteInfo: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(async ({ input }) => {

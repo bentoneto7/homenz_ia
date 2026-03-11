@@ -45,7 +45,7 @@ export async function distributeLeadRoundRobin(
     // 1. Buscar todos os vendedores ativos da franquia
     const { data: sellers, error: sellersError } = await supabase
       .from('profiles')
-      .select('id, full_name, email')
+      .select('id, name, email')
       .eq('franchise_id', franchiseId)
       .eq('role', 'seller')
       .eq('active', true)
@@ -115,13 +115,13 @@ export async function distributeLeadRoundRobin(
         seller_id: selectedSeller.id,
         method: 'round_robin',
         seller_position: nextIndex,
-        notes: `Distribuído automaticamente para ${selectedSeller.full_name} (posição ${nextIndex + 1} de ${sellers.length})`,
+        notes: `Distribuído automaticamente para ${selectedSeller.name} (posição ${nextIndex + 1} de ${sellers.length})`,
       });
 
     return {
       success: true,
       sellerId: selectedSeller.id,
-      sellerName: selectedSeller.full_name,
+      sellerName: selectedSeller.name,
       sellerPosition: nextIndex + 1,
       totalSellers: sellers.length,
     };
@@ -248,7 +248,7 @@ function calculateInitialScore(data: {
 export async function getFranchiseDistributionStats(franchiseId: string) {
   const { data: sellers } = await supabase
     .from('profiles')
-    .select('id, full_name')
+    .select('id, name')
     .eq('franchise_id', franchiseId)
     .eq('role', 'seller')
     .eq('active', true);
@@ -277,7 +277,7 @@ export async function getFranchiseDistributionStats(franchiseId: string) {
     currentPosition: rr?.last_seller_index ?? -1,
     sellers: (sellers || []).map((s, idx) => ({
       id: s.id,
-      name: s.full_name,
+      name: s.name,
       leadsReceived: sellerCounts[s.id] || 0,
       isNext: idx === ((rr?.last_seller_index ?? -1) + 1) % (sellers?.length || 1),
     })),

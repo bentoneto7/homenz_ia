@@ -92,11 +92,13 @@ async function insertLeadEvent(data: {
 
 import { homenzRouter } from "./routers/homenz";
 import { distributionRouter } from "./routers/distribution";
+import { stripeRouter } from "./routers/stripe";
 
 export const appRouter = router({
   system: systemRouter,
   homenz: homenzRouter,
   distribution: distributionRouter,
+  stripe: stripeRouter,
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),

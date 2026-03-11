@@ -13,6 +13,8 @@ import FunnelResult from "./pages/funnel/FunnelResult";
 import FunnelSchedule from "./pages/funnel/FunnelSchedule";
 import FunnelConfirmation from "./pages/funnel/FunnelConfirmation";
 import ClinicOnboarding from "./pages/ClinicOnboarding";
+import CadastroFranqueado from "./pages/CadastroFranqueado";
+import AguardandoPagamento from "./pages/AguardandoPagamento";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminLeads from "./pages/admin/Leads";
 import AdminLeadDetail from "./pages/admin/LeadDetail";
@@ -32,7 +34,9 @@ import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
 import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
 import HomenzLogin from "./pages/HomenzLogin";
+import HomenzAdmLogin from "./pages/HomenzAdmLogin";
 import FranchiseLanding from "./pages/FranchiseLanding";
+import PlanosPage from "./pages/PlanosPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function Router() {
@@ -41,7 +45,10 @@ function Router() {
       {/* Plataforma */}
       <Route path="/" component={HomenzLanding} />
       <Route path="/plataforma" component={Home} />
-      <Route path="/cadastro" component={ClinicOnboarding} />
+      <Route path="/cadastro" component={CadastroFranqueado} />
+      <Route path="/cadastro-clinica" component={ClinicOnboarding} />
+      <Route path="/aguardando-pagamento" component={AguardandoPagamento} />
+      <Route path="/planos" component={PlanosPage} />
 
       {/* Funil público da clínica */}
       <Route path="/c/:slug" component={ClinicLanding} />
@@ -100,23 +107,24 @@ function Router() {
         <ProtectedRoute allowedRoles={["seller"]}><SellerDashboard /></ProtectedRoute>
       </Route>
 
-      {/* Painel Admin da Rede — requer role owner */}
-      <Route path="/rede">
+      {/* Painel Admin da Rede — acesso INTERNO via /homenzadm (não listado no login público) */}
+      <Route path="/homenzadm/login" component={HomenzAdmLogin} />
+      <Route path="/homenzadm">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
-      <Route path="/rede/franquias">
+      <Route path="/homenzadm/franquias">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
-      <Route path="/rede/vendedores">
+      <Route path="/homenzadm/vendedores">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
-      <Route path="/rede/leads">
+      <Route path="/homenzadm/leads">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
-      <Route path="/rede/analytics">
+      <Route path="/homenzadm/analytics">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
-      <Route path="/rede/configuracoes">
+      <Route path="/homenzadm/configuracoes">
         <ProtectedRoute allowedRoles={["owner"]}><NetworkAdminDashboard /></ProtectedRoute>
       </Route>
 
@@ -126,7 +134,7 @@ function Router() {
       {/* Landing pages públicas por franquia */}
       <Route path="/l/:slug" component={FranchiseLanding} />
 
-      {/* Login unificado Homenz */}
+      {/* Login unificado Homenz — apenas Franqueado e Vendedor */}
       <Route path="/login" component={HomenzLogin} />
 
       {/* Aceitar convite de acesso */}
