@@ -34,6 +34,13 @@ export default function ClinicLanding() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
+
+  const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
   const [submitted, setSubmitted] = useState(false);
   const [spotsLeft] = useState(() => Math.floor(Math.random() * 4) + 2);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -213,7 +220,8 @@ export default function ClinicLanding() {
                   <input
                     type="tel"
                     value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: maskPhone(e.target.value) }))}
+                    inputMode="numeric"
                     placeholder="WhatsApp: (00) 99999-9999"
                     className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-10 pr-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#004A9D] transition-colors text-sm"
                     required

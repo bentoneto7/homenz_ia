@@ -54,6 +54,13 @@ export default function CadastroFranqueado() {
     confirmPassword: "",
   });
 
+  const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
@@ -204,8 +211,9 @@ export default function CadastroFranqueado() {
                 <Label className="text-[#374151] font-semibold text-sm">WhatsApp *</Label>
                 <Input
                   value={form.whatsapp}
-                  onChange={(e) => update("whatsapp", e.target.value)}
+                  onChange={(e) => update("whatsapp", maskPhone(e.target.value))}
                   placeholder="(00) 99999-9999"
+                  inputMode="numeric"
                   className="mt-1.5 border-[#E2E8F0] focus:border-[#004A9D] rounded-xl"
                 />
               </div>

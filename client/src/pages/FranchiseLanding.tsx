@@ -96,8 +96,16 @@ export default function FranchiseLanding() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [stepHistory, setStepHistory] = useState<Array<{ step: number; messages: ChatMessage[]; leadData: Partial<LeadData> }>>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
 
   // Buscar dados da landing page
   const { data: landingPage, isLoading: lpLoading, error: lpError } = trpc.distribution.getLandingPage.useQuery(
@@ -152,6 +160,8 @@ export default function FranchiseLanding() {
   }, []);
 
   const advanceToNextStep = useCallback((userResponse: string, dataUpdate: Partial<LeadData>) => {
+    // Salvar estado atual no histórico antes de avançar
+    setStepHistory(prev => [...prev, { step: currentStep, messages: [...messages], leadData: { ...leadData } }]);
     addUserMessage(userResponse);
     const newLeadData = { ...leadData, ...dataUpdate };
     setLeadData(newLeadData);
@@ -166,7 +176,18 @@ export default function FranchiseLanding() {
       // Último passo — submeter lead
       submitLead(newLeadData as LeadData);
     }
-  }, [currentStep, leadData, addUserMessage, addBotMessage]);
+  }, [currentStep, leadData, messages, addUserMessage, addBotMessage]);
+
+  const handleGoBack = useCallback(() => {
+    if (stepHistory.length === 0) return;
+    const prev = stepHistory[stepHistory.length - 1];
+    setStepHistory(h => h.slice(0, -1));
+    setCurrentStep(prev.step);
+    setMessages(prev.messages);
+    setLeadData(prev.leadData);
+    setInputValue("");
+    setPhotoPreview(null);
+  }, [stepHistory]);
 
   const handleOptionSelect = (option: string) => {
     advanceToNextStep(option, { hairProblem: option });
@@ -564,16 +585,33 @@ export default function FranchiseLanding() {
       {showInput && (
         <div className="px-4 py-4 border-t border-[#E2E8F0] bg-white">
           <div className="flex gap-2">
+            {stepHistory.length > 0 && (
+              <button
+                onClick={handleGoBack}
+                className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] text-[#5A667A] hover:bg-[#EEF2F7] transition-colors"
+                title="Voltar"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
             <Input
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => {
+                const val = currentStepType === "input-phone"
+                  ? maskPhone(e.target.value)
+                  : e.target.value;
+                setInputValue(val);
+              }}
               onKeyDown={(e) => e.key === "Enter" && handleTextInput()}
               placeholder={
                 currentStepType === "input-name" ? "Seu nome completo..." :
                 currentStepType === "input-age" ? "Sua idade..." :
-                "Seu WhatsApp com DDD..."
+                "(00) 99999-9999"
               }
-              type={currentStepType === "input-age" ? "number" : currentStepType === "input-phone" ? "tel" : "text"}
+              type={currentStepType === "input-age" ? "number" : "text"}
+              inputMode={currentStepType === "input-phone" ? "numeric" : undefined}
               className="flex-1 rounded-xl border border-[#E2E8F0] text-[#0A2540] placeholder:text-[#A0AABB] focus:border-[#00C1B8] bg-[#F8FAFC]"
               autoFocus
             />

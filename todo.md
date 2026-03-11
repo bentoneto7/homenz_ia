@@ -552,3 +552,8 @@
 - [x] Serviços da franquia listados na seção de serviços
 - [x] FranchiseLanding: atualizar subtítulo para "Faça uma avaliação capilar especializada em 3D real do seu resultado. Grátis, rápido e sem compromisso."
 - [x] Investigar e corrigir erro de upload de fotos no funil (/api/upload-lead-photo)
+
+## Próximos Passos (Mar 11)
+- [x] Máscara WhatsApp (xx) xxxxx-xxxx nos campos de telefone do cadastro, modal de landing page e chat do funil
+- [x] Botão "Voltar" no chat do funil (FranchiseLanding) para corrigir resposta anterior sem reiniciar
+- [x] Verificar e corrigir fluxo completo: foto → análise IA → resultado Antes/Depois

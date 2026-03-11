@@ -62,6 +62,13 @@ export default function ClinicOnboarding() {
 
   const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
+  const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
   const autoSlug = (name: string) =>
     name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -235,8 +242,9 @@ export default function ClinicOnboarding() {
                 <Label>Telefone *</Label>
                 <Input
                   value={form.phone}
-                  onChange={(e) => update("phone", e.target.value)}
+                  onChange={(e) => update("phone", maskPhone(e.target.value))}
                   placeholder="(34) 99999-9999"
+                  inputMode="numeric"
                   className="mt-1"
                 />
               </div>
@@ -244,8 +252,9 @@ export default function ClinicOnboarding() {
                 <Label>WhatsApp para leads *</Label>
                 <Input
                   value={form.whatsapp}
-                  onChange={(e) => update("whatsapp", e.target.value)}
+                  onChange={(e) => update("whatsapp", maskPhone(e.target.value))}
                   placeholder="(34) 99999-9999"
+                  inputMode="numeric"
                   className="mt-1"
                 />
                 <p className="text-xs text-muted-foreground mt-1">

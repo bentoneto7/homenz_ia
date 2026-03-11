@@ -39,6 +39,13 @@ export default function AdminSettings() {
     }
   }, [clinic]);
 
+  const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
   const update = trpc.clinic.update.useMutation({
     onSuccess: () => { toast.success("Configurações salvas!"); refetch(); },
     onError: (err) => toast.error(err.message),
@@ -121,11 +128,11 @@ export default function AdminSettings() {
             </div>
             <div>
               <Label className="text-xs mb-1 block">Telefone</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })} inputMode="numeric" placeholder="(34) 99999-9999" />
             </div>
             <div>
               <Label className="text-xs mb-1 block">WhatsApp</Label>
-              <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="Ex: 34999999999" />
+              <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: maskPhone(e.target.value) })} inputMode="numeric" placeholder="(34) 99999-9999" />
             </div>
             <div className="sm:col-span-2">
               <Label className="text-xs mb-1 block">E-mail</Label>
