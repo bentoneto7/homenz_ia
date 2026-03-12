@@ -629,3 +629,6 @@
 
 ## Melhoria Prompt Geração Imagem Antes/Depois (Mar 12)
 - [x] Reformular prompt de geração de imagem para transformação capilar mais agressiva e visível — prompt contextualizado com baldnessLevel + treatmentInfo + instruções explícitas de cobertura total
+
+## Remoção Classificação Capilar (Mar 12)
+- [ ] Remover classificação técnica (Norwood/Ludwig) da tela de resultado — deixar apenas o potencial de crescimento capilar

@@ -204,11 +204,6 @@ export default function FunnelResult() {
             />
           </div>
 
-          <div className="bg-white/60 rounded-xl p-3 text-center">
-            <p className="text-xs text-[#5A667A] mb-1">Classificação capilar</p>
-            <p className="text-sm font-black text-[#0A2540] capitalize">{result.baldnessLevel ?? "N/A"}</p>
-          </div>
-
           {/* Expectativa motivacional */}
           <div className="mt-3 bg-white/80 border border-[#004A9D]/10 rounded-xl p-3">
             <p className="text-xs text-[#004A9D] font-semibold mb-1">📍 Quanto antes, melhor o resultado</p>
