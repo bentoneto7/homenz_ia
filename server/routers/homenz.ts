@@ -361,6 +361,9 @@ export const homenzRouter = router({
         trialActive = diffDays > 0;
       }
 
+      // Assinante pago = plano diferente de "free" (webhook do Stripe atualiza o campo plan)
+      const hasPaidPlan = !!franchise?.plan && franchise.plan !== "free";
+
       return {
         franchise,
         leads: leads.slice(0, 20), // últimos 20 leads
@@ -379,6 +382,7 @@ export const homenzRouter = router({
           active: trialActive,
           daysLeft: trialDaysLeft,
           endsAt: franchise?.trial_ends_at ?? null,
+          hasPaidPlan, // true = assinante pago, painel liberado mesmo com trial expirado
         },
       };
     }),

@@ -141,15 +141,26 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // Ativar franquia e atualizar plano
+  // Ativar franquia e atualizar plano — zerar trial_ends_at para liberar o painel
   if (p.franchise_id) {
+    // Salvar stripe_subscription_id se disponível na sessão
+    const subscriptionId = typeof session.subscription === "string"
+      ? session.subscription
+      : (session.subscription as { id?: string } | null)?.id ?? null;
+
+    const franchiseUpdate: Record<string, unknown> = {
+      active: true,
+      plan: franchisePlan,
+      trial_ends_at: null, // Zerar trial — conta paga, painel liberado
+      updated_at: new Date().toISOString(),
+    };
+    if (subscriptionId) {
+      franchiseUpdate.stripe_subscription_id = subscriptionId;
+    }
+
     const { error: franchiseErr } = await supabaseAdmin
       .from("franchises")
-      .update({
-        active: true,
-        plan: franchisePlan,
-        updated_at: new Date().toISOString(),
-      })
+      .update(franchiseUpdate)
       .eq("id", p.franchise_id);
 
     if (franchiseErr) {

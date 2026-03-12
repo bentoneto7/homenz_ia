@@ -667,3 +667,6 @@
 ## Tela de Bloqueio Trial Expirado (Mar 12)
 - [x] Criar componente TrialExpiredGate com CTA para checkout Stripe (3 planos, fundo escuro, sem valores)
 - [x] Integrar bloqueio no FranchiseeDashboard quando trial expirado e sem plano pago
+
+## Desbloqueio Automático Pós-Pagamento (Mar 12)
+- [x] Webhook checkout.session.completed: atualizar franchise com plano pago, zerar trial_ends_at e desbloquear painel automaticamente

@@ -1221,9 +1221,9 @@ export default function FranchiseeDashboard() {
   const { franchise, leads, sellers, stats, funnel, trial } = data;
 
   // Bloquear acesso se trial expirou e não tem plano pago
-  // trial.active = false + daysLeft = 0 significa trial expirado sem assinatura paga
-  // trial.endsAt = null significa que não tem trial (conta já paga ou sem trial configurado)
-  const trialExpired = trial && !trial.active && trial.endsAt !== null && (trial.daysLeft ?? 0) <= 0;
+  // hasPaidPlan = true libera o painel mesmo com trial expirado (assinante pago via Stripe)
+  // trial.active = false + daysLeft = 0 + hasPaidPlan = false = bloqueado
+  const trialExpired = trial && !trial.active && trial.endsAt !== null && (trial.daysLeft ?? 0) <= 0 && !trial.hasPaidPlan;
   if (trialExpired) {
     return <TrialExpiredGate />;
   }
