@@ -658,14 +658,19 @@ export const homenzRouter = router({
         .replace(/^-|-$/g, "");
       const slug = `${baseSlug}-${Date.now().toString(36)}`;
 
-      // Criar a franquia (inativa até pagamento)
+      // Trial de 15 dias: ativar imediatamente sem exigir pagamento
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 15);
+
+      // Criar a franquia já ativa com trial de 15 dias
       const franchiseInsert: Record<string, unknown> = {
         name: input.franchiseName,
         slug,
         city: input.city,
         state: input.state.toUpperCase(),
         plan: "free",
-        active: false, // Ativa após pagamento
+        active: true, // Ativa imediatamente — trial de 15 dias sem cartão
+        trial_ends_at: trialEndsAt.toISOString(),
       };
       // Adicionar address apenas se a coluna existir (migration pendente)
       if (input.address) {
@@ -682,7 +687,7 @@ export const homenzRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao criar franquia: ${franchiseErr?.message}` });
       }
 
-      // Criar o perfil do franqueado (inativo até pagamento)
+      // Criar o perfil do franqueado já ativo (trial de 15 dias sem cartão)
       const passwordHash = await hashPassword(input.password);
       const profileInsert: Record<string, unknown> = {
         name: input.name,
@@ -691,7 +696,7 @@ export const homenzRouter = router({
         role: "franchisee" as UserRole,
         franchise_id: franchise.id,
         phone: input.whatsapp,
-        active: false, // Ativa após pagamento Stripe
+        active: true, // Ativa imediatamente — trial de 15 dias sem cartão
       };
 
       const { data: newUser, error: userErr } = await supabaseAdmin
@@ -712,13 +717,13 @@ export const homenzRouter = router({
         .update({ owner_id: newUser.id })
         .eq("id", franchise.id);
 
-      // Não fazer login automático — conta inativa até pagamento
-      // Retornar dados para redirecionar para /planos
+      // Retornar dados para fazer login direto e redirecionar ao painel
       return {
         email: input.email.toLowerCase(),
         franchiseId: franchise.id,
         franchiseSlug: slug,
-        message: "Conta criada! Complete o pagamento para ativar o acesso.",
+        message: "Conta criada! Seus 15 dias grátis já começaram.",
+        trialStarted: true,
       };
     }),
 

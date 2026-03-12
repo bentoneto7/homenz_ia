@@ -651,3 +651,8 @@
 - [x] Criar endpoint trpc para retornar dias restantes do trial (campo trial_ends_at da tabela franchises)
 - [x] Implementar banner de contagem regressiva no painel do franqueado
 - [x] Banner só aparece durante o trial ativo (oculto após assinatura paga) + botão para fechar
+
+## Correção Trial Sem Cartão no Checkout (Mar 12)
+- [x] Rastrear fluxo do botão "Começar grátis" até o Stripe e corrigir onde o cartão é exigido
+- [x] Ativar conta imediatamente no cadastro com trial_ends_at = NOW() + 15 dias (sem passar pelo Stripe)
+- [x] Login automático após cadastro — redireciona direto ao painel do franqueado

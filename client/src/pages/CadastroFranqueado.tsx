@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useHomenzAuth, type HomenzUser } from "@/hooks/useHomenzAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ interface FormState {
 
 export default function CadastroFranqueado() {
   const [, navigate] = useLocation();
+  const { login } = useHomenzAuth();
   const [step, setStep] = useState(0);
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState<FormState>({
@@ -64,11 +66,18 @@ export default function CadastroFranqueado() {
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
+  const loginMutation = trpc.homenz.login.useMutation({
+    onSuccess: (loginData) => {
+      login(loginData.token, loginData.user as HomenzUser);
+      toast.success("🎉 Trial de 15 dias ativado! Bem-vindo ao painel.");
+      navigate("/franqueado");
+    },
+  });
+
   const registerFranchisee = trpc.homenz.registerFranchisee.useMutation({
     onSuccess: (data) => {
-      toast.success("Conta criada! Agora escolha seu plano para ativar o acesso.");
-      // Redirecionar para /planos com email pré-preenchido
-      navigate(`/planos?email=${encodeURIComponent(data.email)}&novo=1`);
+      // Fazer login automático após cadastro — trial já ativo, sem precisar de cartão
+      loginMutation.mutate({ email: data.email, password: form.password });
     },
     onError: (err) => {
       toast.error("Erro ao criar conta", { description: err.message });
