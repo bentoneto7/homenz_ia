@@ -676,3 +676,6 @@
 
 ## Bug: OAuth Manus acionado em /franqueado/pixel (Mar 12)
 - [x] Corrigir OAuth Manus acionado indevidamente em rotas Homenz — main.tsx agora ignora UNAUTHED_ERR_MSG em /franqueado, /vendedor, /homenzadm, /login, /cadastro, /planos, /join
+
+## Bug: Abas do Painel Franqueado Pedindo Autenticação (Mar 12)
+- [x] Corrigir abas do /franqueado que pediam autenticação — distribution.ts migrado de protectedProcedure (Manus OAuth) para homenzProcedure (JWT Homenz)

@@ -3,7 +3,8 @@
  */
 
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../_core/trpc';
+import { router, publicProcedure } from '../_core/trpc';
+import { TRPCError } from '@trpc/server';
 import { createClient } from '@supabase/supabase-js';
 import {
   createAndDistributeLead,
@@ -11,6 +12,25 @@ import {
   getFranchiseDistributionStats,
 } from '../leadDistribution';
 import { trackPixelEvent, getPixelEventStats } from '../pixelEvents';
+import { verifyToken } from '../supabase';
+
+// Middleware que aceita JWT do sistema Homenz (Bearer token)
+const homenzProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  const authHeader = ctx.req.headers.authorization;
+  const token = authHeader?.replace('Bearer ', '') ||
+    (ctx.req as { cookies?: Record<string, string> }).cookies?.['homenz_token'];
+
+  if (!token) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Token não fornecido' });
+  }
+
+  const user = await verifyToken(token);
+  if (!user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Token inválido ou expirado' });
+  }
+
+  return next({ ctx: { ...ctx, homenzUser: user } });
+});
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -178,15 +198,14 @@ export const distributionRouter = router({
   /**
    * Busca estatísticas de distribuição de uma franquia (protegido — franqueado/admin)
    */
-  getDistributionStats: protectedProcedure
+  getDistributionStats: homenzProcedure
     .input(z.object({ franchiseId: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
       // Verificar acesso: admin ou franqueado da própria franquia
-      const userRole = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      const userRole = ctx.homenzUser.role;
+      const userFranchiseId = ctx.homenzUser.franchise_id;
       if (
-        userRole !== 'admin' &&
-        userRole !== 'network_owner' &&
+        userRole !== 'owner' &&
         userFranchiseId !== input.franchiseId
       ) {
         throw new Error('Acesso negado');
@@ -198,14 +217,13 @@ export const distributionRouter = router({
   /**
    * Lista todas as landing pages de uma franquia (protegido)
    */
-  getFranchiseLandingPages: protectedProcedure
+  getFranchiseLandingPages: homenzProcedure
     .input(z.object({ franchiseId: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
-      const userRole2 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId2 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      const userRole2 = ctx.homenzUser.role;
+      const userFranchiseId2 = ctx.homenzUser.franchise_id;
       if (
-        userRole2 !== 'admin' &&
-        userRole2 !== 'network_owner' &&
+        userRole2 !== 'owner' &&
         userFranchiseId2 !== input.franchiseId
       ) {
         throw new Error('Acesso negado');
@@ -224,7 +242,7 @@ export const distributionRouter = router({
   /**
    * Cria uma nova landing page para a franquia (protegido — franqueado)
    */
-  createLandingPage: protectedProcedure
+  createLandingPage: homenzProcedure
     .input(z.object({
       franchiseId: z.string().uuid(),
       title: z.string().min(5),
@@ -233,11 +251,10 @@ export const distributionRouter = router({
       utmMedium: z.string().default('cpc'),
     }))
     .mutation(async ({ input, ctx }) => {
-      const userRole3 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId3 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      const userRole3 = ctx.homenzUser.role;
+      const userFranchiseId3 = ctx.homenzUser.franchise_id;
       if (
-        userRole3 !== 'admin' &&
-        userRole3 !== 'network_owner' &&
+        userRole3 !== 'owner' &&
         userFranchiseId3 !== input.franchiseId
       ) {
         throw new Error('Acesso negado');
@@ -281,7 +298,7 @@ export const distributionRouter = router({
   /**
    * Ativa/desativa uma landing page (protegido)
    */
-  toggleLandingPage: protectedProcedure
+  toggleLandingPage: homenzProcedure
     .input(z.object({
       landingPageId: z.string().uuid(),
       active: z.boolean(),
@@ -299,15 +316,15 @@ export const distributionRouter = router({
   /**
    * Redistribui manualmente um lead para outro vendedor (protegido — franqueado)
    */
-  reassignLead: protectedProcedure
+  reassignLead: homenzProcedure
     .input(z.object({
       leadId: z.string().uuid(),
       newSellerId: z.string().uuid(),
       reason: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const userRole4 = (ctx.user as unknown as { role: string }).role;
-      if (userRole4 !== 'admin' && userRole4 !== 'network_owner' && userRole4 !== 'franchisee') {
+      const userRole4 = ctx.homenzUser.role;
+      if (userRole4 !== 'owner' && userRole4 !== 'franchisee') {
         throw new Error('Acesso negado');
       }
 
@@ -354,7 +371,7 @@ export const distributionRouter = router({
   /**
    * Busca o histórico de distribuição de um lead específico
    */
-  getLeadDistributionHistory: protectedProcedure
+  getLeadDistributionHistory: homenzProcedure
     .input(z.object({ leadId: z.string().uuid() }))
     .query(async ({ input }) => {
       const { data, error } = await supabase
@@ -373,17 +390,16 @@ export const distributionRouter = router({
   /**
    * Atualiza o pixel_id da franquia (protegido — franqueado)
    */
-  updateFranchisePixel: protectedProcedure
+  updateFranchisePixel: homenzProcedure
     .input(z.object({
       franchiseId: z.string().uuid(),
       pixelId: z.string().max(30).optional().nullable(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const userRole5 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId5 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      const userRole5 = ctx.homenzUser.role;
+      const userFranchiseId5 = ctx.homenzUser.franchise_id;
       if (
-        userRole5 !== 'admin' &&
-        userRole5 !== 'network_owner' &&
+        userRole5 !== 'owner' &&
         userFranchiseId5 !== input.franchiseId
       ) {
         throw new Error('Acesso negado');
@@ -399,14 +415,13 @@ export const distributionRouter = router({
   /**
    * Busca o pixel_id da franquia (protegido)
    */
-  getFranchisePixel: protectedProcedure
+  getFranchisePixel: homenzProcedure
     .input(z.object({ franchiseId: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
-      const userRole6 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId6 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      const userRole6 = ctx.homenzUser.role;
+      const userFranchiseId6 = ctx.homenzUser.franchise_id;
       if (
-        userRole6 !== 'admin' &&
-        userRole6 !== 'network_owner' &&
+        userRole6 !== 'owner' &&
         userFranchiseId6 !== input.franchiseId
       ) {
         throw new Error('Acesso negado');
@@ -425,13 +440,13 @@ export const distributionRouter = router({
    * Permite que cada LP tenha seu próprio pixel (sobrescreve o da franquia).
    * Usa o campo utm_campaign com prefixo 'lppixel:' como fallback se a coluna pixel_id não existir.
    */
-  updateLandingPagePixel: protectedProcedure
+  updateLandingPagePixel: homenzProcedure
     .input(z.object({
       landingPageId: z.string().uuid(),
       pixelId: z.string().max(30).nullable(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const userRole7 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const userRole7 = ctx.homenzUser.role;
       // Verificar ownership da landing page
       const { data: lp } = await supabase
         .from('franchise_landing_pages')
@@ -439,8 +454,8 @@ export const distributionRouter = router({
         .eq('id', input.landingPageId)
         .single();
       if (!lp) throw new Error('Landing page não encontrada');
-      const userFranchiseId7 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
-      if (userRole7 !== 'admin' && userRole7 !== 'network_owner' && userFranchiseId7 !== (lp as { franchise_id: string }).franchise_id) {
+      const userFranchiseId7 = ctx.homenzUser.franchise_id;
+      if (userRole7 !== 'owner' && userFranchiseId7 !== (lp as { franchise_id: string }).franchise_id) {
         throw new Error('Acesso negado');
       }
       // Tentar atualizar pixel_id diretamente
@@ -478,12 +493,12 @@ export const distributionRouter = router({
   /**
    * Retorna estatísticas de eventos de pixel por landing page (protegido)
    */
-  getPixelEventStats: protectedProcedure
+  getPixelEventStats: homenzProcedure
     .input(z.object({ franchiseId: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
-      const userRole9 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
-      const userFranchiseId9 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
-      if (userRole9 !== 'admin' && userRole9 !== 'network_owner' && userFranchiseId9 !== input.franchiseId) {
+      const userRole9 = ctx.homenzUser.role;
+      const userFranchiseId9 = ctx.homenzUser.franchise_id;
+      if (userRole9 !== 'owner' && userFranchiseId9 !== input.franchiseId) {
         throw new Error('Acesso negado');
       }
       // Buscar slugs das landing pages da franquia
@@ -510,18 +525,18 @@ export const distributionRouter = router({
   /**
    * Busca o pixel_id de uma landing page específica.
    */
-  getLandingPagePixel: protectedProcedure
+  getLandingPagePixel: homenzProcedure
     .input(z.object({ landingPageId: z.string().uuid() }))
     .query(async ({ input, ctx }) => {
-      const userRole8 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const userRole8 = ctx.homenzUser.role;
       const { data: lp } = await supabase
         .from('franchise_landing_pages')
         .select('*')
         .eq('id', input.landingPageId)
         .single();
       if (!lp) throw new Error('Landing page não encontrada');
-      const userFranchiseId8 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
-      if (userRole8 !== 'admin' && userRole8 !== 'network_owner' && userFranchiseId8 !== (lp as { franchise_id: string }).franchise_id) {
+      const userFranchiseId8 = ctx.homenzUser.franchise_id;
+      if (userRole8 !== 'owner' && userFranchiseId8 !== (lp as { franchise_id: string }).franchise_id) {
         throw new Error('Acesso negado');
       }
       const lpData = lp as Record<string, unknown>;
