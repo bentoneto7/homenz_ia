@@ -670,3 +670,6 @@
 
 ## Desbloqueio Automático Pós-Pagamento (Mar 12)
 - [x] Webhook checkout.session.completed: atualizar franchise com plano pago, zerar trial_ends_at e desbloquear painel automaticamente
+
+## Tela de Sucesso Pós-Pagamento (Mar 12)
+- [x] Criar modal/overlay de sucesso em /franqueado?pagamento=sucesso com boas-vindas ao plano pago e lista de benefícios desbloqueados

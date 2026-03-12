@@ -1181,6 +1181,9 @@ export default function FranchiseeDashboard() {
 
   // MUST be declared before any conditional returns to comply with React hooks rules
   const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
+  // Detectar redirecionamento pós-pagamento Stripe
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(() => searchParams.get("pagamento") === "sucesso");
 
   const createInviteMutation = trpc.homenz.createSellerInvite.useMutation({
     onSuccess: (data) => {
@@ -1230,6 +1233,67 @@ export default function FranchiseeDashboard() {
 
   return (
     <HomenzLayout title={franchise?.name ?? "Dashboard Franqueado"}>
+
+      {/* Modal de Sucesso Pós-Pagamento */}
+      {showPaymentSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center relative animate-in fade-in zoom-in-95 duration-300">
+            {/* Fechar */}
+            <button
+              onClick={() => {
+                setShowPaymentSuccess(false);
+                // Limpar o parâmetro da URL sem recarregar
+                window.history.replaceState({}, "", window.location.pathname);
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Ícone animado */}
+            <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-[#004A9D] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <CheckCircle className="w-10 h-10 text-white" />
+            </div>
+
+            {/* Título */}
+            <h2 className="text-2xl font-black text-[#0A2540] mb-2">
+              Bem-vindo ao plano {((franchise?.plan ?? "Pro") as string).toUpperCase()}!
+            </h2>
+            <p className="text-[#5A667A] text-sm mb-6">
+              Seu pagamento foi confirmado. O painel está totalmente liberado.
+            </p>
+
+            {/* Benefícios do plano */}
+            <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-2xl p-5 mb-6 text-left space-y-3">
+              <p className="text-xs font-bold text-[#004A9D] uppercase tracking-wide mb-2">O que você desbloqueou</p>
+              {[
+                { icon: "🎯", text: "Funil de diagnóstico capilar com IA" },
+                { icon: "📊", text: "Painel de leads em tempo real" },
+                { icon: "👥", text: "Gestão completa de vendedores" },
+                { icon: "📱", text: "Landing pages ilimitadas de captação" },
+                { icon: "🔔", text: "Alertas de temperatura de lead" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-lg">{item.icon}</span>
+                  <span className="text-sm text-[#0A2540] font-medium">{item.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => {
+                setShowPaymentSuccess(false);
+                window.history.replaceState({}, "", window.location.pathname);
+              }}
+              className="w-full bg-gradient-to-r from-[#004A9D] to-teal-500 text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
+            >
+              Começar agora
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
 
         {/* Header */}
