@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE leads ADD COLUMN IF NOT EXISTS seen_by_seller BOOLEAN DEFAULT FALSE;\nALTER TABLE leads ADD COLUMN IF NOT EXISTS seen_at TIMESTAMPTZ DEFAULT NULL;\nCREATE INDEX IF NOT EXISTS idx_leads_assigned_seen ON leads(assigned_to, seen_by_seller) WHERE assigned_to IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute ALTER TABLE leads ADD COLUMN IF NOT EXISTS seen_by_seller BOOLEAN DEFAULT FALSE;\nALTER TABLE leads ADD COLUMN IF NOT EXISTS seen_at TIMESTAMPTZ DEFAULT NULL;\nCREATE INDEX IF NOT EXISTS idx_leads_assigned_seen ON leads(assigned_to, seen_by_seller) WHERE assigned_to IS NOT NULL;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 2: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 62 near \"TIMESTAMPTZ DEFAULT NULL\""
+  ]
+}

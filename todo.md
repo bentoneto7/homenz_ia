@@ -726,3 +726,13 @@
 - [x] sellerDashboard retornando 4 leads quentes para Ana Lima
 - [x] Login do franqueado e vendedor via API funcionando (bcrypt corrigido)
 - [x] Corrigir hash de senha: script usava SHA256, sistema usa bcrypt
+
+## Notificação ao Vendedor + Endereço na Landing (Mar 12)
+- [x] Badge de notificação no sino do HomenzLayout (badge vermelho com contagem)
+- [x] Dropdown com lista de leads novos ao clicar no sino (nome, telefone, score, tempo)
+- [x] Toast automático quando chegar lead novo (polling a cada 30s)
+- [x] Endpoint homenz.getNewLeadsCount (compara com lastSeenAt do localStorage)
+- [x] Marcar leads como vistos ao clicar no sino (atualiza localStorage)
+- [x] Endereço da franquia exibido no header da landing page pública (/l/:slug)
+- [x] Campo de endereço já existia no cadastro de franquia (CadastroFranqueado.tsx)
+- [x] Endereço da franquia do Acre atualizado no Supabase (Av. Ceará, 1234)

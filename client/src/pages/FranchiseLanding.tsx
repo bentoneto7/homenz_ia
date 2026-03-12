@@ -552,22 +552,34 @@ export default function FranchiseLanding() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-[#E2E8F0] bg-white">
-        <img src={franchiseLogo} alt={franchiseName} className="h-8 object-contain" />
-        <div className="min-w-0">
-          <p className="font-semibold text-sm truncate" style={{ color: "#004A9D", fontFamily: "Montserrat, sans-serif" }}>
-            {franchiseName}
-          </p>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#00C1B8] animate-pulse" />
-            <p className="text-[#00C1B8] text-xs">Assistente online</p>
+      <div className="border-b border-[#E2E8F0] bg-white">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <img src={franchiseLogo} alt={franchiseName} className="h-8 object-contain" />
+          <div className="min-w-0">
+            <p className="font-semibold text-sm truncate" style={{ color: "#004A9D", fontFamily: "Montserrat, sans-serif" }}>
+              {franchiseName}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00C1B8] animate-pulse" />
+              <p className="text-[#00C1B8] text-xs">Assistente online</p>
+            </div>
+          </div>
+          <div className="ml-auto flex-shrink-0">
+            <Badge className="text-xs" style={{ background: "rgba(0,74,157,0.08)", color: "#004A9D", border: "1px solid rgba(0,74,157,0.2)" }}>
+              Diagnóstico Gratuito
+            </Badge>
           </div>
         </div>
-        <div className="ml-auto flex-shrink-0">
-          <Badge className="text-xs" style={{ background: "rgba(0,74,157,0.08)", color: "#004A9D", border: "1px solid rgba(0,74,157,0.2)" }}>
-            Diagnóstico Gratuito
-          </Badge>
-        </div>
+        {/* Endereço da unidade — exibido abaixo do header quando preenchido */}
+        {franchiseAddress && (
+          <div className="px-4 pb-2.5 flex items-center gap-1.5">
+            <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "#5A667A" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs" style={{ color: "#5A667A" }}>{franchiseAddress}</span>
+          </div>
+        )}
       </div>
 
       {/* Chat Messages */}

@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useHomenzAuth } from "@/hooks/useHomenzAuth";
+import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard, Users, TrendingUp, Calendar, Settings,
   LogOut, Menu, Bell, ChevronRight,
@@ -47,6 +48,9 @@ const ROLE_LABELS: Record<string, { label: string; color: string; bg: string }> 
 
 // Root paths that require exact match (not startsWith)
 const ROOT_PATHS = ["/homenzadm", "/franqueado", "/vendedor"];
+
+// localStorage key para salvar o timestamp do último acesso do vendedor
+const LAST_SEEN_KEY = "homenz_seller_last_seen";
 
 interface SidebarContentProps {
   navItems: NavItem[];
@@ -145,11 +149,66 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useHomenzAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const navItems = user ? (NAV_BY_ROLE[user.role] ?? []) : [];
   const roleInfo = user ? ROLE_LABELS[user.role] : null;
+  const isSeller = user?.role === "seller";
 
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // ── Notificação de leads novos para vendedores ─────────────────────────────
+  // Armazenar o timestamp do último acesso em localStorage
+  const [lastSeenAt] = useState<string>(() => {
+    if (typeof window === "undefined") return new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    return localStorage.getItem(LAST_SEEN_KEY) ?? new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  });
+
+  // Guardar os IDs de leads já notificados para não repetir toast
+  const notifiedIds = useRef<Set<string>>(new Set());
+
+  // Polling a cada 30s para buscar leads novos (somente para vendedores)
+  const newLeadsQuery = trpc.homenz.getNewLeadsCount.useQuery(
+    { lastSeenAt },
+    {
+      enabled: isSeller,
+      refetchInterval: 30000,
+    }
+  );
+
+  // Disparar toast quando chegar lead novo
+  useEffect(() => {
+    if (!isSeller || !newLeadsQuery.data) return;
+    const { newLeads } = newLeadsQuery.data;
+    newLeads.forEach((lead) => {
+      if (!notifiedIds.current.has(lead.id)) {
+        notifiedIds.current.add(lead.id);
+        const heatEmoji = lead.temperature === "hot" ? "🔥" : lead.temperature === "warm" ? "🌡" : "🧊";
+        toast(`${heatEmoji} Novo lead atribuído!`, {
+          description: `${lead.name} — Score ${lead.lead_score ?? "—"}`,
+          duration: 8000,
+          action: {
+            label: "Ver leads",
+            onClick: () => { window.location.href = "/vendedor"; },
+          },
+        });
+      }
+    });
+  }, [newLeadsQuery.data, isSeller]);
+
+  // Ao clicar no sino: marcar como visto (atualizar lastSeenAt no localStorage)
+  const handleBellClick = useCallback(() => {
+    setNotifOpen((v) => !v);
+    if (isSeller) {
+      const now = new Date().toISOString();
+      localStorage.setItem(LAST_SEEN_KEY, now);
+      // Forçar refetch após marcar como visto
+      newLeadsQuery.refetch();
+    }
+  }, [isSeller, newLeadsQuery]);
+
+  const newLeadsCount = isSeller ? (newLeadsQuery.data?.count ?? 0) : 0;
+  const newLeadsList = isSeller ? (newLeadsQuery.data?.newLeads ?? []) : [];
 
   const handleLogout = useCallback(() => {
     if (loggingOut) return;
@@ -205,10 +264,78 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
             <h1 className="text-[#0A2540] font-bold text-base flex-1 truncate" style={{ fontFamily: "'Montserrat', sans-serif" }}>{title}</h1>
           )}
 
-          <div className="ml-auto flex items-center gap-2">
-            <button className="w-8 h-8 rounded-lg bg-[#F0F4F8] flex items-center justify-center text-[#5A667A] hover:text-[#004A9D] hover:bg-[#EBF4FF] transition-all">
+          <div className="ml-auto flex items-center gap-2 relative">
+            {/* Botão de sino com badge */}
+            <button
+              onClick={handleBellClick}
+              className="relative w-8 h-8 rounded-lg bg-[#F0F4F8] flex items-center justify-center text-[#5A667A] hover:text-[#004A9D] hover:bg-[#EBF4FF] transition-all"
+              title={newLeadsCount > 0 ? `${newLeadsCount} lead(s) novo(s)` : "Notificações"}
+            >
               <Bell className="w-4 h-4" />
+              {newLeadsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                  {newLeadsCount > 9 ? "9+" : newLeadsCount}
+                </span>
+              )}
             </button>
+
+            {/* Dropdown de notificações */}
+            {notifOpen && isSeller && (
+              <div className="absolute top-10 right-0 w-80 bg-white rounded-xl shadow-xl border border-[#E2E8F0] z-50 overflow-hidden">
+                <div className="p-3 border-b border-[#E2E8F0] flex items-center justify-between">
+                  <span className="text-[#0A2540] font-semibold text-sm">Leads novos</span>
+                  {newLeadsCount > 0 && (
+                    <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">
+                      {newLeadsCount} novo{newLeadsCount > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+                {newLeadsList.length === 0 ? (
+                  <div className="p-4 text-center text-[#5A667A] text-sm">
+                    Nenhum lead novo desde o último acesso
+                  </div>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto divide-y divide-[#F0F4F8]">
+                    {newLeadsList.map((lead) => {
+                      const heatEmoji = lead.temperature === "hot" ? "🔥" : lead.temperature === "warm" ? "🌡" : "🧊";
+                      const timeAgo = Math.round((Date.now() - new Date(lead.created_at).getTime()) / 60000);
+                      return (
+                        <div key={lead.id} className="p-3 hover:bg-[#F8FAFC] transition-colors">
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg leading-none mt-0.5">{heatEmoji}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[#0A2540] font-semibold text-sm truncate">{lead.name}</p>
+                              <p className="text-[#5A667A] text-xs">{lead.phone}</p>
+                              <p className="text-[#C0CADB] text-xs mt-0.5">
+                                {timeAgo < 1 ? "agora mesmo" : `há ${timeAgo} min`}
+                                {lead.lead_score ? ` · Score ${lead.lead_score}` : ""}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="p-2 border-t border-[#E2E8F0]">
+                  <a
+                    href="/vendedor"
+                    className="block text-center text-[#004A9D] text-xs font-semibold py-1.5 hover:bg-[#EBF4FF] rounded-lg transition-colors"
+                    onClick={() => setNotifOpen(false)}
+                  >
+                    Ver todos os leads →
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Fechar dropdown ao clicar fora */}
+            {notifOpen && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setNotifOpen(false)}
+              />
+            )}
           </div>
         </header>
 

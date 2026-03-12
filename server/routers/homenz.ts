@@ -1014,4 +1014,38 @@ export const homenzRouter = router({
       });
       return result;
     }),
+
+  // ── Notificações de leads novos para vendedores ──────────────────────────
+
+  /**
+   * Retorna a contagem de leads novos (atribuídos após lastSeenAt).
+   * O frontend armazena o timestamp do último acesso em localStorage.
+   * Polling a cada 30s para detectar leads novos em tempo real.
+   */
+  getNewLeadsCount: supabaseProcedure
+    .input(z.object({
+      lastSeenAt: z.string().optional(), // ISO timestamp do último acesso
+    }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.homenzUser.role !== 'seller') {
+        return { count: 0, newLeads: [] as { id: string; name: string; phone: string; lead_score: number; temperature: string; created_at: string }[] };
+      }
+      // Usar lastSeenAt fornecido ou fallback para últimos 5 minutos
+      const since = input.lastSeenAt
+        ? new Date(input.lastSeenAt).toISOString()
+        : new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      const { data: newLeads } = await supabaseAdmin
+        .from('leads')
+        .select('id, name, phone, lead_score, temperature, created_at')
+        .eq('assigned_to', ctx.homenzUser.id)
+        .gt('created_at', since)
+        .order('created_at', { ascending: false });
+
+      return {
+        count: newLeads?.length ?? 0,
+        newLeads: newLeads ?? [],
+      };
+    }),
 });
+
