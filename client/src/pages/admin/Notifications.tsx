@@ -1,6 +1,7 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Bell, ArrowLeft, CheckCheck } from "lucide-react";
@@ -13,7 +14,7 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default function AdminNotifications() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
   const [, navigate] = useLocation();
 
   const { data: clinic } = trpc.clinic.mine.useQuery(undefined, { enabled: isAuthenticated });

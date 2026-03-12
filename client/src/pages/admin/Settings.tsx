@@ -1,7 +1,8 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { Settings, ArrowLeft, Save, Copy, ExternalLink } from "lucide-react";
 
 export default function AdminSettings() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
   const [, navigate] = useLocation();
 
   const { data: clinic, refetch } = trpc.clinic.mine.useQuery(undefined, { enabled: isAuthenticated });

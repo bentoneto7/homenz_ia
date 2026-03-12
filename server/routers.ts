@@ -10,6 +10,7 @@ import {
   getDb, upsertUser, getUserByOpenId,
   getClinicBySlug, getClinicForUser, getLeadByToken,
   updateLeadFunnelStep, getPlanLimits,
+  loginClinic, registerClinicUser,
 } from "./db";
 import {
   clinics, clinicUsers, leads, leadPhotos,
@@ -110,6 +111,25 @@ export const appRouter = router({
     myClinic: protectedProcedure.query(async ({ ctx }) => {
       return getClinicForUser(ctx.user.id);
     }),
+    // ── Auth próprio para clínicas (sem Manus OAuth) ─────────────────────────────────────────
+    loginClinic: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(6) }))
+      .mutation(async ({ input }) => {
+        const result = await loginClinic(input.email, input.password);
+        if (!result) throw new TRPCError({ code: "UNAUTHORIZED", message: "E-mail ou senha incorretos" });
+        return { token: result.token, user: result.user };
+      }),
+    registerClinic: publicProcedure
+      .input(z.object({
+        name: z.string().min(2),
+        email: z.string().email(),
+        password: z.string().min(6),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await registerClinicUser(input);
+        if (!result) throw new TRPCError({ code: "CONFLICT", message: "E-mail já cadastrado" });
+        return { token: result.token, user: result.user };
+      }),
   }),
 
   // ── CLÍNICAS ───────────────────────────────────────────────────────────────

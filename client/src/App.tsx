@@ -34,6 +34,7 @@ import NetworkAdminDashboard from "./pages/network/NetworkAdminDashboard";
 import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
 import HomenzLogin from "./pages/HomenzLogin";
+import ClinicLogin from "./pages/ClinicLogin";
 import HomenzAdmLogin from "./pages/HomenzAdmLogin";
 import FranchiseLanding from "./pages/FranchiseLanding";
 import PlanosPage from "./pages/PlanosPage";
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/plataforma" component={Home} />
       <Route path="/cadastro" component={CadastroFranqueado} />
       <Route path="/cadastro-clinica" component={ClinicOnboarding} />
+      <Route path="/login-clinica" component={ClinicLogin} />
       <Route path="/aguardando-pagamento" component={AguardandoPagamento} />
       <Route path="/planos" component={PlanosPage} />
       <Route path="/boas-vindas" component={BoasVindas} />

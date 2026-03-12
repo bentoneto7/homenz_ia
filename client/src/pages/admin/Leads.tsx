@@ -1,8 +1,9 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, Link } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, Search, ChevronRight, ArrowLeft, TrendingUp, Phone } from "lucide-react";
@@ -36,7 +37,7 @@ const STEP_COLORS: Record<string, string> = {
 };
 
 export default function AdminLeads() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [stepFilter, setStepFilter] = useState<string>("");
@@ -50,7 +51,7 @@ export default function AdminLeads() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <a href={getLoginUrl()}><Button className="gradient-gold text-white border-0">Entrar</Button></a>
+        <Button className="gradient-gold text-white border-0" onClick={() => window.location.href = '/login-clinica'}>Entrar</Button>
       </div>
     );
   }

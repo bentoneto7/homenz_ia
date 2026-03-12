@@ -49,6 +49,11 @@
 
 ## Fase 6: Onboarding
 - [x] Página de cadastro da clínica com autenticação Manus OAuth
+- [x] Migrar toda autenticação do painel de clínicas para JWT próprio (sem Manus OAuth)
+- [x] Hook useClinicAuth para gerenciar token JWT local
+- [x] Página /login-clinica com login/registro por email+senha
+- [x] context.ts verificando Bearer JWT antes do cookie Manus OAuth
+- [x] DashboardLayout e todos os painéis admin migrados para useClinicAuth
 
 ## Fase 7: Testes e Polimento
 - [x] Testes Vitest (12 testes passando: auth, clinic, leads, funnel flow, UTMs, notificações)
@@ -679,3 +684,25 @@
 
 ## Bug: Abas do Painel Franqueado Pedindo Autenticação (Mar 12)
 - [x] Corrigir abas do /franqueado que pediam autenticação — distribution.ts migrado de protectedProcedure (Manus OAuth) para homenzProcedure (JWT Homenz)
+
+## Remoção Completa do OAuth Manus (Mar 12)
+- [ ] Mapear todos os routers que usam protectedProcedure da Manus
+- [ ] Migrar todos os routers para homenzProcedure (JWT Homenz)
+- [ ] Remover interceptor OAuth da Manus do main.tsx
+- [ ] Remover trpc.auth.me do App.tsx e componentes que usam useAuth do _core
+- [ ] Garantir que nenhuma rota do sistema Homenz depende de sessão Manus
+
+## Remoção Total OAuth Manus (Mar 12)
+- [ ] Criar auth próprio para clínicas: email+senha+JWT (igual ao sistema Homenz)
+- [ ] Migrar routers.ts principal: protectedProcedure → clinicaJwtProcedure
+- [ ] Criar tela de login/cadastro para clínicas sem OAuth
+- [ ] Remover interceptor OAuth do main.tsx
+- [ ] Remover useAuth do _core e trpc.auth.me de todos os componentes
+- [ ] Remover rotas /api/oauth/* do servidor
+
+## Migração para Supabase Auth (Mar 12)
+- [ ] Criar supabaseAuthProcedure no servidor usando JWT do Supabase Auth
+- [ ] Adicionar endpoints de login/cadastro/logout para clínicas usando Supabase Auth
+- [ ] Criar tela de login e cadastro de clínicas no frontend com Supabase Auth
+- [ ] Atualizar cliente tRPC para enviar token Supabase no Authorization header
+- [ ] Remover interceptor OAuth Manus do main.tsx e limpar referências ao _core/useAuth

@@ -1,5 +1,4 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { useLocation, Link } from "wouter";
@@ -24,7 +23,7 @@ function StatCard({ title, value, sub, icon, color }: {
 }
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useClinicAuth();
   const [, navigate] = useLocation();
 
   const { data: clinic } = trpc.clinic.mine.useQuery(undefined, { enabled: isAuthenticated });
@@ -47,9 +46,7 @@ export default function AdminDashboard() {
           </div>
           <h1 className="text-2xl font-bold mb-3">Painel da Clínica</h1>
           <p className="text-muted-foreground mb-6">Faça login para acessar seu painel.</p>
-          <a href={getLoginUrl()}>
-            <Button className="gradient-gold text-white border-0 w-full">Entrar</Button>
-          </a>
+          <Button className="gradient-gold text-white border-0 w-full" onClick={() => navigate("/login-clinica")}>Entrar</Button>
         </div>
       </div>
     );

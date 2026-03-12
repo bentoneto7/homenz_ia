@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +10,17 @@ import { Scissors, ChevronRight, ChevronLeft, Check } from "lucide-react";
 
 const STEPS = ["Dados básicos", "Localização", "Contato", "Confirmação"];
 
+const CLINIC_TOKEN_KEY = "homenz_token";
+
 export default function ClinicOnboarding() {
-  const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [step, setStep] = useState(0);
+  const token = typeof window !== "undefined" ? localStorage.getItem(CLINIC_TOKEN_KEY) : null;
   const [form, setForm] = useState({
     name: "",
     slug: "",
-    ownerName: user?.name ?? "",
-    email: user?.email ?? "",
+    ownerName: "",
+    email: "",
     phone: "",
     whatsapp: "",
     city: "",
@@ -39,7 +39,7 @@ export default function ClinicOnboarding() {
     onError: (err) => toast.error(err.message),
   });
 
-  if (!isAuthenticated) {
+  if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md mx-auto px-4">
@@ -50,11 +50,12 @@ export default function ClinicOnboarding() {
           <p className="text-muted-foreground mb-6">
             Faça login para criar sua clínica e começar a captar leads com IA.
           </p>
-          <a href={getLoginUrl()}>
-            <Button className="gradient-gold text-white border-0 w-full">
-              Entrar para continuar
-            </Button>
-          </a>
+          <Button
+            className="gradient-gold text-white border-0 w-full"
+            onClick={() => navigate("/login-clinica")}
+          >
+            Entrar para continuar
+          </Button>
         </div>
       </div>
     );

@@ -57,6 +57,13 @@
       "when": 1773337579683,
       "tag": "0007_military_wallow",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1773345349183,
+      "tag": "0008_powerful_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,10 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Trophy, Medal, Star, Users, Calendar, MapPin, Camera, TrendingUp, TrendingDown, Minus, Crown, AlertCircle } from "lucide-react";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 
 const GRADE_COLORS: Record<string, string> = {
   S: "bg-yellow-100 text-yellow-700 border-yellow-300",
@@ -21,16 +22,16 @@ const PERIOD_LABELS: Record<string, string> = {
 };
 
 export default function NetworkRanking() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
   const [period, setPeriod] = useState<"today" | "week" | "month">("month");
   const [selectedBrandId] = useState(1); // Homenz = brand ID 1
 
   const { data: ranking, isLoading } = trpc.brand.networkRanking.useQuery(
     { brandId: selectedBrandId, period },
-    { enabled: user?.role === "admin" }
+    { enabled: isAuthenticated }
   );
 
-  if (user?.role !== "admin") {
+  if (!isAuthenticated) {
     return (
       <DashboardLayout>
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">

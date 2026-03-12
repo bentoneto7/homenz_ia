@@ -12,16 +12,18 @@ import {
 } from "drizzle-orm/mysql-core";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// USUÁRIOS (Manus Auth)
+// USUÁRIOS (Auth próprio por email+senha)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  openId: varchar("openId", { length: 64 }).unique(), // legado OAuth Manus — opcional
   name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  email: varchar("email", { length: 320 }).unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  loginMethod: varchar("loginMethod", { length: 64 }).default("email"),
   role: mysqlEnum("role", ["user", "admin", "franchisee", "seller", "owner"]).default("user").notNull(),
+  active: boolean("active").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

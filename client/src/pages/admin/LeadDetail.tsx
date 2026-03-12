@@ -1,6 +1,7 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Phone, Mail, TrendingUp, Camera, Brain, Calendar } from "lucide-react";
 
@@ -14,7 +15,7 @@ const STEP_LABELS: Record<string, string> = {
 export default function AdminLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
 
   const { data: lead, isLoading } = trpc.leads.getById.useQuery(
     { id: Number(id) },

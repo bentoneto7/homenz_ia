@@ -7,6 +7,59 @@ import {
   InsertUser,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "homenz-clinic-secret-2024";
+const JWT_EXPIRES_IN = "7d";
+
+export async function loginClinic(email: string, password: string): Promise<{ user: typeof users.$inferSelect; token: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase().trim())).limit(1);
+  const user = result[0];
+  if (!user || !user.passwordHash) return null;
+  const match = await bcrypt.compare(password, user.passwordHash);
+  if (!match) return null;
+  const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, user.id));
+  return { user, token };
+}
+
+export async function verifyClinicToken(token: string): Promise<typeof users.$inferSelect | null> {
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
+    const db = await getDb();
+    if (!db) return null;
+    const result = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
+    return result[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function registerClinicUser(data: { name: string; email: string; password: string }): Promise<{ user: typeof users.$inferSelect; token: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+  // Verificar se email já existe
+  const existing = await db.select().from(users).where(eq(users.email, data.email.toLowerCase().trim())).limit(1);
+  if (existing[0]) return null;
+  const passwordHash = await bcrypt.hash(data.password, 10);
+  await db.insert(users).values({
+    name: data.name,
+    email: data.email.toLowerCase().trim(),
+    passwordHash,
+    loginMethod: "email",
+    role: "user",
+    active: true,
+    lastSignedIn: new Date(),
+  });
+  const result = await db.select().from(users).where(eq(users.email, data.email.toLowerCase().trim())).limit(1);
+  const user = result[0];
+  if (!user) return null;
+  const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return { user, token };
+}
 
 let _db: ReturnType<typeof drizzle> | null = null;
 

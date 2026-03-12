@@ -1,7 +1,8 @@
+import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Calendar, ArrowLeft, Check, X, Clock } from "lucide-react";
@@ -20,7 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AdminAppointments() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useClinicAuth();
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState("");
 
