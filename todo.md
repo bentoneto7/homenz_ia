@@ -631,4 +631,10 @@
 - [x] Reformular prompt de geração de imagem para transformação capilar mais agressiva e visível — prompt contextualizado com baldnessLevel + treatmentInfo + instruções explícitas de cobertura total
 
 ## Remoção Classificação Capilar (Mar 12)
-- [ ] Remover classificação técnica (Norwood/Ludwig) da tela de resultado — deixar apenas o potencial de crescimento capilar
+- [x] Remover classificação técnica (Norwood/Ludwig) da tela de resultado — deixar apenas o potencial de crescimento capilar
+
+## Validação do Prompt de Geração de Imagem Antes/Depois (Mar 12)
+- [x] Obter fotos reais de calvície para teste (3 fotos: topo, lateral, frente)
+- [x] Criar lead de teste e processar análise de IA com prompt atual
+- [x] Avaliar resultado visual das imagens antes/depois — transformação excelente nos 3 ângulos
+- [x] fal.ai flux-pro-fill não necessário — IA nativa já produz resultados de alta qualidade
