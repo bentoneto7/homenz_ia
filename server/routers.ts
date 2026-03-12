@@ -764,13 +764,19 @@ Retorne JSON com os campos especificados.`,
           const frontPhoto = photos.find((p) => p.photoType === "front") ?? photos[0];
           let afterImageUrl = frontPhoto.s3Url;
           try {
-            const imgResult = await generateImage({
+            // Timeout de 45s para não travar o processo
+            const imgPromise = generateImage({
               prompt: `Photo-realistic hair restoration result for the same man in the original photo. Show the man with a FULL, NATURAL, WELL-STYLED head of hair — thick, dense, and well-groomed. The hairstyle should look masculine and modern, as if he has always had a full head of hair. Keep exactly the same face, facial features, skin tone, glasses (if any), beard (if any), same angle, same lighting, and same background. Only change the hair: make it full, natural, and beautifully styled. The result should look completely realistic and photographic — not illustrated or digitally altered. Masculine, confident appearance. High quality, photorealistic.`,
               originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
             });
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Image generation timeout (45s)")), 45_000)
+            );
+            const imgResult = await Promise.race([imgPromise, timeoutPromise]);
             afterImageUrl = imgResult.url ?? frontPhoto.s3Url;
           } catch (imgErr) {
-            console.warn("[AI] Image generation failed, using original:", imgErr);
+            console.warn("[AI] Image generation failed or timed out, using original photo:", imgErr);
+            // afterImageUrl já está definido como frontPhoto.s3Url — continua normalmente
           }
 
           // Salvar resultado — usar SQL raw para evitar bug do Drizzle com TiDB em updates com campos JSON
@@ -832,11 +838,18 @@ Retorne JSON com os campos especificados.`,
           });
           return { resultId, status: "done" };;
         } catch (err) {
-          await db.update(aiResults).set({
-            processingStatus: "error",
-            errorMessage: String(err),
-          }).where(eq(aiResults.id, resultId));
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Erro ao processar análise" });
+          // Log do erro real para facilitar debugging
+          console.error(`[AI] processPhotos FAILED for lead ${lead.id}, resultId ${resultId}:`, err);
+          try {
+            await db.update(aiResults).set({
+              processingStatus: "error",
+              errorMessage: String(err),
+            }).where(eq(aiResults.id, resultId));
+          } catch (dbErr) {
+            console.error("[AI] Failed to save error status to DB:", dbErr);
+          }
+          const errMsg = err instanceof Error ? err.message : String(err);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao processar análise: ${errMsg}` });
         }
       }),
 

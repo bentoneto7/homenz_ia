@@ -619,3 +619,7 @@
 
 ## Correção ai.processPhotos (Mar 12)
 - [x] Corrigir erro "Erro ao processar análise" no procedure ai.processPhotos — SQL raw usava snake_case mas MySQL tem colunas camelCase
+
+## Retry + Fallback Análise (Mar 12)
+- [x] Retry automático no frontend quando análise retorna erro (até 3 tentativas com delay de 3s)
+- [x] Fallback robusto: timeout de 45s na geração de imagem + log detalhado do erro real no catch

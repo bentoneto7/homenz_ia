@@ -155,9 +155,26 @@ export default function FunnelPhotos() {
 
   const uploadPhoto = trpc.photos.upload.useMutation();
   const updateStep = trpc.leads.updateStep.useMutation();
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
+
   const triggerAI = trpc.ai.processPhotos.useMutation({
     onSuccess: () => navigate(`/c/${slug}/resultado/${token}`),
-    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : "Erro ao processar"),
+    onError: (err: unknown) => {
+      const currentRetry = retryCount;
+      if (currentRetry < MAX_RETRIES) {
+        const nextRetry = currentRetry + 1;
+        setRetryCount(nextRetry);
+        toast.loading(`Tentando novamente... (${nextRetry}/${MAX_RETRIES})`, { id: 'ai-retry' });
+        setTimeout(() => {
+          triggerAI.mutate({ sessionToken: token ?? "" });
+        }, 3000);
+      } else {
+        toast.dismiss('ai-retry');
+        toast.error(err instanceof Error ? err.message : "Erro ao processar. Tente novamente mais tarde.");
+        setRetryCount(0);
+      }
+    },
   });
 
   const currentStep = PHOTO_STEPS[currentPhotoIndex];
