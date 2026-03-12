@@ -585,3 +585,12 @@
 - [x] Otimizar fluxo de fotos: preview com botão "refazer" antes de enviar
 - [x] Otimizar fluxo de fotos: feedback de qualidade (dica de boa iluminação, ângulo correto)
 - [x] Eventos avançados: evento `Lead` no Meta Pixel quando lead é distribuído para vendedor
+
+## CAPI + Relatório de Eventos + Teste de Pixel (Mar 12)
+- [x] Conversions API: campo capi_access_token na aba Pixel do franqueado
+- [x] Conversions API: procedure server-side que envia eventos ao Meta CAPI
+- [x] Conversions API: enviar Lead e CompleteRegistration via CAPI ao criar lead
+- [x] Relatório de eventos: cache em memória + contagem de leads do banco por LP
+- [x] Relatório de eventos: procedure getPixelEventStats por LP (ViewContent, InitiateCheckout, Lead)
+- [x] Relatório de eventos: tabela com totais e taxa de conversão por LP no painel
+- [x] Botão Testar Conexão: envia PageView de teste ao Meta CAPI e retorna status

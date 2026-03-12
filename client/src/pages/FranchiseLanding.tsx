@@ -160,12 +160,20 @@ export default function FranchiseLanding() {
   }, [pixelId]);
 
   const submitLeadMutation = trpc.distribution.submitLead.useMutation();
+  const trackEventMutation = trpc.distribution.trackPixelEvent.useMutation();
 
-  // Helper para disparar eventos do Meta Pixel
+  // Helper para disparar eventos do Meta Pixel (client-side) + rastreamento server-side
   const firePixelEvent = (event: string, params?: Record<string, unknown>) => {
+    // Client-side: Meta Pixel
     const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
     if (typeof fbq === 'function') {
       fbq('track', event, params || {});
+    }
+    // Server-side: rastreamento interno
+    const validEvents = ['ViewContent', 'InitiateCheckout', 'Lead', 'CompleteRegistration'] as const;
+    type ValidEvent = typeof validEvents[number];
+    if (slug && validEvents.includes(event as ValidEvent)) {
+      trackEventMutation.mutate({ slug, event: event as ValidEvent });
     }
   };
 

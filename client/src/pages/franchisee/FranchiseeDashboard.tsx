@@ -12,7 +12,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, TrendingDown,
   Zap, Activity, ArrowUp, ArrowDown, Minus,
   Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2, MapPin,
-  Settings, Info, CheckCircle,
+  Settings, Info, CheckCircle, EyeOff, BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -802,69 +802,117 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
     { franchiseId },
     { refetchOnWindowFocus: false }
   );
-  const [pixelInput, setPixelInput] = useState("");
-  const [saved, setSaved] = useState(false);
+  const capiQuery = trpc.homenz.getCapiToken.useQuery(
+    { franchiseId },
+    { refetchOnWindowFocus: false }
+  );
+  const eventStatsQuery = trpc.distribution.getPixelEventStats.useQuery(
+    { franchiseId },
+    { refetchOnWindowFocus: false, refetchInterval: 30000 }
+  );
 
-  // Sincronizar input com dado do servidor
+  const [pixelInput, setPixelInput] = useState("");
+  const [capiInput, setCapiInput] = useState("");
+  const [showCapiToken, setShowCapiToken] = useState(false);
+  const [savedPixel, setSavedPixel] = useState(false);
+  const [savedCapi, setSavedCapi] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isTesting, setIsTesting] = useState(false);
+
   useEffect(() => {
-    if (pixelQuery.data?.pixelId) {
-      setPixelInput(pixelQuery.data.pixelId);
-    }
+    if (pixelQuery.data?.pixelId) setPixelInput(pixelQuery.data.pixelId);
   }, [pixelQuery.data?.pixelId]);
 
-  const updateMutation = trpc.homenz.updateFranchisePixel.useMutation({
+  useEffect(() => {
+    if (capiQuery.data?.capiToken) setCapiInput(capiQuery.data.capiToken);
+  }, [capiQuery.data?.capiToken]);
+
+  const updatePixelMutation = trpc.homenz.updateFranchisePixel.useMutation({
     onSuccess: () => {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setSavedPixel(true);
+      setTimeout(() => setSavedPixel(false), 3000);
       utils.homenz.getFranchisePixel.invalidate({ franchiseId });
       toast.success("Meta Pixel salvo com sucesso!");
     },
     onError: (err) => toast.error(err.message || "Erro ao salvar pixel"),
   });
 
+  const updateCapiMutation = trpc.homenz.updateCapiToken.useMutation({
+    onSuccess: () => {
+      setSavedCapi(true);
+      setTimeout(() => setSavedCapi(false), 3000);
+      utils.homenz.getCapiToken.invalidate({ franchiseId });
+      toast.success("CAPI Token salvo com sucesso!");
+    },
+    onError: (err) => toast.error(err.message || "Erro ao salvar CAPI token"),
+  });
+
+  const testCapiMutation = trpc.homenz.testCapiEvent.useMutation();
+
+  const handleTestPixel = async () => {
+    const pid = pixelInput || pixelQuery.data?.pixelId;
+    const capi = capiInput || capiQuery.data?.capiToken;
+    if (!pid) {
+      toast.error("Configure o ID do Pixel antes de testar");
+      return;
+    }
+    if (!capi) {
+      toast.error("Configure o CAPI Access Token para testar a conexão server-side");
+      return;
+    }
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      const result = await testCapiMutation.mutateAsync({ franchiseId, pixelId: pid, capiToken: capi });
+      if (result.success) {
+        setTestResult({ success: true, message: `Conexão OK! ${result.eventsReceived ?? 1} evento(s) recebido(s) pelo Meta.` });
+      } else {
+        setTestResult({ success: false, message: result.error || "Erro desconhecido" });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao testar";
+      setTestResult({ success: false, message: msg });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   const currentPixel = pixelQuery.data?.pixelId || null;
+  const stats = eventStatsQuery.data as Record<string, { viewContent: number; initiateCheckout: number; leadFromDb?: number; lead: number; title: string }> | undefined;
+  const totalViews = stats ? Object.values(stats).reduce((s, v) => s + (v.viewContent || 0), 0) : 0;
+  const totalInitiate = stats ? Object.values(stats).reduce((s, v) => s + (v.initiateCheckout || 0), 0) : 0;
+  const totalLeads = stats ? Object.values(stats).reduce((s, v) => s + (v.leadFromDb ?? v.lead ?? 0), 0) : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Card principal */}
+    <div className="space-y-5">
+      {/* Card: Pixel ID */}
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <Settings className="w-6 h-6 text-[#004A9D]" />
+        <div className="flex items-start gap-4 mb-5">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Settings className="w-5 h-5 text-[#004A9D]" />
           </div>
           <div>
-            <h4 className="text-[#0A2540] font-bold text-lg">Meta Pixel (Facebook Ads)</h4>
-            <p className="text-[#5A667A] text-sm mt-1">
-              Configure o seu Pixel do Meta para rastrear conversões nas suas landing pages.
-              Os eventos serão disparados automaticamente quando leads interagem com o funil.
-            </p>
+            <h4 className="text-[#0A2540] font-bold text-base">Meta Pixel (Facebook Ads)</h4>
+            <p className="text-[#5A667A] text-xs mt-0.5">Rastreie conversões nas suas landing pages com eventos automáticos.</p>
           </div>
         </div>
-
-        {/* Input do Pixel ID */}
         <div className="space-y-3">
-          <label className="block text-sm font-semibold text-[#0A2540]">
-            ID do Meta Pixel
-          </label>
-          <div className="flex gap-3">
+          <label className="block text-xs font-semibold text-[#0A2540]">ID do Meta Pixel</label>
+          <div className="flex gap-2">
             <input
               type="text"
               value={pixelInput}
               onChange={(e) => setPixelInput(e.target.value.replace(/\D/g, "").slice(0, 20))}
               placeholder="Ex: 1234567890123456"
-              className="flex-1 border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#004A9D]/30 focus:border-[#004A9D]"
+              className="flex-1 border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-[#0A2540] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#004A9D]/30 focus:border-[#004A9D]"
             />
             <button
-              onClick={() => updateMutation.mutate({ franchiseId, pixelId: pixelInput || null })}
-              disabled={updateMutation.isPending}
-              className="px-5 py-3 bg-[#004A9D] text-white text-sm font-semibold rounded-xl hover:bg-[#003580] transition-colors disabled:opacity-50 flex items-center gap-2"
+              onClick={() => updatePixelMutation.mutate({ franchiseId, pixelId: pixelInput || null })}
+              disabled={updatePixelMutation.isPending}
+              className="px-4 py-2.5 bg-[#004A9D] text-white text-sm font-semibold rounded-xl hover:bg-[#003580] transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              {updateMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : saved ? (
-                <CheckCircle className="w-4 h-4" />
-              ) : null}
-              {saved ? "Salvo!" : "Salvar"}
+              {updatePixelMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : savedPixel ? <CheckCircle className="w-4 h-4" /> : null}
+              {savedPixel ? "Salvo!" : "Salvar"}
             </button>
           </div>
           {currentPixel && (
@@ -873,65 +921,167 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
               Pixel ativo: <span className="font-mono font-bold">{currentPixel}</span>
             </p>
           )}
-          {pixelInput && (
+        </div>
+      </div>
+
+      {/* Card: CAPI Access Token */}
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
+        <div className="flex items-start gap-4 mb-5">
+          <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+            <Zap className="w-5 h-5 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h4 className="text-[#0A2540] font-bold text-base">Conversions API (CAPI)</h4>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Recomendado</span>
+            </div>
+            <p className="text-[#5A667A] text-xs mt-0.5">Envio server-side de eventos — mais preciso que o pixel, funciona mesmo com bloqueadores de cookies (iOS 14+).</p>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <label className="block text-xs font-semibold text-[#0A2540]">Access Token do CAPI</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type={showCapiToken ? "text" : "password"}
+                value={capiInput}
+                onChange={(e) => setCapiInput(e.target.value.slice(0, 300))}
+                placeholder="EAAxxxxxx..."
+                className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-[#0A2540] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCapiToken(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A667A] hover:text-[#0A2540]"
+              >
+                {showCapiToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
             <button
-              onClick={() => { setPixelInput(""); updateMutation.mutate({ franchiseId, pixelId: null }); }}
-              className="text-xs text-red-500 hover:underline"
+              onClick={() => updateCapiMutation.mutate({ franchiseId, capiToken: capiInput || null })}
+              disabled={updateCapiMutation.isPending}
+              className="px-4 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              Remover pixel
+              {updateCapiMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : savedCapi ? <CheckCircle className="w-4 h-4" /> : null}
+              {savedCapi ? "Salvo!" : "Salvar"}
             </button>
+          </div>
+          <p className="text-[10px] text-[#5A667A]">Encontre em: Meta Business &gt; Configurações &gt; Fontes de Dados &gt; Pixels &gt; API de Conversões &gt; Gerar Token de Acesso</p>
+        </div>
+
+        {/* Botão Testar Pixel */}
+        <div className="mt-4 pt-4 border-t border-[#F1F5F9]">
+          <button
+            onClick={handleTestPixel}
+            disabled={isTesting || (!pixelInput && !currentPixel)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-40"
+            style={{ background: "rgba(0,74,157,0.06)", border: "1px solid rgba(0,74,157,0.2)", color: "#004A9D" }}
+          >
+            {isTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {isTesting ? "Testando..." : "Testar Conexão"}
+          </button>
+          {testResult && (
+            <div className={`mt-3 flex items-start gap-2 px-3 py-2 rounded-xl text-xs ${testResult.success ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-red-50 border border-red-200 text-red-700"}`}>
+              {testResult.success ? <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+              {testResult.message}
+            </div>
           )}
         </div>
       </div>
 
-      {/* Eventos rastreados */}
+      {/* Card: Relatório de Eventos */}
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
-        <h5 className="text-[#0A2540] font-bold mb-4 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-500" />
-          Eventos Rastreados Automaticamente
-        </h5>
-        <div className="space-y-3">
+        <div className="flex items-center justify-between mb-4">
+          <h5 className="text-[#0A2540] font-bold flex items-center gap-2 text-base">
+            <BarChart2 className="w-4 h-4 text-[#004A9D]" />
+            Eventos por Landing Page
+          </h5>
+          <button
+            onClick={() => eventStatsQuery.refetch()}
+            className="text-xs text-[#5A667A] hover:text-[#004A9D] flex items-center gap-1"
+          >
+            {eventStatsQuery.isFetching ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+            Atualizar
+          </button>
+        </div>
+
+        {/* Totais */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
           {[
-            {
-              event: "InitiateCheckout",
-              desc: "Disparado quando o lead informa nome e WhatsApp no funil",
-              icon: "📱",
-            },
-            {
-              event: "CompleteRegistration",
-              desc: "Disparado quando o agendamento é confirmado com sucesso",
-              icon: "✅",
-            },
-            {
-              event: "ViewContent",
-              desc: "Disparado quando o lead abre a landing page",
-              icon: "👁️",
-            },
-          ].map(({ event, desc, icon }) => (
-            <div key={event} className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-xl">
-              <span className="text-lg">{icon}</span>
-              <div>
-                <p className="text-sm font-bold text-[#0A2540] font-mono">{event}</p>
-                <p className="text-xs text-[#5A667A] mt-0.5">{desc}</p>
-              </div>
+            { label: "Visualizações", value: totalViews, icon: "👁️", color: "#004A9D" },
+            { label: "Iniciaram", value: totalInitiate, icon: "📱", color: "#7C3AED" },
+            { label: "Leads", value: totalLeads, icon: "✅", color: "#059669" },
+          ].map(({ label, value, icon, color }) => (
+            <div key={label} className="bg-[#F8FAFC] rounded-xl p-3 text-center">
+              <div className="text-lg mb-1">{icon}</div>
+              <div className="text-xl font-bold" style={{ color }}>{value}</div>
+              <div className="text-[10px] text-[#5A667A] mt-0.5">{label}</div>
             </div>
           ))}
         </div>
+
+        {/* Tabela por LP */}
+        {stats && Object.keys(stats).length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-[#E2E8F0]">
+                  <th className="text-left py-2 px-2 text-[#5A667A] font-semibold">Landing Page</th>
+                  <th className="text-center py-2 px-2 text-[#5A667A] font-semibold">👁️ Views</th>
+                  <th className="text-center py-2 px-2 text-[#5A667A] font-semibold">📱 Iniciou</th>
+                  <th className="text-center py-2 px-2 text-[#5A667A] font-semibold">✅ Leads</th>
+                  <th className="text-center py-2 px-2 text-[#5A667A] font-semibold">Conv.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(stats).map(([slug, s]) => {
+                  const leads = s.leadFromDb ?? s.lead ?? 0;
+                  const conv = s.viewContent > 0 ? ((leads / s.viewContent) * 100).toFixed(1) : "—";
+                  return (
+                    <tr key={slug} className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC]">
+                      <td className="py-2 px-2 text-[#0A2540] font-medium max-w-[140px] truncate">{s.title || slug}</td>
+                      <td className="py-2 px-2 text-center text-[#004A9D] font-bold">{s.viewContent || 0}</td>
+                      <td className="py-2 px-2 text-center text-purple-600 font-bold">{s.initiateCheckout || 0}</td>
+                      <td className="py-2 px-2 text-center text-emerald-600 font-bold">{leads}</td>
+                      <td className="py-2 px-2 text-center text-[#5A667A]">{conv}{conv !== "—" ? "%" : ""}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-[#5A667A] text-xs">
+            {eventStatsQuery.isLoading ? "Carregando..." : "Nenhuma landing page ativa com eventos registrados ainda."}
+          </div>
+        )}
       </div>
 
-      {/* Instrucoes */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-[#004A9D] flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-[#004A9D] mb-1">Como encontrar o ID do Pixel</p>
-            <ol className="text-xs text-[#374151] space-y-1 list-decimal list-inside">
-              <li>Acesse o <strong>Gerenciador de Anúncios</strong> do Meta (Facebook)</li>
-              <li>Vá em <strong>Fontes de Dados &gt; Pixels</strong></li>
-              <li>Copie o número de 15-16 dígitos do seu Pixel</li>
-              <li>Cole acima e clique em <strong>Salvar</strong></li>
-            </ol>
-          </div>
+      {/* Eventos rastreados */}
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5">
+        <h5 className="text-[#0A2540] font-bold mb-3 flex items-center gap-2 text-sm">
+          <Zap className="w-4 h-4 text-amber-500" />
+          Eventos Disparados Automaticamente
+        </h5>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { event: "ViewContent", desc: "Quando o lead abre a landing page", icon: "👁️", capi: true },
+            { event: "InitiateCheckout", desc: "Quando informa nome e WhatsApp", icon: "📱", capi: false },
+            { event: "Lead", desc: "Quando o lead é distribuído para o vendedor", icon: "✅", capi: true },
+            { event: "CompleteRegistration", desc: "Quando o cadastro é finalizado", icon: "🎉", capi: true },
+          ].map(({ event, desc, icon, capi }) => (
+            <div key={event} className="flex items-center gap-3 p-2.5 bg-[#F8FAFC] rounded-xl">
+              <span className="text-base">{icon}</span>
+              <div className="flex-1">
+                <p className="text-xs font-bold text-[#0A2540] font-mono">{event}</p>
+                <p className="text-[10px] text-[#5A667A]">{desc}</p>
+              </div>
+              <div className="flex gap-1">
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Pixel</span>
+                {capi && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">CAPI</span>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

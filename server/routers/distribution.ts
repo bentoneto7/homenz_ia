@@ -10,6 +10,7 @@ import {
   distributeLeadRoundRobin,
   getFranchiseDistributionStats,
 } from '../leadDistribution';
+import { trackPixelEvent, getPixelEventStats } from '../pixelEvents';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -96,6 +97,75 @@ export const distributionRouter = router({
         utmMedium: input.utmMedium || lp.utm_medium || 'organic',
         utmCampaign: input.utmCampaign || lp.utm_campaign || input.landingPageSlug,
       });
+
+      // 3. Enviar evento via CAPI (server-side) se configurado
+      try {
+        // Buscar pixel_id e capi_access_token da franquia
+        const { data: franchise } = await supabase
+          .from('franchises')
+          .select('*')
+          .eq('id', lp.franchise_id)
+          .single();
+        const franchiseData = franchise as Record<string, unknown> | null;
+        let pixelId = franchiseData?.pixel_id as string | null | undefined;
+        let capiToken = franchiseData?.capi_access_token as string | null | undefined;
+        // Fallback: ler de landing pages especiais
+        if (!pixelId) {
+          const configSlug = `__pixel_${lp.franchise_id.replace(/-/g, '')}__`;
+          const { data: pixelLp } = await supabase
+            .from('franchise_landing_pages')
+            .select('utm_campaign')
+            .eq('slug', configSlug)
+            .single();
+          const stored = (pixelLp as { utm_campaign?: string } | null)?.utm_campaign || null;
+          if (stored && stored.startsWith('pixel:')) pixelId = stored.slice(6);
+        }
+        if (!capiToken) {
+          const capiSlug = `__capi_${lp.franchise_id.replace(/-/g, '')}__`;
+          const { data: capiLp } = await supabase
+            .from('franchise_landing_pages')
+            .select('utm_campaign')
+            .eq('slug', capiSlug)
+            .single();
+          const stored = (capiLp as { utm_campaign?: string } | null)?.utm_campaign || null;
+          if (stored && stored.startsWith('capi:')) capiToken = stored.slice(5);
+        }
+        if (pixelId && capiToken) {
+          const { sendCapiEvent, hashPhone } = await import('../metaCapi');
+          const phoneHash = await hashPhone(input.phone);
+          // Evento Lead
+          await sendCapiEvent({
+            pixelId,
+            accessToken: capiToken,
+            eventName: 'Lead',
+            externalId: result.leadId,
+            phoneHash,
+            customData: {
+              content_name: 'Diagnóstico Capilar Gratuito',
+              content_category: 'Hair Clinic',
+              currency: 'BRL',
+              value: 0,
+            },
+          });
+          // Evento CompleteRegistration
+          await sendCapiEvent({
+            pixelId,
+            accessToken: capiToken,
+            eventName: 'CompleteRegistration',
+            externalId: result.leadId,
+            phoneHash,
+            customData: {
+              content_name: 'Diagnóstico Capilar Gratuito',
+              status: 'distributed',
+              currency: 'BRL',
+              value: 0,
+            },
+          });
+        }
+      } catch (capiErr) {
+        // CAPI não bloqueia o fluxo principal
+        console.error('[CAPI] Erro ao enviar eventos:', capiErr);
+      }
 
       return {
         success: true,
@@ -387,6 +457,51 @@ export const distributionRouter = router({
         .eq('id', input.landingPageId);
       if (fallbackErr) throw new Error(fallbackErr.message);
       return { success: true, method: 'fallback' };
+    }),
+
+  /**
+   * Registra evento de pixel (público — chamado pela landing page)
+   */
+  trackPixelEvent: publicProcedure
+    .input(z.object({
+      slug: z.string(),
+      event: z.enum(['ViewContent', 'InitiateCheckout', 'Lead', 'CompleteRegistration']),
+    }))
+    .mutation(async ({ input }) => {
+      trackPixelEvent(input.slug, input.event);
+      return { success: true };
+    }),
+
+  /**
+   * Retorna estatísticas de eventos de pixel por landing page (protegido)
+   */
+  getPixelEventStats: protectedProcedure
+    .input(z.object({ franchiseId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const userRole9 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const userFranchiseId9 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      if (userRole9 !== 'admin' && userRole9 !== 'network_owner' && userFranchiseId9 !== input.franchiseId) {
+        throw new Error('Acesso negado');
+      }
+      // Buscar slugs das landing pages da franquia
+      const { data: lps } = await supabase
+        .from('franchise_landing_pages')
+        .select('id, slug, title')
+        .eq('franchise_id', input.franchiseId)
+        .eq('active', true);
+      if (!lps || lps.length === 0) return {};
+      const slugs = (lps as { slug: string }[]).map(lp => lp.slug);
+      const stats = await getPixelEventStats(slugs);
+      // Adicionar título da LP
+      const result: Record<string, unknown> = {};
+      for (const lp of lps as { id: string; slug: string; title: string }[]) {
+        result[lp.slug] = {
+          ...(stats[lp.slug] || {}),
+          title: lp.title,
+          lpId: lp.id,
+        };
+      }
+      return result;
     }),
 
   /**

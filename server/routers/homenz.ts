@@ -819,4 +819,111 @@ export const homenzRouter = router({
       }
       return { success: true, method: 'fallback' };
     }),
+
+  // ── Meta CAPI Token ────────────────────────────────────────────────────────
+  /**
+   * Busca o CAPI Access Token da franquia.
+   * Armazenado em uma landing page especial com prefixo 'capi:' no utm_campaign.
+   */
+  getCapiToken: franchiseeProcedure
+    .input(z.object({ franchiseId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      // Tentar ler capi_access_token diretamente da tabela franchises
+      const { data: franchise } = await supabaseAdmin
+        .from('franchises')
+        .select('*')
+        .eq('id', input.franchiseId)
+        .single();
+      const capiToken = (franchise as Record<string, unknown> | null)?.capi_access_token as string | null | undefined;
+      if (capiToken !== undefined) {
+        return { capiToken: capiToken || null };
+      }
+      // Fallback: ler de landing page especial
+      const configSlug = `__capi_${input.franchiseId.replace(/-/g, '')}__`;
+      const { data: lp } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('utm_campaign')
+        .eq('slug', configSlug)
+        .single();
+      const stored = (lp as { utm_campaign?: string } | null)?.utm_campaign || null;
+      return { capiToken: stored && stored.startsWith('capi:') ? stored.slice(5) : null };
+    }),
+
+  /**
+   * Atualiza o CAPI Access Token da franquia.
+   */
+  updateCapiToken: franchiseeProcedure
+    .input(z.object({
+      franchiseId: z.string().uuid(),
+      capiToken: z.string().max(300).nullable(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      // Tentar atualizar capi_access_token diretamente na tabela franchises
+      const { error: directErr } = await supabaseAdmin
+        .from('franchises')
+        .update({ capi_access_token: input.capiToken || null } as Record<string, unknown>)
+        .eq('id', input.franchiseId);
+      if (!directErr) {
+        return { success: true, method: 'direct' };
+      }
+      // Fallback: persistir em landing page especial
+      const configSlug = `__capi_${input.franchiseId.replace(/-/g, '')}__`;
+      const capiValue = input.capiToken ? `capi:${input.capiToken}` : null;
+      const { data: existing } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('slug', configSlug)
+        .single();
+      if (existing) {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .update({ utm_campaign: capiValue })
+          .eq('slug', configSlug);
+      } else {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .insert({
+            franchise_id: input.franchiseId,
+            slug: configSlug,
+            title: '__capi_config__',
+            procedure: 'config',
+            active: false,
+            utm_campaign: capiValue,
+          });
+      }
+      return { success: true, method: 'fallback' };
+    }),
+
+  /**
+   * Envia um evento de teste para o Meta CAPI.
+   * Permite verificar se o pixel_id + access_token estão corretos.
+   */
+  testCapiEvent: franchiseeProcedure
+    .input(z.object({
+      franchiseId: z.string().uuid(),
+      pixelId: z.string(),
+      capiToken: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      const { sendCapiEvent } = await import('../metaCapi');
+      const result = await sendCapiEvent({
+        pixelId: input.pixelId,
+        accessToken: input.capiToken,
+        eventName: 'PageView',
+        customData: { test: true, source: 'homenz_pixel_test' },
+      });
+      return result;
+    }),
 });
