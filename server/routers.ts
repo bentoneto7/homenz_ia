@@ -774,21 +774,22 @@ Retorne JSON com os campos especificados.`,
           }
 
           // Salvar resultado — usar SQL raw para evitar bug do Drizzle com TiDB em updates com campos JSON
+          // IMPORTANTE: colunas em camelCase conforme schema MySQL
           console.log(`[AI] Saving result for lead ${lead.id}, resultId ${resultId}`);
           await db.execute(sql`
             UPDATE ai_results SET
-              analysis_text = ${analysis.analysisText},
-              baldness_level = ${analysis.baldnessLevel},
-              baldness_scale = ${analysis.baldnessScale},
-              affected_areas = ${JSON.stringify(analysis.affectedAreas)},
-              density_estimate = ${analysis.densityEstimate},
-              before_image_url = ${frontPhoto.s3Url},
-              after_image_url = ${afterImageUrl},
-              recommended_treatment = ${analysis.recommendedTreatment},
-              estimated_sessions = ${Number(analysis.estimatedSessions)},
-              lead_score = ${Number(analysis.leadScore)},
-              lead_score_breakdown = ${JSON.stringify(analysis.leadScoreBreakdown)},
-              processing_status = 'done'
+              analysisText = ${analysis.analysisText},
+              baldnessLevel = ${analysis.baldnessLevel},
+              baldnessScale = ${analysis.baldnessScale},
+              affectedAreas = ${JSON.stringify(analysis.affectedAreas)},
+              densityEstimate = ${analysis.densityEstimate},
+              beforeImageUrl = ${frontPhoto.s3Url},
+              afterImageUrl = ${afterImageUrl},
+              recommendedTreatment = ${analysis.recommendedTreatment},
+              estimatedSessions = ${Number(analysis.estimatedSessions)},
+              leadScore = ${Number(analysis.leadScore)},
+              leadScoreBreakdown = ${JSON.stringify(analysis.leadScoreBreakdown)},
+              processingStatus = 'done'
             WHERE id = ${resultId}
           `);
           console.log(`[AI] ai_result ${resultId} saved successfully via raw SQL`);

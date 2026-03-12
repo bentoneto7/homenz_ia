@@ -616,3 +616,6 @@
 
 ## Correção Upload de Fotos (Mar 12)
 - [x] Corrigir erro ao enviar fotos na demo da landing page — compressão client-side (max 1200px, 75%) + novo endpoint tRPC photos.uploadPublic sem autenticação
+
+## Correção ai.processPhotos (Mar 12)
+- [x] Corrigir erro "Erro ao processar análise" no procedure ai.processPhotos — SQL raw usava snake_case mas MySQL tem colunas camelCase
