@@ -69,8 +69,8 @@ export default function CadastroFranqueado() {
   const loginMutation = trpc.homenz.login.useMutation({
     onSuccess: (loginData) => {
       login(loginData.token, loginData.user as HomenzUser);
-      toast.success("🎉 Trial de 15 dias ativado! Bem-vindo ao painel.");
-      navigate("/franqueado");
+      // Redirecionar para tela de boas-vindas com checklist de primeiros passos
+      navigate("/boas-vindas");
     },
   });
 

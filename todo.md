@@ -656,3 +656,7 @@
 - [x] Rastrear fluxo do botão "Começar grátis" até o Stripe e corrigir onde o cartão é exigido
 - [x] Ativar conta imediatamente no cadastro com trial_ends_at = NOW() + 15 dias (sem passar pelo Stripe)
 - [x] Login automático após cadastro — redireciona direto ao painel do franqueado
+
+## Cron + Tela Boas-Vindas (Mar 12)
+- [x] Cron diário: desativar franquias com trial_ends_at < NOW() e sem assinatura paga (executa às 00:00 UTC)
+- [x] Tela de boas-vindas após cadastro com checklist de primeiros passos (/boas-vindas)

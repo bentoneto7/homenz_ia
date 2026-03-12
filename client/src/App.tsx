@@ -37,6 +37,7 @@ import HomenzLogin from "./pages/HomenzLogin";
 import HomenzAdmLogin from "./pages/HomenzAdmLogin";
 import FranchiseLanding from "./pages/FranchiseLanding";
 import PlanosPage from "./pages/PlanosPage";
+import BoasVindas from "./pages/BoasVindas";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function Router() {
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/cadastro-clinica" component={ClinicOnboarding} />
       <Route path="/aguardando-pagamento" component={AguardandoPagamento} />
       <Route path="/planos" component={PlanosPage} />
+      <Route path="/boas-vindas" component={BoasVindas} />
 
       {/* Funil público da clínica */}
       <Route path="/c/:slug" component={ClinicLanding} />
