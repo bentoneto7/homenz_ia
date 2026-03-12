@@ -349,6 +349,18 @@ export const homenzRouter = router({
         };
       });
 
+      // Calcular dias restantes do trial
+      let trialDaysLeft: number | null = null;
+      let trialActive = false;
+      if (franchise?.trial_ends_at) {
+        const trialEnd = new Date(franchise.trial_ends_at);
+        const now = new Date();
+        const diffMs = trialEnd.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        trialDaysLeft = Math.max(0, diffDays);
+        trialActive = diffDays > 0;
+      }
+
       return {
         franchise,
         leads: leads.slice(0, 20), // últimos 20 leads
@@ -363,6 +375,11 @@ export const homenzRouter = router({
           conversionRate: leads.length > 0 ? Math.round((scheduled / leads.length) * 100) : 0,
         },
         funnel,
+        trial: {
+          active: trialActive,
+          daysLeft: trialDaysLeft,
+          endsAt: franchise?.trial_ends_at ?? null,
+        },
       };
     }),
 

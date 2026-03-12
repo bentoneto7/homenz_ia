@@ -12,7 +12,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, TrendingDown,
   Zap, Activity, ArrowUp, ArrowDown, Minus,
   Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2, MapPin,
-  Settings, Info, CheckCircle, EyeOff, BarChart2,
+  Settings, Info, CheckCircle, EyeOff, BarChart2, Timer, CreditCard, X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -1214,7 +1214,8 @@ export default function FranchiseeDashboard() {
     );
   }
 
-  const { franchise, leads, sellers, stats, funnel } = data;
+  const { franchise, leads, sellers, stats, funnel, trial } = data;
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
 
   return (
     <HomenzLayout title={franchise?.name ?? "Dashboard Franqueado"}>
@@ -1246,6 +1247,66 @@ export default function FranchiseeDashboard() {
             Convidar Vendedor
           </button>
         </div>
+
+        {/* Banner de Trial */}
+        {trial?.active && trial.daysLeft !== null && !trialBannerDismissed && (
+          <div className={`relative rounded-2xl p-4 flex items-center gap-4 flex-wrap ${
+            trial.daysLeft <= 3
+              ? "bg-red-50 border border-red-200"
+              : trial.daysLeft <= 7
+              ? "bg-amber-50 border border-amber-200"
+              : "bg-blue-50 border border-blue-200"
+          }`}>
+            {/* Ícone */}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              trial.daysLeft <= 3 ? "bg-red-100" : trial.daysLeft <= 7 ? "bg-amber-100" : "bg-blue-100"
+            }`}>
+              <Timer className={`w-5 h-5 ${
+                trial.daysLeft <= 3 ? "text-red-600" : trial.daysLeft <= 7 ? "text-amber-600" : "text-[#004A9D]"
+              }`} />
+            </div>
+            {/* Texto */}
+            <div className="flex-1 min-w-0">
+              <p className={`font-bold text-sm ${
+                trial.daysLeft <= 3 ? "text-red-800" : trial.daysLeft <= 7 ? "text-amber-800" : "text-[#0A2540]"
+              }`}>
+                {trial.daysLeft === 0
+                  ? "Seu trial expirou hoje!"
+                  : trial.daysLeft === 1
+                  ? "\u26a0\ufe0f Falta 1 dia para o trial encerrar"
+                  : `${trial.daysLeft} dias restantes no seu per\u00edodo gratuito`}
+              </p>
+              <p className={`text-xs mt-0.5 ${
+                trial.daysLeft <= 3 ? "text-red-600" : trial.daysLeft <= 7 ? "text-amber-600" : "text-[#5A667A]"
+              }`}>
+                {trial.daysLeft <= 3
+                  ? "Assine agora para n\u00e3o perder o acesso ao painel e aos seus leads."
+                  : "Aproveite o per\u00edodo gratuito. Assine antes do fim para manter o acesso."}
+              </p>
+            </div>
+            {/* CTA */}
+            <a
+              href="/planos"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white flex-shrink-0 transition-all ${
+                trial.daysLeft <= 3
+                  ? "bg-red-600 hover:bg-red-700"
+                  : trial.daysLeft <= 7
+                  ? "bg-amber-500 hover:bg-amber-600"
+                  : "bg-[#004A9D] hover:bg-[#003580]"
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              Assinar agora
+            </a>
+            {/* Fechar */}
+            <button
+              onClick={() => setTrialBannerDismissed(true)}
+              className="absolute top-3 right-3 text-[#94A3B8] hover:text-[#5A667A] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

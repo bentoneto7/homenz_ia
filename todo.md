@@ -646,3 +646,8 @@
 - [x] Atualizar subtítulo da seção de planos: "sem cartão de crédito"
 - [x] Atualizar botões dos planos: "Começar grátis — sem cartão"
 - [x] Garantir que o onboarding inicia trial de 15 dias sem exigir cartão (payment_method_collection: if_required no Stripe)
+
+## Banner Contagem Regressiva Trial (Mar 12)
+- [x] Criar endpoint trpc para retornar dias restantes do trial (campo trial_ends_at da tabela franchises)
+- [x] Implementar banner de contagem regressiva no painel do franqueado
+- [x] Banner só aparece durante o trial ativo (oculto após assinatura paga) + botão para fechar
