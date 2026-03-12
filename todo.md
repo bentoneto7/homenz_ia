@@ -603,3 +603,10 @@
 - [x] Persistência: ViewContent persistido via total_views na tabela franchise_landing_pages
 - [x] Persistência: Lead contado via tabela leads (fonte de verdade)
 - [x] Relatório histórico: getPixelEventStats lê banco para ViewContent e Lead
+
+## SEO Página Inicial (Mar 12)
+- [x] Corrigir título: de 9 para 50 caracteres via index.html + document.title no Home.tsx
+- [x] Adicionar meta description com palavras-chave
+- [x] Adicionar meta keywords em PT, EN e ES
+- [x] Adicionar Open Graph tags (og:title, og:description, og:locale)
+- [x] Adicionar Twitter Card tags

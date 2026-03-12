@@ -1,12 +1,32 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Scissors, BarChart3, Calendar, Bell, Users, Zap, ChevronRight, Star } from "lucide-react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
+
+  // SEO: define título e palavras-chave via JS (sobrescreve qualquer valor padrão da plataforma)
+  useEffect(() => {
+    const SEO_TITLE = "Homenz.ia — Funil de Leads para Clínicas Capilares";
+    const SEO_KEYWORDS = "clínica capilar, implante capilar, queda de cabelo, tratamento capilar, diagnóstico capilar, agendamento consulta capilar, funil de leads, tráfego pago clínica";
+
+    document.title = SEO_TITLE;
+
+    // Garantir que a meta keywords existe e está atualizada
+    let metaKw = document.querySelector('meta[name="keywords"]') as HTMLMetaElement | null;
+    if (!metaKw) {
+      metaKw = document.createElement('meta');
+      metaKw.setAttribute('name', 'keywords');
+      document.head.appendChild(metaKw);
+    }
+    metaKw.setAttribute('content', SEO_KEYWORDS);
+
+    return () => { document.title = "Homenz.ia"; };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
