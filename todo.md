@@ -736,3 +736,6 @@
 - [x] Endereço da franquia exibido no header da landing page pública (/l/:slug)
 - [x] Campo de endereço já existia no cadastro de franquia (CadastroFranqueado.tsx)
 - [x] Endereço da franquia do Acre atualizado no Supabase (Av. Ceará, 1234)
+
+## Link Google Maps na Landing Page (Mar 12)
+- [x] Transformar endereço da franquia em link clicável do Google Maps na landing /l/:slug (abre Maps com endereço + cidade + estado)
