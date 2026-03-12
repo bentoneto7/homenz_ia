@@ -663,3 +663,7 @@
 
 ## Bug: Hook Condicional no FranchiseeDashboard (Mar 12)
 - [x] Corrigir "Rendered more hooks than during the previous render" no FranchiseeDashboard — useState do trialBannerDismissed movido para antes dos returns condicionais
+
+## Tela de Bloqueio Trial Expirado (Mar 12)
+- [x] Criar componente TrialExpiredGate com CTA para checkout Stripe (3 planos, fundo escuro, sem valores)
+- [x] Integrar bloqueio no FranchiseeDashboard quando trial expirado e sem plano pago
