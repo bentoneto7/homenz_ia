@@ -158,7 +158,7 @@ export default function PlanosPage() {
           </span>
         </h1>
         <p className="text-[#5A667A] text-lg max-w-2xl mx-auto">
-          Comece com 15 dias grátis. Cancele quando quiser. Sem taxas de instalação.
+          Comece com 15 dias grátis. Sem cartão de crédito. Cancele quando quiser.
         </p>
       </section>
 
@@ -205,7 +205,7 @@ export default function PlanosPage() {
                       : "bg-[#F0F4F8] hover:bg-[#E2E8F0] text-[#0A2540]"
                   }`}
                 >
-                  {loadingPlan === plan.id ? "Aguarde..." : "Começar 15 dias grátis"}
+                  {loadingPlan === plan.id ? "Aguarde..." : "Começar grátis — sem cartão"}
                 </Button>
 
                 {/* Features */}
@@ -231,8 +231,8 @@ export default function PlanosPage() {
               <Check className="w-5 h-5 text-green-600" />
             </div>
             <div className="text-left">
-              <p className="text-[#0A2540] font-bold text-sm">Garantia de 15 dias</p>
-              <p className="text-[#5A667A] text-xs">Cancele sem custo dentro do período de teste</p>
+              <p className="text-[#0A2540] font-bold text-sm">15 dias grátis — sem cartão</p>
+              <p className="text-[#5A667A] text-xs">Comece agora, sem informar cartão de crédito</p>
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export default function PlanosPage() {
               },
               {
                 q: "O que acontece após os 15 dias grátis?",
-                a: "Você será cobrado automaticamente no cartão cadastrado. Pode cancelar antes do fim do período sem custo.",
+                a: "Após os 15 dias, você recebe um aviso e pode cadastrar seu cartão para continuar. Se não quiser continuar, basta não fazer nada — o acesso é encerrado sem cobrança.",
               },
               {
                 q: "Quantos vendedores posso cadastrar?",

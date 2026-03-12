@@ -638,3 +638,11 @@
 - [x] Criar lead de teste e processar análise de IA com prompt atual
 - [x] Avaliar resultado visual das imagens antes/depois — transformação excelente nos 3 ângulos
 - [x] fal.ai flux-pro-fill não necessário — IA nativa já produz resultados de alta qualidade
+
+## Atualização Seção de Planos (Mar 12)
+- [x] Adicionar "sem cartão de crédito" no subtítulo e nos botões da seção de planos
+
+## Trial 15 Dias Grátis Sem Cartão (Mar 12)
+- [x] Atualizar subtítulo da seção de planos: "sem cartão de crédito"
+- [x] Atualizar botões dos planos: "Começar grátis — sem cartão"
+- [x] Garantir que o onboarding inicia trial de 15 dias sem exigir cartão (payment_method_collection: if_required no Stripe)

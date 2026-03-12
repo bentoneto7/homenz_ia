@@ -75,6 +75,7 @@ export const stripeRouter = router({
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
+        payment_method_collection: "if_required", // Cartão não obrigatório durante o trial de 15 dias
         allow_promotion_codes: true,
         customer_email: customerEmail,
         line_items: [
