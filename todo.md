@@ -626,3 +626,6 @@
 
 ## Correção UPDATE ai_results id errado (Mar 12)
 - [x] Corrigir "Failed query" no UPDATE ai_results — densityEstimate varchar(100) truncado, ampliado para varchar(500); baldnessLevel para varchar(200). Lead 90004 restaurado para done.
+
+## Melhoria Prompt Geração Imagem Antes/Depois (Mar 12)
+- [x] Reformular prompt de geração de imagem para transformação capilar mais agressiva e visível — prompt contextualizado com baldnessLevel + treatmentInfo + instruções explícitas de cobertura total

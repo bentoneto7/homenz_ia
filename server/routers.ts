@@ -762,12 +762,32 @@ Retorne JSON com os campos especificados.`,
 
           // Gerar imagem simulada pós-preenchimento
           const frontPhoto = photos.find((p) => p.photoType === "front") ?? photos[0];
-          let afterImageUrl = frontPhoto.s3Url;
+          const topPhoto = photos.find((p) => p.photoType === "top");
+          const bestPhoto = topPhoto ?? frontPhoto; // foto do topo mostra melhor a calvície
+          let afterImageUrl = bestPhoto.s3Url;
           try {
             // Timeout de 45s para não travar o processo
+            // Prompt agressivo e específico para transformação capilar visível
+            const baldnessInfo = analysis.baldnessLevel ? `The man has ${analysis.baldnessLevel} hair loss.` : "The man has visible hair thinning or baldness.";
+            const treatmentInfo = analysis.recommendedTreatment ? `Treatment: ${analysis.recommendedTreatment}.` : "Hair fiber filling and scalp micropigmentation.";
             const imgPromise = generateImage({
-              prompt: `Photo-realistic hair restoration result for the same man in the original photo. Show the man with a FULL, NATURAL, WELL-STYLED head of hair — thick, dense, and well-groomed. The hairstyle should look masculine and modern, as if he has always had a full head of hair. Keep exactly the same face, facial features, skin tone, glasses (if any), beard (if any), same angle, same lighting, and same background. Only change the hair: make it full, natural, and beautifully styled. The result should look completely realistic and photographic — not illustrated or digitally altered. Masculine, confident appearance. High quality, photorealistic.`,
-              originalImages: [{ url: frontPhoto.s3Url, mimeType: "image/jpeg" }],
+              prompt: `HAIR RESTORATION SIMULATION — DRAMATIC BEFORE/AFTER TRANSFORMATION.
+${baldnessInfo} ${treatmentInfo}
+
+TRANSFORMATION INSTRUCTIONS (follow strictly):
+- COMPLETELY FILL all bald, thinning, and receding areas with DENSE, THICK, NATURAL hair
+- The scalp must NOT be visible anywhere — full coverage of the entire head
+- Add significant hair VOLUME and DENSITY — this should be a DRAMATIC visible change
+- Hair style: short masculine cut, natural-looking, well-groomed, modern
+- Hair color: match the existing hair color of the man
+- The hairline should be sharp, defined, and natural-looking
+- Keep IDENTICAL: face, skin tone, facial features, eyes, nose, mouth, beard, glasses, background, lighting, angle
+- ONLY change the hair — everything else must be pixel-perfect identical
+- Result must look like a real photograph, not a digital illustration
+- High resolution, photorealistic, professional quality
+
+IMPORTANT: The hair transformation MUST be clearly visible and dramatic. Do NOT make subtle changes.`,
+              originalImages: [{ url: bestPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             const timeoutPromise = new Promise<never>((_, reject) =>
               setTimeout(() => reject(new Error("Image generation timeout (45s)")), 45_000)
