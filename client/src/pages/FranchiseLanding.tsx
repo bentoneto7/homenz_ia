@@ -97,6 +97,7 @@ export default function FranchiseLanding() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [stepHistory, setStepHistory] = useState<Array<{ step: number; messages: ChatMessage[]; leadData: Partial<LeadData> }>>([]);
+  const [photoQualityTip, setPhotoQualityTip] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -284,6 +285,14 @@ export default function FranchiseLanding() {
       alert("Foto muito grande. Máximo 10MB.");
       return;
     }
+    // Feedback de qualidade baseado no tamanho do arquivo
+    if (file.size < 50 * 1024) {
+      setPhotoQualityTip("💡 Foto muito pequena — tente tirar uma foto com mais luz e resolução.");
+    } else if (file.size < 200 * 1024) {
+      setPhotoQualityTip("💡 Dica: fotos com boa iluminação ajudam nossa equipe a fazer uma avaliação mais precisa.");
+    } else {
+      setPhotoQualityTip(null);
+    }
 
     setIsUploading(true);
     const preview = URL.createObjectURL(file);
@@ -365,6 +374,15 @@ export default function FranchiseLanding() {
         status: 'lead_submitted',
         currency: 'BRL',
         value: 0,
+      });
+      // Disparar evento Lead (distribuição para vendedor confirmada)
+      // Este evento sinaliza ao Meta que o lead foi qualificado e distribuído
+      firePixelEvent('Lead', {
+        content_name: 'Diagnóstico Capilar Gratuito',
+        content_category: 'Hair Clinic',
+        currency: 'BRL',
+        value: 0,
+        status: 'distributed',
       });
 
       setTimeout(() => {
@@ -552,42 +570,93 @@ export default function FranchiseLanding() {
               {/* Upload de foto */}
               {msg.role === "bot" && msg.type === "photo-upload" && currentStep === 1 && !leadData.photoUrl && !leadData.hairProblem?.includes("Prefiro") && (
                 <div className="mt-3 space-y-2">
+                  {/* Guia visual de como tirar a foto */}
+                  {!photoPreview && (
+                    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,74,157,0.15)", background: "rgba(0,74,157,0.03)" }}>
+                      <div className="px-3 py-2 text-xs font-semibold" style={{ background: "rgba(0,74,157,0.08)", color: "#004A9D" }}>Como tirar a foto ideal</div>
+                      <div className="grid grid-cols-3 gap-0 divide-x divide-[#E2E8F0]">
+                        {[
+                          { icon: "☀️", label: "Boa luz", tip: "Prefira luz natural ou ambiente bem iluminado" },
+                          { icon: "📷", label: "Topo da cabeça", tip: "Aponte a câmera de cima para baixo" },
+                          { icon: "📍", label: "Foco na área", tip: "Centralize a região com maior queda" },
+                        ].map((item) => (
+                          <div key={item.label} className="flex flex-col items-center gap-1 px-2 py-2.5 text-center">
+                            <span className="text-lg">{item.icon}</span>
+                            <span className="text-[10px] font-semibold" style={{ color: "#004A9D" }}>{item.label}</span>
+                            <span className="text-[9px] leading-tight" style={{ color: "#5A667A" }}>{item.tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {/* Alerta de expectativa */}
-                  <div className="flex items-start gap-2 px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(255,193,7,0.12)", border: "1px solid rgba(255,193,7,0.35)", color: "#92400e" }}>
-                    <span className="flex-shrink-0 mt-0.5">⚠️</span>
-                    <span><strong>Expectativa, não garantia:</strong> A foto é usada para orientar nossa equipe na avaliação inicial. Os resultados reais dependem de cada caso e serão avaliados presencialmente.</span>
-                  </div>
+                  {!photoPreview && (
+                    <div className="flex items-start gap-2 px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(255,193,7,0.12)", border: "1px solid rgba(255,193,7,0.35)", color: "#92400e" }}>
+                      <span className="flex-shrink-0 mt-0.5">⚠️</span>
+                      <span><strong>Expectativa, não garantia:</strong> A foto orienta nossa equipe na avaliação inicial. Resultados reais são avaliados presencialmente.</span>
+                    </div>
+                  )}
                   {photoPreview ? (
-                    <div className="relative">
-                      <img src={photoPreview} alt="Preview" className="w-full max-w-[200px] rounded-xl object-cover" style={{ maxHeight: "150px" }} />
-                      {isUploading && (
-                        <div className="absolute inset-0 flex items-center justify-center rounded-xl" style={{ background: "rgba(0,0,0,0.5)" }}>
-                          <div className="text-white text-xs">Enviando...</div>
+                    <div className="space-y-2">
+                      <div className="relative rounded-xl overflow-hidden" style={{ border: "2px solid rgba(0,74,157,0.2)" }}>
+                        <img src={photoPreview} alt="Preview" className="w-full max-w-[220px] rounded-xl object-cover block" style={{ maxHeight: "165px" }} />
+                        {isUploading && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl gap-2" style={{ background: "rgba(0,0,0,0.55)" }}>
+                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="text-white text-xs font-medium">Enviando...</div>
+                          </div>
+                        )}
+                        {!isUploading && (
+                          <div className="absolute top-2 right-2">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,193,184,0.9)", color: "white" }}>✓ Pronta</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Feedback de qualidade */}
+                      {photoQualityTip && (
+                        <div className="flex items-start gap-1.5 px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(255,193,7,0.1)", border: "1px solid rgba(255,193,7,0.3)", color: "#92400e" }}>
+                          {photoQualityTip}
                         </div>
+                      )}
+                      {/* Botão refazer */}
+                      {!isUploading && (
+                        <button
+                          onClick={() => {
+                            setPhotoPreview(null);
+                            setPhotoQualityTip(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                          className="w-full px-3 py-2 rounded-xl text-xs font-medium transition-all hover:opacity-80 flex items-center justify-center gap-1.5"
+                          style={{ background: "rgba(0,74,157,0.06)", border: "1px solid rgba(0,74,157,0.2)", color: "#004A9D" }}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          Tirar outra foto
+                        </button>
                       )}
                     </div>
                   ) : (
                     <>
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                        className="w-full px-4 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                         style={{
-                          background: "rgba(0,74,157,0.05)",
-                          border: "2px dashed rgba(0,74,157,0.3)",
-                          color: "#004A9D",
+                          background: "linear-gradient(135deg, #004A9D, #00C1B8)",
+                          color: "white",
+                          boxShadow: "0 4px 14px rgba(0,74,157,0.3)",
                         }}
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Enviar foto
+                        Tirar foto agora
                       </button>
                       <button
                         onClick={skipPhoto}
-                        className="w-full px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-gray-300 transition-colors"
+                        className="w-full px-4 py-2 rounded-xl text-xs transition-colors"
+                        style={{ color: "#A0AABB" }}
                       >
-                        Pular por agora
+                        Prefiro não enviar foto
                       </button>
                     </>
                   )}

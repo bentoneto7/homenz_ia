@@ -36,6 +36,9 @@ function LandingPagesTab() {
   const [newAddress, setNewAddress] = useState("");
   const [newZipCode, setNewZipCode] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
+  // Pixel por LP: mapa de landingPageId -> pixelId editado
+  const [lpPixelEditing, setLpPixelEditing] = useState<Record<string, string>>({});
+  const [lpPixelSaving, setLpPixelSaving] = useState<Record<string, boolean>>({});
   const baseUrl = window.location.origin;
   const utils = trpc.useUtils();
 
@@ -90,6 +93,23 @@ function LandingPagesTab() {
   const copyLink = (slug: string) => {
     navigator.clipboard.writeText(`${baseUrl}/l/${slug}`);
     toast.success("Link copiado!");
+  };
+
+  const saveLpPixel = async (landingPageId: string) => {
+    const pixelId = lpPixelEditing[landingPageId] ?? null;
+    setLpPixelSaving(prev => ({ ...prev, [landingPageId]: true }));
+    try {
+      await utils.client.distribution.updateLandingPagePixel.mutate({
+        landingPageId,
+        pixelId: pixelId || null,
+      });
+      utils.homenz.getLandingPages.invalidate();
+      toast.success("Pixel salvo para esta landing page!");
+    } catch (err: unknown) {
+      toast.error((err as { message?: string })?.message || "Erro ao salvar pixel");
+    } finally {
+      setLpPixelSaving(prev => ({ ...prev, [landingPageId]: false }));
+    }
   };
 
   if (pagesQuery.isLoading) return (
@@ -182,8 +202,33 @@ function LandingPagesTab() {
                   </div>
                 </div>
               </div>
+              {/* Pixel por LP */}
+              <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Settings className="w-3.5 h-3.5 text-[#A0AABB]" />
+                  <span className="text-xs font-semibold text-[#5A667A]">Meta Pixel desta LP</span>
+                  <span className="text-[10px] text-[#A0AABB]">(sobrescreve o pixel da franquia)</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={lpPixelEditing[page.id] ?? ((page as Record<string, unknown>).pixel_id as string | null) ?? ""}
+                    onChange={(e) => setLpPixelEditing(prev => ({ ...prev, [page.id]: e.target.value.replace(/\D/g, "").slice(0, 20) }))}
+                    placeholder="ID do Pixel (opcional)"
+                    className="flex-1 border border-[#E2E8F0] rounded-lg px-3 py-1.5 text-[#0A2540] text-xs font-mono focus:outline-none focus:ring-1 focus:ring-[#004A9D]/30 focus:border-[#004A9D]"
+                  />
+                  <button
+                    onClick={() => saveLpPixel(page.id)}
+                    disabled={lpPixelSaving[page.id]}
+                    className="px-3 py-1.5 bg-[#004A9D] text-white text-xs font-semibold rounded-lg hover:bg-[#003580] transition-colors disabled:opacity-50 flex items-center gap-1"
+                  >
+                    {lpPixelSaving[page.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+                    Salvar
+                  </button>
+                </div>
+              </div>
               {/* Ações */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#E2E8F0] flex-wrap">
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <button
                   onClick={() => copyLink(page.slug)}
                   className="flex items-center gap-1.5 text-xs font-semibold text-[#00C1B8] bg-teal-50 hover:bg-teal-50 px-3 py-1.5 rounded-lg transition-colors border border-[#00C1B8]"

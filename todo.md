@@ -578,3 +578,10 @@
 - [x] Evento "CompleteRegistration" quando lead finaliza o agendamento
 - [ ] Otimizar fluxo de fotos: guia visual melhorado, preview antes de enviar, feedback de qualidade
 - [x] Alerta de expectativa no Antes/Depois: banner destacado "Esta é uma simulação visual — não é garantia de resultado"
+
+## Próximos Passos — Pixel + Fotos + Eventos (Mar 12)
+- [x] Pixel por landing page: campo pixel_id individual por LP no modal de edição de landing pages
+- [x] Otimizar fluxo de fotos: guia visual com overlay mostrando como tirar a foto corretamente
+- [x] Otimizar fluxo de fotos: preview com botão "refazer" antes de enviar
+- [x] Otimizar fluxo de fotos: feedback de qualidade (dica de boa iluminação, ângulo correto)
+- [x] Eventos avançados: evento `Lead` no Meta Pixel quando lead é distribuído para vendedor

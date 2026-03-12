@@ -349,4 +349,70 @@ export const distributionRouter = router({
       if (error) throw new Error(error.message);
       return { pixelId: (data as { pixel_id?: string | null })?.pixel_id || null };
     }),
+
+  /**
+   * Atualiza o pixel_id de uma landing page específica.
+   * Permite que cada LP tenha seu próprio pixel (sobrescreve o da franquia).
+   * Usa o campo utm_campaign com prefixo 'lppixel:' como fallback se a coluna pixel_id não existir.
+   */
+  updateLandingPagePixel: protectedProcedure
+    .input(z.object({
+      landingPageId: z.string().uuid(),
+      pixelId: z.string().max(30).nullable(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const userRole7 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      // Verificar ownership da landing page
+      const { data: lp } = await supabase
+        .from('franchise_landing_pages')
+        .select('franchise_id')
+        .eq('id', input.landingPageId)
+        .single();
+      if (!lp) throw new Error('Landing page não encontrada');
+      const userFranchiseId7 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      if (userRole7 !== 'admin' && userRole7 !== 'network_owner' && userFranchiseId7 !== (lp as { franchise_id: string }).franchise_id) {
+        throw new Error('Acesso negado');
+      }
+      // Tentar atualizar pixel_id diretamente
+      const { error: directErr } = await supabase
+        .from('franchise_landing_pages')
+        .update({ pixel_id: input.pixelId || null } as Record<string, unknown>)
+        .eq('id', input.landingPageId);
+      if (!directErr) return { success: true, method: 'direct' };
+      // Fallback: usar utm_campaign com prefixo especial
+      const utmValue = input.pixelId ? `lppixel:${input.pixelId}` : null;
+      const { error: fallbackErr } = await supabase
+        .from('franchise_landing_pages')
+        .update({ utm_campaign: utmValue })
+        .eq('id', input.landingPageId);
+      if (fallbackErr) throw new Error(fallbackErr.message);
+      return { success: true, method: 'fallback' };
+    }),
+
+  /**
+   * Busca o pixel_id de uma landing page específica.
+   */
+  getLandingPagePixel: protectedProcedure
+    .input(z.object({ landingPageId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const userRole8 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const { data: lp } = await supabase
+        .from('franchise_landing_pages')
+        .select('*')
+        .eq('id', input.landingPageId)
+        .single();
+      if (!lp) throw new Error('Landing page não encontrada');
+      const userFranchiseId8 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      if (userRole8 !== 'admin' && userRole8 !== 'network_owner' && userFranchiseId8 !== (lp as { franchise_id: string }).franchise_id) {
+        throw new Error('Acesso negado');
+      }
+      const lpData = lp as Record<string, unknown>;
+      // Tentar pixel_id direto
+      if (lpData.pixel_id !== undefined) {
+        return { pixelId: (lpData.pixel_id as string | null) || null };
+      }
+      // Fallback: ler do utm_campaign com prefixo lppixel:
+      const utm = lpData.utm_campaign as string | null;
+      return { pixelId: utm && utm.startsWith('lppixel:') ? utm.slice(8) : null };
+    }),
 });
