@@ -293,9 +293,38 @@ export default function FranchiseLanding() {
     setInputValue("");
   };
 
+  // Comprime a imagem via canvas e retorna base64 JPEG (max 1200px, qualidade 0.75)
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1200;
+          let { width, height } = img;
+          if (width > MAX || height > MAX) {
+            if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+            else { width = Math.round((width * MAX) / height); height = MAX; }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { reject(new Error("Canvas não disponível")); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.75));
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handlePhotoUpload = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("Foto muito grande. Máximo 10MB.");
+    if (file.size > 15 * 1024 * 1024) {
+      alert("Foto muito grande. Máximo 15MB.");
       return;
     }
     // Feedback de qualidade baseado no tamanho do arquivo
@@ -312,27 +341,31 @@ export default function FranchiseLanding() {
     setPhotoPreview(preview);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // Comprime a imagem antes de enviar (evita limite de proxy em produção)
+      const base64 = await compressImage(file);
 
-      const response = await fetch("/api/upload-lead-photo", {
+      // Usa o endpoint tRPC de upload (mesmo caminho do FunnelPhotos, mais robusto)
+      const response = await fetch("/api/trpc/photos.uploadPublic", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { base64 } }),
       });
 
       if (!response.ok) {
         const errText = await response.text().catch(() => "Erro desconhecido");
-        console.error("[upload-lead-photo] Erro HTTP:", response.status, errText);
+        console.error("[upload-photo] Erro HTTP:", response.status, errText);
         throw new Error(`Upload falhou: ${response.status}`);
       }
 
       const result = await response.json();
-      const photoUrl: string | undefined = result.url;
+      const photoUrl: string | undefined = result?.result?.data?.json?.url;
+
+      if (!photoUrl) throw new Error("URL da foto não retornada");
 
       setIsUploading(false);
       advanceToNextStep("📸 Foto enviada", { photoUrl });
     } catch (err) {
-      console.error("[upload-lead-photo] Erro:", err);
+      console.error("[upload-photo] Erro:", err);
       setIsUploading(false);
       setPhotoPreview(null);
       setMessages(prev => [...prev, {

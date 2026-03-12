@@ -613,3 +613,6 @@
 
 ## Remoção Botão Duplicado Formulário (Mar 12)
 - [x] Remover botão sticky CTA fixo "Ver meu resultado 3D — grátis" do ClinicLanding (deixar só o botão do formulário)
+
+## Correção Upload de Fotos (Mar 12)
+- [x] Corrigir erro ao enviar fotos na demo da landing page — compressão client-side (max 1200px, 75%) + novo endpoint tRPC photos.uploadPublic sem autenticação

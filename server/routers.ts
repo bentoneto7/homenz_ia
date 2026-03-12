@@ -595,6 +595,20 @@ export const appRouter = router({
           .from(leadPhotos)
           .where(and(eq(leadPhotos.leadId, input.leadId), eq(leadPhotos.clinicId, ctx.clinic.id)));
       }),
+
+    // Upload público sem sessionToken — usado pela FranchiseLanding (/l/:slug)
+    // Recebe base64 comprimido (max ~300KB após compressão no cliente)
+    uploadPublic: publicProcedure
+      .input(z.object({ base64: z.string().max(5_000_000) })) // max ~3.75MB de base64
+      .mutation(async ({ input }) => {
+        const base64Data = input.base64.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const mimeType = input.base64.startsWith("data:image/png") ? "image/png" : "image/jpeg";
+        const ext = mimeType === "image/png" ? "png" : "jpg";
+        const fileKey = `leads/landing-photos/${nanoid(16)}.${ext}`;
+        const { url } = await storagePut(fileKey, buffer, mimeType);
+        return { url, key: fileKey };
+      }),
   }),
 
   // ── IA ─────────────────────────────────────────────────────────────────────
