@@ -594,3 +594,12 @@
 - [x] Relatório de eventos: procedure getPixelEventStats por LP (ViewContent, InitiateCheckout, Lead)
 - [x] Relatório de eventos: tabela com totais e taxa de conversão por LP no painel
 - [x] Botão Testar Conexão: envia PageView de teste ao Meta CAPI e retorna status
+
+## Debug CAPI + Deduplicação + Histórico (Mar 12)
+- [x] test_event_code: campo opcional na aba Pixel para testar eventos no Meta Events Manager
+- [x] test_event_code: passar o código nos envios CAPI quando configurado
+- [x] Deduplicação: gerar event_id único por evento no cliente
+- [x] Deduplicação: passar event_id no pixel client-side (fbq) e no CAPI server-side
+- [x] Persistência: ViewContent persistido via total_views na tabela franchise_landing_pages
+- [x] Persistência: Lead contado via tabela leads (fonte de verdade)
+- [x] Relatório histórico: getPixelEventStats lê banco para ViewContent e Lead

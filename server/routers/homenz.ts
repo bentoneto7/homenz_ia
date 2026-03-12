@@ -903,6 +903,66 @@ export const homenzRouter = router({
     }),
 
   /**
+   * Busca o test_event_code da franquia (para debug no Meta Events Manager).
+   */
+  getTestEventCode: franchiseeProcedure
+    .input(z.object({ franchiseId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      const configSlug = `__testcode_${input.franchiseId.replace(/-/g, '')}__`;
+      const { data: lp } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('utm_campaign')
+        .eq('slug', configSlug)
+        .single();
+      const stored = (lp as { utm_campaign?: string } | null)?.utm_campaign || null;
+      return { testEventCode: stored && stored.startsWith('testcode:') ? stored.slice(9) : null };
+    }),
+
+  /**
+   * Atualiza o test_event_code da franquia.
+   */
+  updateTestEventCode: franchiseeProcedure
+    .input(z.object({
+      franchiseId: z.string().uuid(),
+      testEventCode: z.string().max(50).nullable(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      const configSlug = `__testcode_${input.franchiseId.replace(/-/g, '')}__`;
+      const codeValue = input.testEventCode ? `testcode:${input.testEventCode}` : null;
+      const { data: existing } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('slug', configSlug)
+        .single();
+      if (existing) {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .update({ utm_campaign: codeValue })
+          .eq('slug', configSlug);
+      } else {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .insert({
+            franchise_id: input.franchiseId,
+            slug: configSlug,
+            title: '__testcode_config__',
+            procedure: 'config',
+            active: false,
+            utm_campaign: codeValue,
+          });
+      }
+      return { success: true };
+    }),
+
+  /**
    * Envia um evento de teste para o Meta CAPI.
    * Permite verificar se o pixel_id + access_token estão corretos.
    */
@@ -911,6 +971,7 @@ export const homenzRouter = router({
       franchiseId: z.string().uuid(),
       pixelId: z.string(),
       capiToken: z.string(),
+      testEventCode: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const { homenzUser } = ctx;
@@ -922,6 +983,7 @@ export const homenzRouter = router({
         pixelId: input.pixelId,
         accessToken: input.capiToken,
         eventName: 'PageView',
+        testEventCode: input.testEventCode,
         customData: { test: true, source: 'homenz_pixel_test' },
       });
       return result;

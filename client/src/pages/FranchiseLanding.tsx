@@ -163,17 +163,22 @@ export default function FranchiseLanding() {
   const trackEventMutation = trpc.distribution.trackPixelEvent.useMutation();
 
   // Helper para disparar eventos do Meta Pixel (client-side) + rastreamento server-side
+  // Gera um event_id único por evento para deduplicar entre pixel e CAPI
   const firePixelEvent = (event: string, params?: Record<string, unknown>) => {
-    // Client-side: Meta Pixel
+    // Gerar event_id único para deduplicar entre pixel client-side e CAPI server-side
+    const eventId = `${event}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    // Client-side: Meta Pixel com eventID para deduplicar
     const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
     if (typeof fbq === 'function') {
-      fbq('track', event, params || {});
+      // O 4º parâmetro do fbq é o objeto de opções com eventID
+      fbq('track', event, params || {}, { eventID: eventId });
     }
-    // Server-side: rastreamento interno
+    // Server-side: rastreamento interno + event_id para CAPI
     const validEvents = ['ViewContent', 'InitiateCheckout', 'Lead', 'CompleteRegistration'] as const;
     type ValidEvent = typeof validEvents[number];
     if (slug && validEvents.includes(event as ValidEvent)) {
-      trackEventMutation.mutate({ slug, event: event as ValidEvent });
+      trackEventMutation.mutate({ slug, event: event as ValidEvent, eventId });
     }
   };
 

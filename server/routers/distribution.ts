@@ -466,10 +466,13 @@ export const distributionRouter = router({
     .input(z.object({
       slug: z.string(),
       event: z.enum(['ViewContent', 'InitiateCheckout', 'Lead', 'CompleteRegistration']),
+      /** ID único do evento para deduplicar entre pixel client-side e CAPI server-side */
+      eventId: z.string().max(100).optional(),
     }))
     .mutation(async ({ input }) => {
       trackPixelEvent(input.slug, input.event);
-      return { success: true };
+      // O eventId é registrado para referência futura (ex: CAPI deduplication)
+      return { success: true, eventId: input.eventId };
     }),
 
   /**

@@ -806,6 +806,10 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
     { franchiseId },
     { refetchOnWindowFocus: false }
   );
+  const testCodeQuery = trpc.homenz.getTestEventCode.useQuery(
+    { franchiseId },
+    { refetchOnWindowFocus: false }
+  );
   const eventStatsQuery = trpc.distribution.getPixelEventStats.useQuery(
     { franchiseId },
     { refetchOnWindowFocus: false, refetchInterval: 30000 }
@@ -813,9 +817,11 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
 
   const [pixelInput, setPixelInput] = useState("");
   const [capiInput, setCapiInput] = useState("");
+  const [testCodeInput, setTestCodeInput] = useState("");
   const [showCapiToken, setShowCapiToken] = useState(false);
   const [savedPixel, setSavedPixel] = useState(false);
   const [savedCapi, setSavedCapi] = useState(false);
+  const [savedTestCode, setSavedTestCode] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isTesting, setIsTesting] = useState(false);
 
@@ -826,6 +832,10 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
   useEffect(() => {
     if (capiQuery.data?.capiToken) setCapiInput(capiQuery.data.capiToken);
   }, [capiQuery.data?.capiToken]);
+
+  useEffect(() => {
+    if (testCodeQuery.data?.testEventCode) setTestCodeInput(testCodeQuery.data.testEventCode);
+  }, [testCodeQuery.data?.testEventCode]);
 
   const updatePixelMutation = trpc.homenz.updateFranchisePixel.useMutation({
     onSuccess: () => {
@@ -848,10 +858,20 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
   });
 
   const testCapiMutation = trpc.homenz.testCapiEvent.useMutation();
+  const updateTestCodeMutation = trpc.homenz.updateTestEventCode.useMutation({
+    onSuccess: () => {
+      setSavedTestCode(true);
+      setTimeout(() => setSavedTestCode(false), 3000);
+      utils.homenz.getTestEventCode.invalidate({ franchiseId });
+      toast.success(testCodeInput ? "Código de teste salvo!" : "Código de teste removido.");
+    },
+    onError: (err) => toast.error(err.message || "Erro ao salvar código de teste"),
+  });
 
   const handleTestPixel = async () => {
     const pid = pixelInput || pixelQuery.data?.pixelId;
     const capi = capiInput || capiQuery.data?.capiToken;
+    const code = testCodeInput || testCodeQuery.data?.testEventCode || undefined;
     if (!pid) {
       toast.error("Configure o ID do Pixel antes de testar");
       return;
@@ -863,9 +883,10 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
     setIsTesting(true);
     setTestResult(null);
     try {
-      const result = await testCapiMutation.mutateAsync({ franchiseId, pixelId: pid, capiToken: capi });
+      const result = await testCapiMutation.mutateAsync({ franchiseId, pixelId: pid, capiToken: capi, testEventCode: code });
       if (result.success) {
-        setTestResult({ success: true, message: `Conexão OK! ${result.eventsReceived ?? 1} evento(s) recebido(s) pelo Meta.` });
+        const codeMsg = code ? ` (código de teste: ${code})` : '';
+        setTestResult({ success: true, message: `Conexão OK! ${result.eventsReceived ?? 1} evento(s) recebido(s) pelo Meta.${codeMsg}` });
       } else {
         setTestResult({ success: false, message: result.error || "Erro desconhecido" });
       }
@@ -967,6 +988,32 @@ function PixelTab({ franchiseId }: { franchiseId: string }) {
             </button>
           </div>
           <p className="text-[10px] text-[#5A667A]">Encontre em: Meta Business &gt; Configurações &gt; Fontes de Dados &gt; Pixels &gt; API de Conversões &gt; Gerar Token de Acesso</p>
+        </div>
+
+        {/* Código de Teste */}
+        <div className="mt-4 pt-4 border-t border-[#F1F5F9] space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-[#0A2540]">Código de Teste</label>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Opcional</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={testCodeInput}
+              onChange={(e) => setTestCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20))}
+              placeholder="Ex: TEST12345"
+              className="flex-1 border border-[#E2E8F0] rounded-xl px-4 py-2 text-[#0A2540] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+            />
+            <button
+              onClick={() => updateTestCodeMutation.mutate({ franchiseId, testEventCode: testCodeInput || null })}
+              disabled={updateTestCodeMutation.isPending}
+              className="px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {updateTestCodeMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : savedTestCode ? <CheckCircle className="w-4 h-4" /> : null}
+              {savedTestCode ? "Salvo!" : "Salvar"}
+            </button>
+          </div>
+          <p className="text-[10px] text-[#5A667A]">Quando preenchido, os eventos aparecem na aba <strong>Testar Eventos</strong> do Meta Events Manager sem afetar dados reais de campanha.</p>
         </div>
 
         {/* Botão Testar Pixel */}

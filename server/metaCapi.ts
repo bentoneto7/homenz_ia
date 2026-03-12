@@ -24,6 +24,18 @@ export interface CapiEventData {
   customData?: Record<string, unknown>;
   /** Timestamp Unix em segundos (padrão: agora) */
   eventTime?: number;
+  /**
+   * Código de teste do Meta Events Manager.
+   * Quando definido, os eventos aparecem na aba "Testar Eventos" do Events Manager
+   * sem afetar dados reais de campanha.
+   */
+  testEventCode?: string;
+  /**
+   * ID único do evento para deduplicação entre CAPI e pixel client-side.
+   * O Meta usa esse ID para evitar contar o mesmo evento duas vezes.
+   * Deve ser o mesmo valor passado no parâmetro eventID do fbq().
+   */
+  eventId?: string;
 }
 
 export interface CapiResult {
@@ -77,7 +89,7 @@ export async function sendCapiEvent(params: CapiEventData): Promise<CapiResult> 
     if (clientIpAddress) userData.client_ip_address = clientIpAddress;
     if (clientUserAgent) userData.client_user_agent = clientUserAgent;
 
-    const eventPayload = {
+    const eventPayload: Record<string, unknown> = {
       data: [
         {
           event_name: eventName,
@@ -86,9 +98,12 @@ export async function sendCapiEvent(params: CapiEventData): Promise<CapiResult> 
           action_source: 'website',
           user_data: userData,
           custom_data: customData ?? {},
+          // event_id para deduplicação com o pixel client-side
+          ...(params.eventId ? { event_id: params.eventId } : {}),
         },
       ],
-      // test_event_code: 'TEST12345', // Descomente para testar no Events Manager
+      // test_event_code só é incluído quando explicitamente fornecido
+      ...(params.testEventCode ? { test_event_code: params.testEventCode } : {}),
     };
 
     const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;

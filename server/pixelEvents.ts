@@ -1,14 +1,14 @@
 /**
  * Rastreamento de eventos de pixel por landing page.
  *
- * Estratégia: persiste eventos na tabela `leads` usando campos existentes
- * (chat_summary) como fallback, e usa um Map em memória como cache de 24h
- * para consultas rápidas no painel.
+ * Estratégia de persistência:
+ * - ViewContent → incrementa `total_views` na tabela franchise_landing_pages
+ * - InitiateCheckout → armazenado em cache em memória (sem coluna dedicada)
+ * - Lead → contado via tabela `leads` (fonte de verdade)
+ * - CompleteRegistration → equivalente ao Lead para fins de relatório
  *
- * Eventos rastreados:
- * - ViewContent: quando a landing page é aberta
- * - InitiateCheckout: quando nome + WhatsApp são informados
- * - Lead: quando o lead é criado e distribuído
+ * O cache em memória serve como buffer para InitiateCheckout e como
+ * camada de leitura rápida para o painel (evita múltiplas queries).
  */
 
 import { supabaseAdmin } from './supabase';
@@ -23,7 +23,7 @@ interface EventCount {
   lastUpdated: number;
 }
 
-// Cache em memória: landingPageSlug → contagens
+// Cache em memória: landingPageSlug → contagens (buffer para InitiateCheckout)
 const eventCache = new Map<string, EventCount>();
 
 function getOrCreate(slug: string): EventCount {
@@ -41,12 +41,19 @@ function getOrCreate(slug: string): EventCount {
 
 /**
  * Registra um evento de pixel para uma landing page.
- * Chamado pelo servidor quando eventos ocorrem.
+ * ViewContent é persistido no banco via total_views.
+ * Os demais ficam em cache em memória.
  */
 export function trackPixelEvent(slug: string, event: PixelEventType): void {
   const counts = getOrCreate(slug);
   switch (event) {
-    case 'ViewContent': counts.viewContent++; break;
+    case 'ViewContent':
+      counts.viewContent++;
+      // Persistir ViewContent no banco de forma assíncrona (fire-and-forget)
+      persistViewContent(slug).catch(err =>
+        console.error('[pixelEvents] Erro ao persistir ViewContent:', err)
+      );
+      break;
     case 'InitiateCheckout': counts.initiateCheckout++; break;
     case 'Lead': counts.lead++; break;
     case 'CompleteRegistration': counts.completeRegistration++; break;
@@ -55,28 +62,44 @@ export function trackPixelEvent(slug: string, event: PixelEventType): void {
 }
 
 /**
- * Retorna as contagens de eventos para uma lista de slugs.
- * Para Lead e CompleteRegistration, consulta o banco para dados precisos.
+ * Persiste o evento ViewContent incrementando total_views na LP.
+ * Usa o campo existente da tabela para histórico permanente.
  */
-export async function getPixelEventStats(slugs: string[]): Promise<Record<string, EventCount & { leadFromDb?: number }>> {
-  const result: Record<string, EventCount & { leadFromDb?: number }> = {};
+async function persistViewContent(slug: string): Promise<void> {
+  // Buscar LP pelo slug
+  const { data: lp } = await supabaseAdmin
+    .from('franchise_landing_pages')
+    .select('id, total_views')
+    .eq('slug', slug)
+    .single();
 
-  // Buscar contagens de leads do banco (mais preciso que o cache)
+  if (!lp) return;
+
+  const currentViews = (lp as { total_views?: number }).total_views || 0;
+  await supabaseAdmin
+    .from('franchise_landing_pages')
+    .update({ total_views: currentViews + 1 })
+    .eq('id', (lp as { id: string }).id);
+}
+
+/**
+ * Retorna as contagens de eventos para uma lista de slugs.
+ * ViewContent e Lead vêm do banco (dados históricos precisos).
+ * InitiateCheckout vem do cache em memória.
+ */
+export async function getPixelEventStats(slugs: string[]): Promise<Record<string, EventCount & { leadFromDb?: number; viewsFromDb?: number }>> {
+  const result: Record<string, EventCount & { leadFromDb?: number; viewsFromDb?: number }> = {};
+
   try {
-    // Buscar IDs das landing pages pelos slugs
+    // Buscar dados das LPs (total_views + total_leads já persistidos)
     const { data: lps } = await supabaseAdmin
       .from('franchise_landing_pages')
-      .select('id, slug')
+      .select('id, slug, total_views, total_leads')
       .in('slug', slugs);
 
     if (lps && lps.length > 0) {
-      const lpIds = lps.map((lp: { id: string }) => lp.id);
-      const slugById: Record<string, string> = {};
-      for (const lp of lps as { id: string; slug: string }[]) {
-        slugById[lp.id] = lp.slug;
-      }
-
-      // Contar leads por landing page
+      // Contar leads reais por landing page
+      const lpIds = (lps as { id: string }[]).map(lp => lp.id);
       const { data: leads } = await supabaseAdmin
         .from('leads')
         .select('landing_page_id')
@@ -87,12 +110,23 @@ export async function getPixelEventStats(slugs: string[]): Promise<Record<string
         leadCountByLpId[lead.landing_page_id] = (leadCountByLpId[lead.landing_page_id] || 0) + 1;
       }
 
-      for (const lp of lps as { id: string; slug: string }[]) {
+      for (const lp of lps as { id: string; slug: string; total_views?: number; total_leads?: number }[]) {
         const slug = lp.slug;
-        const counts = getOrCreate(slug);
+        const cacheData = getOrCreate(slug);
+        const viewsFromDb = lp.total_views || 0;
+        const leadFromDb = leadCountByLpId[lp.id] || 0;
+
         result[slug] = {
-          ...counts,
-          leadFromDb: leadCountByLpId[lp.id] || 0,
+          // ViewContent: banco tem precedência sobre cache
+          viewContent: Math.max(viewsFromDb, cacheData.viewContent),
+          // InitiateCheckout: apenas cache (sem coluna dedicada)
+          initiateCheckout: cacheData.initiateCheckout,
+          // Lead: banco tem precedência
+          lead: Math.max(leadFromDb, cacheData.lead),
+          completeRegistration: cacheData.completeRegistration,
+          lastUpdated: cacheData.lastUpdated,
+          leadFromDb,
+          viewsFromDb,
         };
       }
     }
@@ -112,7 +146,6 @@ export async function getPixelEventStats(slugs: string[]): Promise<Record<string
 
 /**
  * Registra um evento de ViewContent via endpoint público.
- * Chamado pela landing page quando carrega.
  */
 export async function recordViewContent(slug: string): Promise<void> {
   trackPixelEvent(slug, 'ViewContent');
@@ -120,7 +153,6 @@ export async function recordViewContent(slug: string): Promise<void> {
 
 /**
  * Registra um evento de InitiateCheckout.
- * Chamado quando o lead informa nome + WhatsApp.
  */
 export async function recordInitiateCheckout(slug: string): Promise<void> {
   trackPixelEvent(slug, 'InitiateCheckout');
