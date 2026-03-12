@@ -660,3 +660,6 @@
 ## Cron + Tela Boas-Vindas (Mar 12)
 - [x] Cron diário: desativar franquias com trial_ends_at < NOW() e sem assinatura paga (executa às 00:00 UTC)
 - [x] Tela de boas-vindas após cadastro com checklist de primeiros passos (/boas-vindas)
+
+## Bug: Hook Condicional no FranchiseeDashboard (Mar 12)
+- [x] Corrigir "Rendered more hooks than during the previous render" no FranchiseeDashboard — useState do trialBannerDismissed movido para antes dos returns condicionais

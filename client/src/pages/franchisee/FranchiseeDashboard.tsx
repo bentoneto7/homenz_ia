@@ -1178,6 +1178,9 @@ export default function FranchiseeDashboard() {
     refetchInterval: 30000,
   });
 
+  // MUST be declared before any conditional returns to comply with React hooks rules
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
+
   const createInviteMutation = trpc.homenz.createSellerInvite.useMutation({
     onSuccess: (data) => {
       setGeneratedInviteUrl(data.inviteUrl);
@@ -1215,7 +1218,6 @@ export default function FranchiseeDashboard() {
   }
 
   const { franchise, leads, sellers, stats, funnel, trial } = data;
-  const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
 
   return (
     <HomenzLayout title={franchise?.name ?? "Dashboard Franqueado"}>
