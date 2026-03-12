@@ -673,3 +673,6 @@
 
 ## Tela de Sucesso Pós-Pagamento (Mar 12)
 - [x] Criar modal/overlay de sucesso em /franqueado?pagamento=sucesso com boas-vindas ao plano pago e lista de benefícios desbloqueados
+
+## Bug: OAuth Manus acionado em /franqueado/pixel (Mar 12)
+- [x] Corrigir OAuth Manus acionado indevidamente em rotas Homenz — main.tsx agora ignora UNAUTHED_ERR_MSG em /franqueado, /vendedor, /homenzadm, /login, /cadastro, /planos, /join

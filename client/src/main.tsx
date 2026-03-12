@@ -15,8 +15,14 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (typeof window === "undefined") return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
+
+  // Não redirecionar para OAuth da Manus em rotas do sistema Homenz
+  // (franqueados, vendedores e admins usam autenticação própria via JWT)
+  const homenzRoutes = ["/franqueado", "/vendedor", "/homenzadm", "/login", "/cadastro", "/boas-vindas", "/planos", "/join"];
+  const currentPath = window.location.pathname;
+  const isHomenzRoute = homenzRoutes.some(route => currentPath.startsWith(route));
+  if (isHomenzRoute) return;
 
   window.location.href = getLoginUrl();
 };
