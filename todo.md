@@ -715,3 +715,14 @@
 - [x] Investigar e corrigir erro na criação de landing page personalizada (checkSellers endpoint)
 - [x] Verificar distribuição de leads para vendedor correto (round-robin já funcionava)
 - [x] Alerta de sem vendedor ao tentar criar landing page (bloquear criação com banner de aviso)
+
+## Auditoria Fluxo Completo — Acre (Mar 12)
+- [x] Franquia Homenz Rio Branco (AC) criada no Supabase
+- [x] Franqueado Carlos Mendes criado (franqueado.acre@homenz.com.br / Homenz@2024)
+- [x] Vendedor Ana Lima criado e ativo (vendedor.acre@homenz.com.br / Vendedor@2024)
+- [x] Landing page criada: /l/homenz-rio-branco-crescimento-capilar-mmny3qqs
+- [x] submitLead via API testado e funcionando (lead criado + distribuído)
+- [x] 4 leads distribuídos via round-robin para Ana Lima (todos assigned)
+- [x] sellerDashboard retornando 4 leads quentes para Ana Lima
+- [x] Login do franqueado e vendedor via API funcionando (bcrypt corrigido)
+- [x] Corrigir hash de senha: script usava SHA256, sistema usa bcrypt
