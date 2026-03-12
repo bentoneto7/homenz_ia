@@ -548,4 +548,21 @@ export const distributionRouter = router({
       const utm = lpData.utm_campaign as string | null;
       return { pixelId: utm && utm.startsWith('lppixel:') ? utm.slice(8) : null };
     }),
+
+  /**
+   * Verifica se a franquia tem vendedores ativos (usado antes de criar LP)
+   */
+  checkSellers: homenzProcedure
+    .query(async ({ ctx }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) return { hasSellers: false, count: 0, sellers: [] as { id: string; name: string; email: string }[] };
+      const { data: sellers } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('franchise_id', franchiseId)
+        .eq('role', 'seller')
+        .eq('active', true);
+      const list = (sellers ?? []) as { id: string; name: string; email: string }[];
+      return { hasSellers: list.length > 0, count: list.length, sellers: list };
+    }),
 });

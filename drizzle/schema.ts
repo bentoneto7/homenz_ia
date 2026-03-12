@@ -707,3 +707,17 @@ export const accessInviteUses = mysqlTable("access_invite_uses", {
 
 export type AccessInviteUse = typeof accessInviteUses.$inferSelect;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TOKENS DE RECUPERAÇÃO DE SENHA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const passwordResetTokens = mysqlTable("password_reset_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // FK → users.id
+  token: varchar("token", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+

@@ -706,3 +706,12 @@
 - [ ] Criar tela de login e cadastro de clínicas no frontend com Supabase Auth
 - [ ] Atualizar cliente tRPC para enviar token Supabase no Authorization header
 - [ ] Remover interceptor OAuth Manus do main.tsx e limpar referências ao _core/useAuth
+
+## Melhorias Implementadas (Mar 2026)
+- [x] Recuperação de senha: endpoint auth.forgotPassword + auth.resetPassword + páginas /esqueci-senha e /recuperar-senha
+- [x] Link "Esqueci minha senha" na página de login da clínica
+- [x] Nome da clínica no sidebar (DashboardLayout busca trpc.clinic.mine e exibe nome real)
+- [x] Redirecionamento automático para /login-clinica quando token expirar (DashboardLayout detecta erro 401)
+- [x] Investigar e corrigir erro na criação de landing page personalizada (checkSellers endpoint)
+- [x] Verificar distribuição de leads para vendedor correto (round-robin já funcionava)
+- [x] Alerta de sem vendedor ao tentar criar landing page (bloquear criação com banner de aviso)

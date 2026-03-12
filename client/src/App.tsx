@@ -35,6 +35,8 @@ import CreatorPanel from "./pages/creator/CreatorPanel";
 import JoinInvite from "./pages/JoinInvite";
 import HomenzLogin from "./pages/HomenzLogin";
 import ClinicLogin from "./pages/ClinicLogin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import HomenzAdmLogin from "./pages/HomenzAdmLogin";
 import FranchiseLanding from "./pages/FranchiseLanding";
 import PlanosPage from "./pages/PlanosPage";
@@ -50,6 +52,8 @@ function Router() {
       <Route path="/cadastro" component={CadastroFranqueado} />
       <Route path="/cadastro-clinica" component={ClinicOnboarding} />
       <Route path="/login-clinica" component={ClinicLogin} />
+      <Route path="/esqueci-senha" component={ForgotPassword} />
+      <Route path="/recuperar-senha" component={ResetPassword} />
       <Route path="/aguardando-pagamento" component={AguardandoPagamento} />
       <Route path="/planos" component={PlanosPage} />
       <Route path="/boas-vindas" component={BoasVindas} />

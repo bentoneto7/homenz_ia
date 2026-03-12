@@ -172,7 +172,7 @@ export default function ClinicLogin() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-gray-500">
               {mode === "login" ? "Não tem conta?" : "Já tem conta?"}{" "}
               <button
@@ -183,6 +183,17 @@ export default function ClinicLogin() {
                 {mode === "login" ? "Criar agora" : "Entrar"}
               </button>
             </p>
+            {mode === "login" && (
+              <p>
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = '/esqueci-senha'; }}
+                  className="text-[#C9A84C] hover:underline text-xs"
+                >
+                  Esqueci minha senha
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

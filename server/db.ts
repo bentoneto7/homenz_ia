@@ -3,12 +3,13 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   users, clinics, clinicUsers, leads, leadPhotos,
   aiResults, appointments, notifications, npsResponses,
-  planLimits, treatments,
+  planLimits, treatments, passwordResetTokens,
   InsertUser,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const JWT_SECRET = process.env.JWT_SECRET || "homenz-clinic-secret-2024";
 const JWT_EXPIRES_IN = "7d";
@@ -191,4 +192,46 @@ export async function updateLeadFunnelStep(
     .update(leads)
     .set({ funnelStep, lastActivityAt: new Date() })
     .where(eq(leads.id, leadId));
+}
+
+// ── Recuperação de Senha ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Cria um token de recuperação de senha para o email informado.
+ * Retorna o token gerado (para enviar por email) ou null se o email não existir.
+ */
+export async function createPasswordResetToken(email: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase().trim())).limit(1);
+  const user = result[0];
+  if (!user) return null;
+  // Invalidar tokens anteriores
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
+  // Gerar novo token
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+  await db.insert(passwordResetTokens).values({ userId: user.id, token, expiresAt });
+  return token;
+}
+
+/**
+ * Verifica o token de recuperação e redefine a senha.
+ * Retorna true se bem-sucedido, false se token inválido/expirado.
+ */
+export async function resetPasswordWithToken(token: string, newPassword: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(passwordResetTokens)
+    .where(eq(passwordResetTokens.token, token)).limit(1);
+  const resetToken = result[0];
+  if (!resetToken) return false;
+  if (resetToken.usedAt) return false; // já usado
+  if (new Date() > resetToken.expiresAt) return false; // expirado
+  // Atualizar senha
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await db.update(users).set({ passwordHash }).where(eq(users.id, resetToken.userId));
+  // Marcar token como usado
+  await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, resetToken.id));
+  return true;
 }

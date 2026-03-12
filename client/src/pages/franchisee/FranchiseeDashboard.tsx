@@ -47,6 +47,12 @@ function LandingPagesTab() {
     refetchOnWindowFocus: false,
   });
 
+  const sellersQuery = trpc.distribution.checkSellers.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+  const hasSellers = sellersQuery.data?.hasSellers ?? false;
+  const sellersCount = sellersQuery.data?.count ?? 0;
+
   const createMutation = trpc.homenz.createLandingPageForFranchisee.useMutation({
     onSuccess: () => {
       toast.success("Landing page criada!");
@@ -88,6 +94,10 @@ function LandingPagesTab() {
 
   const createPage = () => {
     if (!newTitle.trim()) { toast.error("Dê um nome para a landing page"); return; }
+    if (!hasSellers) {
+      toast.error("Cadastre ao menos um vendedor antes de criar uma landing page. Os leads precisam de um destino!");
+      return;
+    }
     createMutation.mutate({ title: newTitle, procedure: newProcedure, address: newAddress || undefined, zipCode: newZipCode || undefined });
   };
 
@@ -135,6 +145,27 @@ function LandingPagesTab() {
           Nova Landing Page
         </button>
       </div>
+
+      {/* Alerta: sem vendedores */}
+      {!sellersQuery.isLoading && !hasSellers && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-amber-800 font-semibold text-sm mb-1">Nenhum vendedor cadastrado</p>
+            <p className="text-amber-700 text-sm leading-relaxed">
+              Para criar uma landing page, você precisa ter ao menos <strong>1 vendedor ativo</strong>. Os leads captados são distribuídos automaticamente entre os vendedores via round-robin. Cadastre um vendedor na aba <strong>Time</strong> antes de criar uma landing page.
+            </p>
+          </div>
+        </div>
+      )}
+      {!sellersQuery.isLoading && hasSellers && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+          <p className="text-emerald-700 text-sm">
+            <strong>{sellersCount} vendedor{sellersCount !== 1 ? 'es' : ''} ativo{sellersCount !== 1 ? 's' : ''}</strong> — os leads serão distribuídos automaticamente via round-robin.
+          </p>
+        </div>
+      )}
 
       {/* Como funciona */}
       <div className="bg-blue-500/8 border border-blue-500/20 rounded-2xl p-5">

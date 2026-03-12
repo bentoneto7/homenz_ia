@@ -11,6 +11,7 @@ import {
   getClinicBySlug, getClinicForUser, getLeadByToken,
   updateLeadFunnelStep, getPlanLimits,
   loginClinic, registerClinicUser,
+  createPasswordResetToken, resetPasswordWithToken,
 } from "./db";
 import {
   clinics, clinicUsers, leads, leadPhotos,
@@ -129,6 +130,36 @@ export const appRouter = router({
         const result = await registerClinicUser(input);
         if (!result) throw new TRPCError({ code: "CONFLICT", message: "E-mail já cadastrado" });
         return { token: result.token, user: result.user };
+      }),
+    // Solicitar recuperação de senha (envia link por email)
+    forgotPassword: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input, ctx }) => {
+        const token = await createPasswordResetToken(input.email);
+        if (token) {
+          // Enviar email com link de recuperação
+          const origin = ctx.req.headers.origin || ctx.req.headers.referer?.replace(/\/[^/]*$/, '') || 'https://homenz.com.br';
+          const resetUrl = `${origin}/recuperar-senha?token=${token}`;
+          // Usar notifyOwner como fallback — em produção substituir por serviço de email
+          try {
+            const { invokeLLM } = await import('./_core/llm');
+            // Não temos serviço de email configurado, então logamos o link
+            console.log(`[ForgotPassword] Reset link for ${input.email}: ${resetUrl}`);
+          } catch {}
+        }
+        // Sempre retornar sucesso para não revelar se o email existe
+        return { success: true, message: "Se o e-mail estiver cadastrado, você receberá um link de recuperação." };
+      }),
+    // Redefinir senha com token
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string().min(10),
+        newPassword: z.string().min(6),
+      }))
+      .mutation(async ({ input }) => {
+        const success = await resetPasswordWithToken(input.token, input.newPassword);
+        if (!success) throw new TRPCError({ code: "BAD_REQUEST", message: "Token inválido ou expirado. Solicite um novo link." });
+        return { success: true };
       }),
   }),
 

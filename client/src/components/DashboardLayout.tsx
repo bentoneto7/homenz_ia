@@ -1,4 +1,5 @@
 import { useClinicAuth } from "@/hooks/useClinicAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -113,9 +114,23 @@ function DashboardLayoutContent({
   children,
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
-  const { logout } = useClinicAuth();
-  const user: { name?: string; email?: string } | null = null; // Clinic auth doesn't expose user object directly
+  const { logout, isAuthenticated } = useClinicAuth();
   const [location, setLocation] = useLocation();
+  // Buscar nome da clínica
+  const { data: clinic, error: clinicError } = trpc.clinic.mine.useQuery(undefined, {
+    enabled: isAuthenticated,
+    retry: false,
+  });
+  // Redirecionar automaticamente se token expirado (401)
+  useEffect(() => {
+    if (clinicError) {
+      const httpStatus = (clinicError as { data?: { httpStatus?: number } })?.data?.httpStatus;
+      if (httpStatus === 401) {
+        localStorage.removeItem("homenz_token");
+        window.location.href = "/login-clinica";
+      }
+    }
+  }, [clinicError]);
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -220,7 +235,7 @@ function DashboardLayoutContent({
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                     <p className="text-sm font-medium truncate leading-none">
-                      Clínica
+                      {clinic?.name ?? "Clínica"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate mt-1.5">
                       Painel Admin
