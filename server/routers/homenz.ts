@@ -637,6 +637,7 @@ export const homenzRouter = router({
       whatsapp: z.string().min(10, "WhatsApp inválido"),
       instagram: z.string().optional(),
       address: z.string().optional(),
+      servicePhone: z.string().optional(), // Número de atendimento da unidade (WhatsApp)
       franchiseName: z.string().min(2, "Nome da clínica obrigatório"),
       city: z.string().min(2, "Cidade obrigatória"),
       state: z.string().length(2, "Estado deve ter 2 letras"),
@@ -679,6 +680,10 @@ export const homenzRouter = router({
       // Adicionar address apenas se a coluna existir (migration pendente)
       if (input.address) {
         franchiseInsert.address = input.address;
+      }
+      // Adicionar número de atendimento da unidade
+      if (input.servicePhone) {
+        franchiseInsert.phone = input.servicePhone;
       }
 
       const { data: franchise, error: franchiseErr } = await supabaseAdmin
@@ -1022,6 +1027,47 @@ export const homenzRouter = router({
    * O frontend armazena o timestamp do último acesso em localStorage.
    * Polling a cada 30s para detectar leads novos em tempo real.
    */
+  updateFranchiseSettings: franchiseeProcedure
+    .input(z.object({
+      address: z.string().optional(),
+      phone: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+
+      const updateData: Record<string, string> = {};
+      if (input.address !== undefined) updateData.address = input.address;
+      if (input.phone !== undefined) updateData.phone = input.phone;
+
+      if (Object.keys(updateData).length === 0) return { success: true };
+
+      const { error } = await supabaseAdmin
+        .from('franchises')
+        .update(updateData)
+        .eq('id', franchiseId);
+
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return { success: true };
+    }),
+
+  getFranchiseSettings: franchiseeProcedure
+    .query(async ({ ctx }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) return { address: '', phone: '' };
+
+      const { data } = await supabaseAdmin
+        .from('franchises')
+        .select('address, phone')
+        .eq('id', franchiseId)
+        .single();
+
+      return {
+        address: (data?.address as string) || '',
+        phone: (data?.phone as string) || '',
+      };
+    }),
+
   getNewLeadsCount: supabaseProcedure
     .input(z.object({
       lastSeenAt: z.string().optional(), // ISO timestamp do último acesso

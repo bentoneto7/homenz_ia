@@ -34,6 +34,7 @@ interface FormState {
   city: string;
   state: string;
   address: string;
+  servicePhone: string;
   password: string;
   confirmPassword: string;
 }
@@ -52,6 +53,7 @@ export default function CadastroFranqueado() {
     city: "",
     state: "",
     address: "",
+    servicePhone: "",
     password: "",
     confirmPassword: "",
   });
@@ -114,6 +116,7 @@ export default function CadastroFranqueado() {
       whatsapp: form.whatsapp,
       instagram: form.instagram || undefined,
       address: form.address || undefined,
+      servicePhone: form.servicePhone || undefined,
       franchiseName: form.franchiseName,
       city: form.city,
       state: form.state,
@@ -318,6 +321,20 @@ export default function CadastroFranqueado() {
                   placeholder="Rua, número, bairro"
                   className="mt-1.5 border-[#E2E8F0] focus:border-[#004A9D] rounded-xl"
                 />
+              </div>
+              <div>
+                <Label className="text-[#374151] font-semibold text-sm">
+                  Número de Atendimento <span className="text-[#94A3B8] font-normal">(opcional)</span>
+                </Label>
+                <Input
+                  type="tel"
+                  value={form.servicePhone}
+                  onChange={(e) => update("servicePhone", maskPhone(e.target.value))}
+                  placeholder="(00) 90000-0000"
+                  inputMode="numeric"
+                  className="mt-1.5 border-[#E2E8F0] focus:border-[#004A9D] rounded-xl"
+                />
+                <p className="text-xs text-[#94A3B8] mt-1">WhatsApp ou telefone exibido nas suas landing pages para contato direto</p>
               </div>
             </div>
           )}

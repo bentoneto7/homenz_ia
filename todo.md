@@ -739,3 +739,12 @@
 
 ## Link Google Maps na Landing Page (Mar 12)
 - [x] Transformar endereço da franquia em link clicável do Google Maps na landing /l/:slug (abre Maps com endereço + cidade + estado)
+
+## Configurações do Franqueado + Preview LP (Mar 12)
+- [x] Aba "Configurações" no dashboard do franqueado (endereço + número de atendimento)
+- [x] Campo de número de atendimento nas configurações do franqueado (FranchiseeSettingsTab)
+- [x] Campo de número de atendimento no formulário de cadastro (CadastroFranqueado.tsx)
+- [x] Número de atendimento exibido na landing page ao lado do endereço (link WhatsApp verde)
+- [x] Botão "Ver minha landing page" destacado (gradiente teal-azul) na lista de LPs
+- [x] Endpoint updateFranchiseSettings aceita phone + address
+- [x] Endpoint getFranchiseSettings retorna phone + address para pré-preencher formulário
