@@ -28,8 +28,8 @@ export const distributionRouter = router({
         .select(`
           id, slug, title, procedure, city, state, active,
           total_views, total_leads, utm_source, utm_medium, utm_campaign,
-          franchise_id,
-          franchises!inner(id, name, slug, city, state, phone, address, logo_url)
+          franchise_id, pixel_id,
+          franchises!inner(id, name, slug, city, state, phone, address, logo_url, pixel_id)
         `)
         .eq('slug', input.slug)
         .eq('active', true)
@@ -298,5 +298,55 @@ export const distributionRouter = router({
 
       if (error) throw new Error(error.message);
       return data || [];
+    }),
+
+  /**
+   * Atualiza o pixel_id da franquia (protegido — franqueado)
+   */
+  updateFranchisePixel: protectedProcedure
+    .input(z.object({
+      franchiseId: z.string().uuid(),
+      pixelId: z.string().max(30).optional().nullable(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const userRole5 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const userFranchiseId5 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      if (
+        userRole5 !== 'admin' &&
+        userRole5 !== 'network_owner' &&
+        userFranchiseId5 !== input.franchiseId
+      ) {
+        throw new Error('Acesso negado');
+      }
+      const { error } = await supabase
+        .from('franchises')
+        .update({ pixel_id: input.pixelId || null, updated_at: new Date().toISOString() })
+        .eq('id', input.franchiseId);
+      if (error) throw new Error(error.message);
+      return { success: true };
+    }),
+
+  /**
+   * Busca o pixel_id da franquia (protegido)
+   */
+  getFranchisePixel: protectedProcedure
+    .input(z.object({ franchiseId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const userRole6 = (ctx.user as unknown as { role: string; franchise_id?: string }).role;
+      const userFranchiseId6 = (ctx.user as unknown as { franchise_id?: string }).franchise_id;
+      if (
+        userRole6 !== 'admin' &&
+        userRole6 !== 'network_owner' &&
+        userFranchiseId6 !== input.franchiseId
+      ) {
+        throw new Error('Acesso negado');
+      }
+      const { data, error } = await supabase
+        .from('franchises')
+        .select('pixel_id')
+        .eq('id', input.franchiseId)
+        .single();
+      if (error) throw new Error(error.message);
+      return { pixelId: (data as { pixel_id?: string | null })?.pixel_id || null };
     }),
 });

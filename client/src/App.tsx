@@ -95,6 +95,9 @@ function Router() {
       <Route path="/franqueado/landing-pages">
         <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
       </Route>
+      <Route path="/franqueado/pixel">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
 
       {/* Painel do Vendedor — requer role seller */}
       <Route path="/vendedor">

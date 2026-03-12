@@ -569,3 +569,12 @@
 - [x] Lead 60010 preso em ai_processing — corrigido manualmente
 - [x] Corrigir tipo da franquia no FranchiseLanding (remover whatsapp/bio inexistentes)
 - [x] Zero erros TypeScript após todas as correções
+
+## Central de Pixel + Otimizações (Mar 12)
+- [x] DB: adicionar coluna pixel_id na tabela franchise_landing_pages (Supabase) — fallback via utm_campaign implementado
+- [x] Painel do franqueado: aba "Pixel" para inserir o Meta Pixel ID da landing page
+- [x] FranchiseLanding: injetar script do Meta Pixel dinamicamente com o pixel_id da landing page
+- [x] Evento "InitiateCheckout" quando lead digita nome + WhatsApp e avança (cadastro parcial)
+- [x] Evento "CompleteRegistration" quando lead finaliza o agendamento
+- [ ] Otimizar fluxo de fotos: guia visual melhorado, preview antes de enviar, feedback de qualidade
+- [x] Alerta de expectativa no Antes/Depois: banner destacado "Esta é uma simulação visual — não é garantia de resultado"

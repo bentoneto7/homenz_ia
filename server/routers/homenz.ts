@@ -734,4 +734,89 @@ export const homenzRouter = router({
         email: invite.email,
       };
     }),
+
+  // ── Meta Pixel ─────────────────────────────────────────────────────────────
+  /**
+   * Busca o pixel_id da franquia.
+   * Usa a coluna pixel_id se existir, caso contrário lê do campo utm_campaign
+   * de uma landing page especial com slug "__pixel_config__<franchiseId>".
+   */
+  getFranchisePixel: franchiseeProcedure
+    .input(z.object({ franchiseId: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      // Tentar ler pixel_id diretamente da tabela franchises
+      const { data: franchise } = await supabaseAdmin
+        .from('franchises')
+        .select('*')
+        .eq('id', input.franchiseId)
+        .single();
+      const pixelId = (franchise as Record<string, unknown> | null)?.pixel_id as string | null | undefined;
+      if (pixelId !== undefined) {
+        return { pixelId: pixelId || null };
+      }
+      // Fallback: ler de landing page especial
+      const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
+      const { data: lp } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('utm_campaign')
+        .eq('slug', configSlug)
+        .single();
+      const stored = (lp as { utm_campaign?: string } | null)?.utm_campaign || null;
+      return { pixelId: stored && stored.startsWith('pixel:') ? stored.slice(6) : null };
+    }),
+
+  /**
+   * Atualiza o pixel_id da franquia.
+   * Usa a coluna pixel_id se existir, caso contrário persiste em uma landing page
+   * especial com slug "__pixel_<franchiseId>__" usando utm_campaign como storage.
+   */
+  updateFranchisePixel: franchiseeProcedure
+    .input(z.object({
+      franchiseId: z.string().uuid(),
+      pixelId: z.string().max(30).nullable(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { homenzUser } = ctx;
+      if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
+      }
+      // Tentar atualizar pixel_id diretamente na tabela franchises
+      const { error: directErr } = await supabaseAdmin
+        .from('franchises')
+        .update({ pixel_id: input.pixelId || null } as Record<string, unknown>)
+        .eq('id', input.franchiseId);
+      if (!directErr) {
+        return { success: true, method: 'direct' };
+      }
+      // Fallback: persistir em landing page especial
+      const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
+      const utmValue = input.pixelId ? `pixel:${input.pixelId}` : null;
+      const { data: existing } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('slug', configSlug)
+        .single();
+      if (existing) {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .update({ utm_campaign: utmValue })
+          .eq('slug', configSlug);
+      } else {
+        await supabaseAdmin
+          .from('franchise_landing_pages')
+          .insert({
+            franchise_id: input.franchiseId,
+            slug: configSlug,
+            title: '__pixel_config__',
+            procedure: 'config',
+            active: false,
+            utm_campaign: utmValue,
+          });
+      }
+      return { success: true, method: 'fallback' };
+    }),
 });

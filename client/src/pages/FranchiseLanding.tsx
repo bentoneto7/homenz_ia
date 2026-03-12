@@ -22,7 +22,7 @@ const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663133764902/Cc4dL
 
 // Helper para extrair dados da franquia do objeto aninhado
 function getFranchise(lp: { franchises?: unknown }) {
-  const f = lp.franchises as { name?: string; city?: string; state?: string; phone?: string; address?: string; logo_url?: string } | null;
+  const f = lp.franchises as { name?: string; city?: string; state?: string; phone?: string; address?: string; logo_url?: string; pixel_id?: string | null } | null;
   return f || {};
 }
 
@@ -121,7 +121,52 @@ export default function FranchiseLanding() {
   const franchiseAddress = franchise.address || '';
   const franchiseBio = '';
 
+  // Pixel ID: prioridade landing page > franquia
+  const pixelId = (
+    (landingPage as { pixel_id?: string | null } | null)?.pixel_id ||
+    (franchise as { pixel_id?: string | null })?.pixel_id ||
+    null
+  );
+
+  // Injetar Meta Pixel script quando pixel_id estiver disponível
+  useEffect(() => {
+    if (!pixelId) return;
+    // Evitar injeção duplicada
+    if (document.getElementById('meta-pixel-script')) return;
+    const script = document.createElement('script');
+    script.id = 'meta-pixel-script';
+    script.innerHTML = `
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '${pixelId}');
+      fbq('track', 'PageView');
+    `;
+    document.head.appendChild(script);
+    // Disparar ViewContent
+    if (typeof (window as Window & { fbq?: (...args: unknown[]) => void }).fbq === 'function') {
+      (window as Window & { fbq?: (...args: unknown[]) => void }).fbq?.('track', 'ViewContent');
+    }
+    return () => {
+      const el = document.getElementById('meta-pixel-script');
+      if (el) el.remove();
+    };
+  }, [pixelId]);
+
   const submitLeadMutation = trpc.distribution.submitLead.useMutation();
+
+  // Helper para disparar eventos do Meta Pixel
+  const firePixelEvent = (event: string, params?: Record<string, unknown>) => {
+    const fbq = (window as Window & { fbq?: (...args: unknown[]) => void }).fbq;
+    if (typeof fbq === 'function') {
+      fbq('track', event, params || {});
+    }
+  };
 
   // Scroll automático
   useEffect(() => {
@@ -222,6 +267,13 @@ export default function FranchiseLanding() {
         }]);
         return;
       }
+      // Disparar evento InitiateCheckout quando nome + WhatsApp coletados
+      firePixelEvent('InitiateCheckout', {
+        content_name: 'Diagnóstico Capilar Gratuito',
+        content_category: 'Hair Clinic',
+        currency: 'BRL',
+        value: 0,
+      });
       advanceToNextStep(inputValue, { phone: inputValue });
     }
     setInputValue("");
@@ -304,6 +356,15 @@ export default function FranchiseLanding() {
         utmSource: urlParams.get("utm_source") || undefined,
         utmMedium: urlParams.get("utm_medium") || undefined,
         utmCampaign: urlParams.get("utm_campaign") || undefined,
+      });
+
+      // Disparar evento CompleteRegistration quando lead é registrado com sucesso
+      firePixelEvent('CompleteRegistration', {
+        content_name: 'Diagnóstico Capilar Gratuito',
+        content_category: 'Hair Clinic',
+        status: 'lead_submitted',
+        currency: 'BRL',
+        value: 0,
       });
 
       setTimeout(() => {
@@ -491,6 +552,11 @@ export default function FranchiseLanding() {
               {/* Upload de foto */}
               {msg.role === "bot" && msg.type === "photo-upload" && currentStep === 1 && !leadData.photoUrl && !leadData.hairProblem?.includes("Prefiro") && (
                 <div className="mt-3 space-y-2">
+                  {/* Alerta de expectativa */}
+                  <div className="flex items-start gap-2 px-3 py-2 rounded-xl text-xs" style={{ background: "rgba(255,193,7,0.12)", border: "1px solid rgba(255,193,7,0.35)", color: "#92400e" }}>
+                    <span className="flex-shrink-0 mt-0.5">⚠️</span>
+                    <span><strong>Expectativa, não garantia:</strong> A foto é usada para orientar nossa equipe na avaliação inicial. Os resultados reais dependem de cada caso e serão avaliados presencialmente.</span>
+                  </div>
                   {photoPreview ? (
                     <div className="relative">
                       <img src={photoPreview} alt="Preview" className="w-full max-w-[200px] rounded-xl object-cover" style={{ maxHeight: "150px" }} />

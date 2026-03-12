@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT table_name, column_name, data_type\nFROM information_schema.columns\nWHERE table_schema = 'public'\n  AND table_name IN ('franchises', 'franchise_landing_pages')\n  AND column_name = 'pixel_id';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute \nSELECT table_name, column_name, data_type\nFROM information_schema.columns\nWHERE table_schema = 'public'\n  AND table_name IN ('franchises', 'franchise_landing_pages')\n  AND column_name = 'pixel_id';\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 628
+}

@@ -37,6 +37,9 @@ export async function runMigrations() {
   // Verificar e adicionar colunas whatsapp, bio, zip_code na tabela franchises
   await addFranchiseColumns();
 
+  // Verificar e adicionar coluna pixel_id
+  await addPixelIdColumn();
+
   console.log("[Migration] Concluído.");
 }
 
@@ -87,6 +90,54 @@ async function addFranchiseColumns() {
     }
   } else {
     console.log('[Migration] franchises.whatsapp/bio/zip_code: OK');
+  }
+}
+
+async function addPixelIdColumn() {
+  const supabaseUrl = process.env.SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  // Check if pixel_id column exists on franchises
+  const { error: pErr } = await supabaseAdmin.from('franchises').select('pixel_id').limit(0);
+  if (pErr && pErr.message.includes('pixel_id')) {
+    console.log('[Migration] Adicionando coluna pixel_id nas tabelas franchises e franchise_landing_pages...');
+    const sql = `
+      ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS pixel_id TEXT;
+      ALTER TABLE public.franchise_landing_pages ADD COLUMN IF NOT EXISTS pixel_id TEXT;
+    `;
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ sql }),
+      });
+      if (!response.ok) {
+        const pgResponse = await fetch(`${supabaseUrl}/pg/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify({ query: sql }),
+        });
+        if (!pgResponse.ok) {
+          console.log('[Migration] Não foi possível adicionar pixel_id via API.');
+        } else {
+          console.log('[Migration] pixel_id adicionado via pg endpoint!');
+        }
+      } else {
+        console.log('[Migration] pixel_id adicionado com sucesso!');
+      }
+    } catch (e) {
+      console.log('[Migration] Erro ao adicionar pixel_id:', (e as Error).message);
+    }
+  } else {
+    console.log('[Migration] franchises.pixel_id: OK');
   }
 }
 

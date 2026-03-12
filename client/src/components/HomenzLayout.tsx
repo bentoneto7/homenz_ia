@@ -4,7 +4,7 @@ import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import {
   LayoutDashboard, Users, TrendingUp, Calendar, Settings,
   LogOut, Menu, Bell, ChevronRight,
-  Building2, BarChart3, Target, Award, Link2,
+  Building2, BarChart3, Target, Award, Link2, BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,6 +29,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { label: "Agendamentos", href: "/franqueado/agendamentos", icon: <Calendar className="w-4 h-4" /> },
     { label: "Analytics", href: "/franqueado/analytics", icon: <TrendingUp className="w-4 h-4" /> },
     { label: "Landing Pages", href: "/franqueado/landing-pages", icon: <Link2 className="w-4 h-4" /> },
+    { label: "Meta Pixel", href: "/franqueado/pixel", icon: <BarChart2 className="w-4 h-4" /> },
     { label: "Configurações", href: "/franqueado/configuracoes", icon: <Settings className="w-4 h-4" /> },
   ],
   seller: [

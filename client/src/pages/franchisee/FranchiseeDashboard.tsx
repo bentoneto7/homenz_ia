@@ -12,6 +12,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, TrendingDown,
   Zap, Activity, ArrowUp, ArrowDown, Minus,
   Link2, ExternalLink, QrCode, Globe, Smartphone, Eye, MousePointerClick, Share2, MapPin,
+  Settings, Info, CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -748,6 +749,150 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
+// ── Componente Meta Pixel ───────────────────────────────────────────────────
+
+function PixelTab({ franchiseId }: { franchiseId: string }) {
+  const utils = trpc.useUtils();
+  const pixelQuery = trpc.homenz.getFranchisePixel.useQuery(
+    { franchiseId },
+    { refetchOnWindowFocus: false }
+  );
+  const [pixelInput, setPixelInput] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  // Sincronizar input com dado do servidor
+  useEffect(() => {
+    if (pixelQuery.data?.pixelId) {
+      setPixelInput(pixelQuery.data.pixelId);
+    }
+  }, [pixelQuery.data?.pixelId]);
+
+  const updateMutation = trpc.homenz.updateFranchisePixel.useMutation({
+    onSuccess: () => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      utils.homenz.getFranchisePixel.invalidate({ franchiseId });
+      toast.success("Meta Pixel salvo com sucesso!");
+    },
+    onError: (err) => toast.error(err.message || "Erro ao salvar pixel"),
+  });
+
+  const currentPixel = pixelQuery.data?.pixelId || null;
+
+  return (
+    <div className="space-y-6">
+      {/* Card principal */}
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Settings className="w-6 h-6 text-[#004A9D]" />
+          </div>
+          <div>
+            <h4 className="text-[#0A2540] font-bold text-lg">Meta Pixel (Facebook Ads)</h4>
+            <p className="text-[#5A667A] text-sm mt-1">
+              Configure o seu Pixel do Meta para rastrear conversões nas suas landing pages.
+              Os eventos serão disparados automaticamente quando leads interagem com o funil.
+            </p>
+          </div>
+        </div>
+
+        {/* Input do Pixel ID */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-[#0A2540]">
+            ID do Meta Pixel
+          </label>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={pixelInput}
+              onChange={(e) => setPixelInput(e.target.value.replace(/\D/g, "").slice(0, 20))}
+              placeholder="Ex: 1234567890123456"
+              className="flex-1 border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#004A9D]/30 focus:border-[#004A9D]"
+            />
+            <button
+              onClick={() => updateMutation.mutate({ franchiseId, pixelId: pixelInput || null })}
+              disabled={updateMutation.isPending}
+              className="px-5 py-3 bg-[#004A9D] text-white text-sm font-semibold rounded-xl hover:bg-[#003580] transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {updateMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : saved ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : null}
+              {saved ? "Salvo!" : "Salvar"}
+            </button>
+          </div>
+          {currentPixel && (
+            <p className="text-xs text-emerald-600 flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5" />
+              Pixel ativo: <span className="font-mono font-bold">{currentPixel}</span>
+            </p>
+          )}
+          {pixelInput && (
+            <button
+              onClick={() => { setPixelInput(""); updateMutation.mutate({ franchiseId, pixelId: null }); }}
+              className="text-xs text-red-500 hover:underline"
+            >
+              Remover pixel
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Eventos rastreados */}
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6">
+        <h5 className="text-[#0A2540] font-bold mb-4 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-amber-500" />
+          Eventos Rastreados Automaticamente
+        </h5>
+        <div className="space-y-3">
+          {[
+            {
+              event: "InitiateCheckout",
+              desc: "Disparado quando o lead informa nome e WhatsApp no funil",
+              icon: "📱",
+            },
+            {
+              event: "CompleteRegistration",
+              desc: "Disparado quando o agendamento é confirmado com sucesso",
+              icon: "✅",
+            },
+            {
+              event: "ViewContent",
+              desc: "Disparado quando o lead abre a landing page",
+              icon: "👁️",
+            },
+          ].map(({ event, desc, icon }) => (
+            <div key={event} className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-xl">
+              <span className="text-lg">{icon}</span>
+              <div>
+                <p className="text-sm font-bold text-[#0A2540] font-mono">{event}</p>
+                <p className="text-xs text-[#5A667A] mt-0.5">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Instrucoes */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-[#004A9D] flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-[#004A9D] mb-1">Como encontrar o ID do Pixel</p>
+            <ol className="text-xs text-[#374151] space-y-1 list-decimal list-inside">
+              <li>Acesse o <strong>Gerenciador de Anúncios</strong> do Meta (Facebook)</li>
+              <li>Vá em <strong>Fontes de Dados &gt; Pixels</strong></li>
+              <li>Copie o número de 15-16 dígitos do seu Pixel</li>
+              <li>Cole acima e clique em <strong>Salvar</strong></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Painel principal ─────────────────────────────────────────────────────────
 
 export default function FranchiseeDashboard() {
@@ -757,7 +902,7 @@ export default function FranchiseeDashboard() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(null);
   // Sincronizar aba com a rota atual
-  const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing" | "calendar"> = {
+  const routeToTab: Record<string, "leads" | "sellers" | "funnel" | "landing" | "calendar" | "pixel"> = {
     "/franqueado": "sellers",
     "/franqueado/vendedores": "sellers",
     "/franqueado/leads": "leads",
@@ -765,6 +910,7 @@ export default function FranchiseeDashboard() {
     "/franqueado/analytics": "funnel",
     "/franqueado/configuracoes": "sellers",
     "/franqueado/landing-pages": "landing",
+    "/franqueado/pixel": "pixel",
   };
   // Aba ativa derivada da rota — reativa a mudanças de URL pelo menu lateral
   const activeTabFromRoute = useMemo(
@@ -773,13 +919,14 @@ export default function FranchiseeDashboard() {
   );
   // activeTab derivado 100% da rota — menu lateral e tabs inline sincronizados
   const activeTab = activeTabFromRoute;
-  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing" | "calendar") => {
+  const setActiveTab = (tab: "leads" | "sellers" | "funnel" | "landing" | "calendar" | "pixel") => {
     const tabToRoute: Record<string, string> = {
       sellers: "/franqueado/vendedores",
       leads: "/franqueado/leads",
       calendar: "/franqueado/agendamentos",
       funnel: "/franqueado/analytics",
       landing: "/franqueado/landing-pages",
+      pixel: "/franqueado/pixel",
     };
     navigate(tabToRoute[tab] ?? "/franqueado");
   };
@@ -869,7 +1016,7 @@ export default function FranchiseeDashboard() {
         {/* Tabs */}
         <div>
           <div className="flex gap-1 mb-6 bg-white p-1 rounded-xl flex-wrap">
-            {(["sellers", "leads", "calendar", "funnel", "landing"] as const).map((tab) => (
+            {(["sellers", "leads", "calendar", "funnel", "landing", "pixel"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -877,7 +1024,7 @@ export default function FranchiseeDashboard() {
                   activeTab === tab ? "bg-[#EBF4FF] text-[#004A9D]" : "text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8]"
                 }`}
               >
-                {tab === "leads" ? "Leads" : tab === "sellers" ? "Time" : tab === "calendar" ? "📅 Agenda" : tab === "funnel" ? "Funil" : "🔗 Landing"}
+                {tab === "leads" ? "Leads" : tab === "sellers" ? "Time" : tab === "calendar" ? "📅 Agenda" : tab === "funnel" ? "Funil" : tab === "landing" ? "🔗 Landing" : "📊 Pixel"}
               </button>
             ))}
           </div>
@@ -1007,6 +1154,11 @@ export default function FranchiseeDashboard() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Tab: Meta Pixel */}
+          {activeTab === "pixel" && franchise?.id && (
+            <PixelTab franchiseId={franchise.id} />
           )}
         </div>
 
