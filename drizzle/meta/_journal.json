@@ -50,6 +50,13 @@
       "when": 1773092112781,
       "tag": "0006_peaceful_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1773337579683,
+      "tag": "0007_military_wallow",
+      "breakpoints": true
     }
   ]
 }

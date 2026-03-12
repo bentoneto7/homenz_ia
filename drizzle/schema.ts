@@ -228,10 +228,10 @@ export const aiResults = mysqlTable("ai_results", {
   clinicId: int("clinicId").notNull(),
   // Análise
   analysisText: text("analysisText"),
-  baldnessLevel: varchar("baldnessLevel", { length: 50 }),  // Norwood I-VII / Ludwig I-III
+  baldnessLevel: varchar("baldnessLevel", { length: 200 }),  // Norwood I-VII / Ludwig I-III
   baldnessScale: mysqlEnum("baldnessScale", ["norwood", "ludwig"]),
   affectedAreas: json("affectedAreas"),   // string[]
-  densityEstimate: varchar("densityEstimate", { length: 100 }),
+  densityEstimate: varchar("densityEstimate", { length: 500 }),
   // Imagens geradas
   beforeImageUrl: text("beforeImageUrl"),
   afterImageUrl: text("afterImageUrl"),

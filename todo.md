@@ -623,3 +623,6 @@
 ## Retry + Fallback Análise (Mar 12)
 - [x] Retry automático no frontend quando análise retorna erro (até 3 tentativas com delay de 3s)
 - [x] Fallback robusto: timeout de 45s na geração de imagem + log detalhado do erro real no catch
+
+## Correção UPDATE ai_results id errado (Mar 12)
+- [x] Corrigir "Failed query" no UPDATE ai_results — densityEstimate varchar(100) truncado, ampliado para varchar(500); baldnessLevel para varchar(200). Lead 90004 restaurado para done.
