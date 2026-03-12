@@ -1093,5 +1093,42 @@ export const homenzRouter = router({
         newLeads: newLeads ?? [],
       };
     }),
+
+  updateLandingPage: franchiseeProcedure
+    .input(z.object({
+      id: z.string().uuid(),
+      title: z.string().min(3).max(120).optional(),
+      procedure: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'FORBIDDEN', message: 'Sem franquia associada' });
+
+      // Verificar que a LP pertence à franquia do usuário
+      const { data: existing } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id, franchise_id')
+        .eq('id', input.id)
+        .eq('franchise_id', franchiseId)
+        .single();
+      if (!existing) throw new TRPCError({ code: 'NOT_FOUND', message: 'Landing page não encontrada' });
+
+      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (input.title !== undefined) updateData.title = input.title;
+      if (input.procedure !== undefined) updateData.procedure = input.procedure;
+      if (input.city !== undefined) updateData.city = input.city;
+      if (input.state !== undefined) updateData.state = input.state;
+
+      const { data, error } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .update(updateData)
+        .eq('id', input.id)
+        .select()
+        .single();
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data;
+    }),
 });
 

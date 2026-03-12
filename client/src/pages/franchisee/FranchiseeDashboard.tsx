@@ -166,8 +166,11 @@ type LandingPage = {
   created_at: string;
 };
 
+type EditingLP = { id: string; title: string; procedure: string; city: string; state: string } | null;
+
 function LandingPagesTab() {
   const [showCreate, setShowCreate] = useState(false);
+  const [editingLP, setEditingLP] = useState<EditingLP>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newProcedure, setNewProcedure] = useState("crescimento-capilar");
   const [newAddress, setNewAddress] = useState("");
@@ -207,6 +210,15 @@ function LandingPagesTab() {
       toast.success("Status atualizado!");
     },
     onError: (err) => toast.error(err.message || "Erro ao atualizar status"),
+  });
+
+  const updateLPMutation = trpc.homenz.updateLandingPage.useMutation({
+    onSuccess: () => {
+      toast.success("Landing page atualizada!");
+      setEditingLP(null);
+      utils.homenz.getLandingPages.invalidate();
+    },
+    onError: (err) => toast.error(err.message || "Erro ao atualizar"),
   });
 
   const fetchCep = async (cep: string) => {
@@ -403,6 +415,18 @@ function LandingPagesTab() {
                 >
                   <Copy className="w-3.5 h-3.5" /> Copiar link
                 </button>
+                <button
+                  onClick={() => setEditingLP({
+                    id: page.id,
+                    title: page.title,
+                    procedure: page.procedure,
+                    city: (page as Record<string, unknown>).city as string ?? "",
+                    state: (page as Record<string, unknown>).state as string ?? "",
+                  })}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[#004A9D] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-[#004A9D]/30"
+                >
+                  <Settings className="w-3.5 h-3.5" /> Editar
+                </button>
                 <a
                   href={`/l/${page.slug}`}
                   target="_blank"
@@ -508,11 +532,95 @@ function LandingPagesTab() {
           </div>
         </div>
       )}
+
+      {/* Modal editar landing page */}
+      {editingLP && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-bold text-[#0A2540]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Editar Landing Page</h3>
+              <button onClick={() => setEditingLP(null)} className="text-[#A0AABB] hover:text-[#0A2540] transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-[#5A667A] text-sm mb-6">Atualize o título e procedimento da página</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Título da página</label>
+                <input
+                  type="text"
+                  value={editingLP.title}
+                  onChange={(e) => setEditingLP(prev => prev ? { ...prev, title: e.target.value } : null)}
+                  placeholder="Ex: Homenz Rio Branco — Crescimento Capilar"
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Procedimento</label>
+                <select
+                  value={editingLP.procedure}
+                  onChange={(e) => setEditingLP(prev => prev ? { ...prev, procedure: e.target.value } : null)}
+                  className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] focus:outline-none focus:border-[#00C1B8] transition-all"
+                >
+                  <option value="crescimento-capilar">Crescimento Capilar</option>
+                  <option value="micropigmentacao">Micropigmentação Capilar</option>
+                  <option value="diagnostico">Diagnóstico Capilar Gratuito</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Cidade</label>
+                  <input
+                    type="text"
+                    value={editingLP.city}
+                    onChange={(e) => setEditingLP(prev => prev ? { ...prev, city: e.target.value } : null)}
+                    placeholder="Rio Branco"
+                    className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[#5A667A] text-sm font-medium block mb-1.5">Estado (UF)</label>
+                  <input
+                    type="text"
+                    value={editingLP.state}
+                    onChange={(e) => setEditingLP(prev => prev ? { ...prev, state: e.target.value.toUpperCase().slice(0, 2) } : null)}
+                    placeholder="AC"
+                    maxLength={2}
+                    className="w-full bg-[#F0F4F8] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[#0A2540] placeholder-[#A0AABB] focus:outline-none focus:border-[#00C1B8] transition-all uppercase"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setEditingLP(null)}
+                className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => updateLPMutation.mutate({
+                  id: editingLP.id,
+                  title: editingLP.title.trim() || undefined,
+                  procedure: editingLP.procedure || undefined,
+                  city: editingLP.city.trim() || undefined,
+                  state: editingLP.state.trim() || undefined,
+                })}
+                disabled={updateLPMutation.isPending}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#3b82f6] text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {updateLPMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Tipos ─────────────────────────────────────────────────────────────────────
+// ── Tipos ─────────────────────────────────────────────────────────────────────────────────
 
 type SellerMetrics = {
   leads_assigned: number;

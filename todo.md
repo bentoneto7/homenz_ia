@@ -748,3 +748,9 @@
 - [x] Botão "Ver minha landing page" destacado (gradiente teal-azul) na lista de LPs
 - [x] Endpoint updateFranchiseSettings aceita phone + address
 - [x] Endpoint getFranchiseSettings retorna phone + address para pré-preencher formulário
+
+## Edição de Landing Page pelo Painel (Mar 12)
+- [x] Endpoint updateLandingPage (atualizar título, procedure, cidade e estado da LP)
+- [x] Botão "Editar" na lista de landing pages do dashboard do franqueado
+- [x] Modal de edição inline com campos de título, procedimento, cidade e estado
+- [x] Salvar alterações sem criar nova LP (invalida cache e atualiza lista)
