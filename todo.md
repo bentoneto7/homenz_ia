@@ -610,3 +610,6 @@
 - [x] Adicionar meta keywords em PT, EN e ES
 - [x] Adicionar Open Graph tags (og:title, og:description, og:locale)
 - [x] Adicionar Twitter Card tags
+
+## Remoção Botão Duplicado Formulário (Mar 12)
+- [x] Remover botão sticky CTA fixo "Ver meu resultado 3D — grátis" do ClinicLanding (deixar só o botão do formulário)

@@ -366,21 +366,8 @@ export default function ClinicLanding() {
         </div>
       )}
 
-      {/* ── STICKY CTA (mobile) ── */}
-      {!submitted && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/95 to-transparent sm:hidden z-50">
-          <button
-            onClick={() => document.getElementById("capture-form")?.scrollIntoView({ behavior: "smooth" })}
-            className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"
-          >
-            Ver meu resultado 3D — grátis
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Bottom padding for sticky CTA */}
-      <div className="h-24 sm:h-4" />
+      {/* Bottom padding */}
+      <div className="h-4" />
     </div>
   );
 }
