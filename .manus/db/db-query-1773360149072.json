@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE landing_page_sellers ADD COLUMN seller_name VARCHAR(255) NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute ALTER TABLE landing_page_sellers ADD COLUMN seller_name VARCHAR(255) NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1033
+}

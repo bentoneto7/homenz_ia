@@ -168,14 +168,22 @@ type LandingPage = {
 
 type EditingLP = { id: string; title: string; procedure: string; city: string; state: string } | null;
 
+// Tipo para o modal de gerenciamento de vendedores de uma LP
+type ManagingSellersLP = { id: string; title: string } | null;
+
 function LandingPagesTab() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingLP, setEditingLP] = useState<EditingLP>(null);
+  const [managingSellersLP, setManagingSellersLP] = useState<ManagingSellersLP>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newProcedure, setNewProcedure] = useState("crescimento-capilar");
   const [newAddress, setNewAddress] = useState("");
   const [newZipCode, setNewZipCode] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
+  // Vendedores selecionados no modal de criação
+  const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
+  // Vendedores selecionados no modal de gerenciamento de LP existente
+  const [managingSellerIds, setManagingSellerIds] = useState<string[]>([]);
   // Pixel por LP: mapa de landingPageId -> pixelId editado
   const [lpPixelEditing, setLpPixelEditing] = useState<Record<string, string>>({});
   const [lpPixelSaving, setLpPixelSaving] = useState<Record<string, boolean>>({});
@@ -192,11 +200,45 @@ function LandingPagesTab() {
   const hasSellers = sellersQuery.data?.hasSellers ?? false;
   const sellersCount = sellersQuery.data?.count ?? 0;
 
+  // Buscar lista completa de vendedores para o modal de criação
+  const allSellersQuery = trpc.homenz.getSellers.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    enabled: showCreate || managingSellersLP !== null,
+  });
+  const allSellers = allSellersQuery.data ?? [];
+
+  // Buscar vendedores vinculados à LP sendo gerenciada
+  const lpSellersQuery = trpc.homenz.getLandingPageSellers.useQuery(
+    { landingPageId: managingSellersLP?.id ?? '' },
+    {
+      enabled: !!managingSellersLP?.id,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  // Quando abrir o modal de gerenciamento, pré-selecionar os vendedores já vinculados
+  useEffect(() => {
+    if (lpSellersQuery.data && managingSellersLP) {
+      setManagingSellerIds(lpSellersQuery.data.map((s) => s.sellerId));
+    }
+  }, [lpSellersQuery.data, managingSellersLP]);
+
+  const assignSellersMutation = trpc.homenz.assignSellersToLandingPage.useMutation({
+    onSuccess: () => {
+      toast.success("Vendedores atualizados!");
+      setManagingSellersLP(null);
+      setManagingSellerIds([]);
+      utils.homenz.getLandingPageSellers.invalidate();
+    },
+    onError: (err) => toast.error(err.message || "Erro ao atualizar vendedores"),
+  });
+
   const createMutation = trpc.homenz.createLandingPageForFranchisee.useMutation({
     onSuccess: () => {
       toast.success("Landing page criada!");
       setShowCreate(false);
       setNewTitle("");
+      setSelectedSellerIds([]);
       utils.homenz.getLandingPages.invalidate();
     },
     onError: (err) => toast.error(err.message || "Erro ao criar landing page"),
@@ -246,7 +288,17 @@ function LandingPagesTab() {
       toast.error("Cadastre ao menos um vendedor antes de criar uma landing page. Os leads precisam de um destino!");
       return;
     }
-    createMutation.mutate({ title: newTitle, procedure: newProcedure, address: newAddress || undefined, zipCode: newZipCode || undefined });
+    if (selectedSellerIds.length === 0) {
+      toast.error("Selecione ao menos um vendedor para receber os leads desta página.");
+      return;
+    }
+    createMutation.mutate({
+      title: newTitle,
+      procedure: newProcedure,
+      address: newAddress || undefined,
+      zipCode: newZipCode || undefined,
+      sellerIds: selectedSellerIds,
+    });
   };
 
   const copyLink = (slug: string) => {
@@ -427,6 +479,15 @@ function LandingPagesTab() {
                 >
                   <Settings className="w-3.5 h-3.5" /> Editar
                 </button>
+                <button
+                  onClick={() => {
+                    setManagingSellersLP({ id: page.id, title: page.title });
+                    setManagingSellerIds([]);
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 px-3 py-1.5 rounded-lg transition-colors border border-violet-300"
+                >
+                  <Users className="w-3.5 h-3.5" /> Vendedores
+                </button>
                 <a
                   href={`/l/${page.slug}`}
                   target="_blank"
@@ -512,10 +573,61 @@ function LandingPagesTab() {
                   </p>
                 </div>
               )}
+              {/* Seleção de vendedores */}
+              <div>
+                <label className="text-[#5A667A] text-sm font-medium block mb-1.5">
+                  Vendedores que receberão os leads <span className="text-red-400">*</span>
+                </label>
+                {allSellersQuery.isLoading ? (
+                  <div className="flex items-center gap-2 py-3">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#00C1B8]" />
+                    <span className="text-[#5A667A] text-sm">Carregando vendedores...</span>
+                  </div>
+                ) : allSellers.length === 0 ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-700 text-sm">
+                    Nenhum vendedor ativo encontrado. Cadastre vendedores na aba Time.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {allSellers.map((seller) => (
+                      <label key={seller.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedSellerIds.includes(seller.id)
+                          ? 'bg-teal-50 border-[#00C1B8] text-[#0A2540]'
+                          : 'bg-[#F0F4F8] border-[#E2E8F0] text-[#5A667A] hover:border-[#00C1B8]/40'
+                      }`}>
+                        <input
+                          type="checkbox"
+                          checked={selectedSellerIds.includes(seller.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedSellerIds(prev => [...prev, seller.id]);
+                            } else {
+                              setSelectedSellerIds(prev => prev.filter(id => id !== seller.id));
+                            }
+                          }}
+                          className="w-4 h-4 accent-[#00C1B8] flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold">{seller.name}</p>
+                          <p className="text-xs text-[#A0AABB] truncate">{seller.email}</p>
+                        </div>
+                        {selectedSellerIds.includes(seller.id) && (
+                          <CheckCircle className="w-4 h-4 text-[#00C1B8] flex-shrink-0" />
+                        )}
+                      </label>
+                    ))}
+                    {selectedSellerIds.length > 0 && (
+                      <p className="text-xs text-[#00C1B8] font-medium">
+                        {selectedSellerIds.length} vendedor{selectedSellerIds.length !== 1 ? 'es' : ''} selecionado{selectedSellerIds.length !== 1 ? 's' : ''} — round-robin entre eles
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => { setShowCreate(false); setNewTitle(""); setNewAddress(""); setNewZipCode(""); }}
+                onClick={() => { setShowCreate(false); setNewTitle(""); setNewAddress(""); setNewZipCode(""); setSelectedSellerIds([]); }}
                 className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
               >
                 Cancelar
@@ -616,11 +728,104 @@ function LandingPagesTab() {
           </div>
         </div>
       )}
+
+      {/* Modal de gerenciamento de vendedores da LP */}
+      {managingSellersLP && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-bold text-[#0A2540]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Vendedores da LP</h3>
+              <button onClick={() => { setManagingSellersLP(null); setManagingSellerIds([]); }} className="text-[#A0AABB] hover:text-[#0A2540] transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-[#5A667A] text-sm mb-1">
+              <span className="font-semibold text-[#0A2540]">{managingSellersLP.title}</span>
+            </p>
+            <p className="text-[#5A667A] text-xs mb-5">
+              Selecione quais vendedores receberão os leads desta página. A distribuição será feita em round-robin igualitário entre os selecionados.
+            </p>
+
+            {lpSellersQuery.isLoading || allSellersQuery.isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-[#00C1B8]" />
+              </div>
+            ) : allSellers.length === 0 ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-700 text-sm">
+                Nenhum vendedor ativo encontrado. Cadastre vendedores na aba Time.
+              </div>
+            ) : (
+              <div className="space-y-2 mb-5">
+                {allSellers.map((seller) => (
+                  <label key={seller.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                    managingSellerIds.includes(seller.id)
+                      ? 'bg-violet-50 border-violet-400 text-[#0A2540]'
+                      : 'bg-[#F0F4F8] border-[#E2E8F0] text-[#5A667A] hover:border-violet-300'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={managingSellerIds.includes(seller.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setManagingSellerIds(prev => [...prev, seller.id]);
+                        } else {
+                          setManagingSellerIds(prev => prev.filter(id => id !== seller.id));
+                        }
+                      }}
+                      className="w-4 h-4 accent-violet-600 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold">{seller.name}</p>
+                      <p className="text-xs text-[#A0AABB] truncate">{seller.email}</p>
+                    </div>
+                    {managingSellerIds.includes(seller.id) && (
+                      <CheckCircle className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                    )}
+                  </label>
+                ))}
+                {managingSellerIds.length > 0 && (
+                  <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-2.5">
+                    <p className="text-xs text-violet-700 font-medium">
+                      ✅ {managingSellerIds.length} vendedor{managingSellerIds.length !== 1 ? 'es' : ''} selecionado{managingSellerIds.length !== 1 ? 's' : ''} — leads distribuídos em round-robin entre eles
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setManagingSellersLP(null); setManagingSellerIds([]); }}
+                className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (managingSellerIds.length === 0) {
+                    toast.error("Selecione ao menos um vendedor");
+                    return;
+                  }
+                  assignSellersMutation.mutate({
+                    landingPageId: managingSellersLP.id,
+                    sellerIds: managingSellerIds,
+                  });
+                }}
+                disabled={assignSellersMutation.isPending || managingSellerIds.length === 0}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {assignSellersMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                Salvar Vendedores
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Tipos ─────────────────────────────────────────────────────────────────────────────────
+// ── Tipos ───────────────────────────────────────────────────────────────────────────────────────
 
 type SellerMetrics = {
   leads_assigned: number;

@@ -3,12 +3,13 @@
  * 
  * Lógica:
  * 1. Lead chega via landing page de uma franquia
- * 2. Sistema busca todos os vendedores ativos da franquia
- * 3. Pega o índice do último vendedor que recebeu lead (franchise_round_robin)
- * 4. Avança para o próximo (circular: 0 → 1 → 2 → 0 → ...)
- * 5. Atribui o lead ao vendedor selecionado
- * 6. Registra no log de distribuição
- * 7. Atualiza o índice no round-robin
+ * 2. Se a LP tiver vendedores vinculados (landing_page_sellers), usa APENAS esses
+ * 3. Caso contrário, usa todos os vendedores ativos da franquia (fallback)
+ * 4. Pega o índice do último vendedor que recebeu lead (franchise_round_robin)
+ * 5. Avança para o próximo (circular: 0 → 1 → 2 → 0 → ...)
+ * 6. Atribui o lead ao vendedor selecionado
+ * 7. Registra no log de distribuição
+ * 8. Atualiza o índice no round-robin
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -35,45 +36,109 @@ export interface DistributeLeadResult {
 }
 
 /**
+ * Busca os vendedores vinculados a uma landing page específica no TiDB.
+ * Retorna array vazio se não houver vínculos ou se o TiDB estiver indisponível.
+ */
+async function getLandingPageSellerIds(landingPageId: string): Promise<{ id: string; name: string }[]> {
+  try {
+    const { getDb } = await import('./db');
+    const db = await getDb();
+    if (!db) return [];
+
+    const { landingPageSellers } = await import('../drizzle/schema');
+    const { eq } = await import('drizzle-orm');
+
+    const rows = await db
+      .select()
+      .from(landingPageSellers)
+      .where(eq(landingPageSellers.landingPageId, landingPageId));
+
+    return rows.map((r) => ({ id: r.sellerId, name: r.sellerName ?? '' }));
+  } catch (err) {
+    console.error('[LeadDistribution] Erro ao buscar vendedores da LP:', err);
+    return [];
+  }
+}
+
+/**
  * Distribui um lead para o próximo vendedor da fila (round-robin)
+ * Se a LP tiver vendedores vinculados, distribui apenas entre eles.
+ * Caso contrário, distribui entre todos os vendedores ativos da franquia.
  */
 export async function distributeLeadRoundRobin(
   input: DistributeLeadInput
 ): Promise<DistributeLeadResult> {
-  const { leadId, franchiseId } = input;
+  const { leadId, franchiseId, landingPageId } = input;
 
   try {
-    // 1. Buscar todos os vendedores ativos da franquia
-    const { data: sellers, error: sellersError } = await supabase
-      .from('profiles')
-      .select('id, name, email')
-      .eq('franchise_id', franchiseId)
-      .eq('role', 'seller')
-      .eq('active', true)
-      .order('created_at', { ascending: true }); // ordem consistente
+    let sellers: { id: string; name: string; email?: string }[] = [];
+    let distributionScope = 'franchise'; // para o log
 
-    if (sellersError) throw new Error('Erro ao buscar vendedores: ' + sellersError.message);
-    if (!sellers || sellers.length === 0) {
-      return { success: false, error: 'Nenhum vendedor ativo nesta franquia' };
+    // 1. Se houver landingPageId, tentar buscar vendedores vinculados à LP
+    if (landingPageId) {
+      const lpSellers = await getLandingPageSellerIds(landingPageId);
+      if (lpSellers.length > 0) {
+        // Verificar que os vendedores ainda estão ativos no Supabase
+        const { data: activeSellers } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .eq('franchise_id', franchiseId)
+          .eq('role', 'seller')
+          .eq('active', true)
+          .in('id', lpSellers.map((s) => s.id));
+
+        if (activeSellers && activeSellers.length > 0) {
+          // Manter a ordem original dos vendedores vinculados (consistência do round-robin)
+          sellers = lpSellers
+            .filter((lps) => activeSellers.some((as) => as.id === lps.id))
+            .map((lps) => {
+              const active = activeSellers.find((as) => as.id === lps.id)!;
+              return { id: active.id, name: active.name, email: active.email };
+            });
+          distributionScope = `lp:${landingPageId}`;
+        }
+      }
     }
 
-    // 2. Buscar estado atual do round-robin da franquia
+    // 2. Fallback: usar todos os vendedores ativos da franquia
+    if (sellers.length === 0) {
+      const { data: allSellers, error: sellersError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('franchise_id', franchiseId)
+        .eq('role', 'seller')
+        .eq('active', true)
+        .order('created_at', { ascending: true }); // ordem consistente
+
+      if (sellersError) throw new Error('Erro ao buscar vendedores: ' + sellersError.message);
+      if (!allSellers || allSellers.length === 0) {
+        return { success: false, error: 'Nenhum vendedor ativo nesta franquia' };
+      }
+      sellers = allSellers;
+      distributionScope = 'franchise';
+    }
+
+    // 3. Buscar estado atual do round-robin da franquia
+    // Usamos uma chave composta: franchise_id + scope para separar RR por LP
+    const rrKey = distributionScope === 'franchise' ? franchiseId : `${franchiseId}__${landingPageId}`;
+    
     const { data: rrData, error: rrError } = await supabase
       .from('franchise_round_robin')
       .select('id, last_seller_index, total_distributed')
-      .eq('franchise_id', franchiseId)
+      .eq('franchise_id', rrKey)
       .single();
 
     if (rrError && rrError.code !== 'PGRST116') {
+      // PGRST116 = not found (primeira vez) — não é erro
       throw new Error('Erro ao buscar round-robin: ' + rrError.message);
     }
 
-    // 3. Calcular próximo índice (circular)
+    // 4. Calcular próximo índice (circular)
     const currentIndex = rrData?.last_seller_index ?? -1;
     const nextIndex = (currentIndex + 1) % sellers.length;
     const selectedSeller = sellers[nextIndex];
 
-    // 4. Atualizar o lead com o vendedor atribuído
+    // 5. Atualizar o lead com o vendedor atribuído
     const { error: leadUpdateError } = await supabase
       .from('leads')
       .update({
@@ -85,7 +150,7 @@ export async function distributeLeadRoundRobin(
 
     if (leadUpdateError) throw new Error('Erro ao atualizar lead: ' + leadUpdateError.message);
 
-    // 5. Atualizar ou inserir o estado do round-robin
+    // 6. Atualizar ou inserir o estado do round-robin
     const totalDistributed = (rrData?.total_distributed ?? 0) + 1;
     
     if (rrData) {
@@ -96,18 +161,18 @@ export async function distributeLeadRoundRobin(
           total_distributed: totalDistributed,
           updated_at: new Date().toISOString(),
         })
-        .eq('franchise_id', franchiseId);
+        .eq('franchise_id', rrKey);
     } else {
       await supabase
         .from('franchise_round_robin')
         .insert({
-          franchise_id: franchiseId,
+          franchise_id: rrKey,
           last_seller_index: nextIndex,
           total_distributed: totalDistributed,
         });
     }
 
-    // 6. Registrar no log de distribuição
+    // 7. Registrar no log de distribuição
     await supabase
       .from('lead_distribution_log')
       .insert({
@@ -116,10 +181,10 @@ export async function distributeLeadRoundRobin(
         seller_id: selectedSeller.id,
         method: 'round_robin',
         seller_position: nextIndex,
-        notes: `Distribuído automaticamente para ${selectedSeller.name} (posição ${nextIndex + 1} de ${sellers.length})`,
+        notes: `Distribuído automaticamente para ${selectedSeller.name} (posição ${nextIndex + 1} de ${sellers.length}) [escopo: ${distributionScope}]`,
       });
 
-    // 7. Notificar o dono da plataforma sobre novo lead distribuído
+    // 8. Notificar o dono da plataforma sobre novo lead distribuído
     notifyOwner({
       title: '🔥 Novo lead distribuído!',
       content: `Lead atribuído a ${selectedSeller.name} na franquia. Verifique o painel para acompanhar.`,
@@ -213,7 +278,7 @@ export async function createAndDistributeLead(
     }
   }
 
-  // 3. Distribuir o lead
+  // 3. Distribuir o lead (usando vendedores específicos da LP se disponíveis)
   const distribution = await distributeLeadRoundRobin({
     leadId: lead.id,
     franchiseId,

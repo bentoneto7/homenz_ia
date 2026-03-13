@@ -592,6 +592,8 @@ export const homenzRouter = router({
       utmMedium: z.string().default('cpc'),
       address: z.string().optional(),
       zipCode: z.string().optional(),
+      // Vendedores selecionados para receber leads desta LP
+      sellerIds: z.array(z.string()).min(1, 'Selecione ao menos um vendedor'),
     }))
     .mutation(async ({ ctx, input }) => {
       const franchiseId = ctx.homenzUser.franchise_id;
@@ -602,6 +604,16 @@ export const homenzRouter = router({
         .eq('id', franchiseId)
         .single();
       if (!franchise) throw new TRPCError({ code: 'NOT_FOUND', message: 'Franquia não encontrada' });
+      // Verificar que todos os vendedores pertencem à franquia
+      const { data: sellers } = await supabaseAdmin
+        .from('profiles')
+        .select('id, name')
+        .eq('franchise_id', franchiseId)
+        .eq('role', 'seller')
+        .in('id', input.sellerIds);
+      if (!sellers || sellers.length === 0) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Nenhum vendedor válido selecionado' });
+      }
       const baseSlug = franchise.slug + '-' + input.procedure;
       const timestamp = Date.now().toString(36);
       const slug = `${baseSlug}-${timestamp}`;
@@ -625,7 +637,19 @@ export const homenzRouter = router({
         .select()
         .single();
       if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
-      return data;
+      // Salvar vínculos LP → vendedores no TiDB
+      const { getDb } = await import('../db');
+      const db = await getDb();
+      if (db) {
+        const { landingPageSellers } = await import('../../drizzle/schema');
+        const sellerLinks = sellers.map((s) => ({
+          landingPageId: data.id,
+          sellerId: s.id,
+          sellerName: s.name,
+        }));
+        await db.insert(landingPageSellers).values(sellerLinks);
+      }
+      return { ...data, assignedSellers: sellers };
     }),
 
   // ── Registro público de franqueado ─────────────────────────────────────────
@@ -1092,6 +1116,107 @@ export const homenzRouter = router({
         count: newLeads?.length ?? 0,
         newLeads: newLeads ?? [],
       };
+    }),
+
+  // ── Vendedores da franquia ─────────────────────────────────────────────────
+
+  /**
+   * Retorna todos os vendedores ativos da franquia do usuário autenticado.
+   * Usado no modal de criação/edição de LP para selecionar quais vendedores
+   * vão receber leads daquela página específica.
+   */
+  getSellers: franchiseeProcedure
+    .query(async ({ ctx }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .select('id, name, email, phone, active, created_at')
+        .eq('franchise_id', franchiseId)
+        .eq('role', 'seller')
+        .eq('active', true)
+        .order('name', { ascending: true });
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return data ?? [];
+    }),
+
+  /**
+   * Retorna os vendedores vinculados a uma landing page específica.
+   * Lê da tabela landing_page_sellers no TiDB.
+   */
+  getLandingPageSellers: franchiseeProcedure
+    .input(z.object({ landingPageId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      // Verificar que a LP pertence à franquia
+      const { data: lp } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('id', input.landingPageId)
+        .eq('franchise_id', franchiseId)
+        .single();
+      if (!lp) throw new TRPCError({ code: 'NOT_FOUND', message: 'Landing page não encontrada' });
+      // Buscar vínculos no TiDB
+      const { getDb } = await import('../db');
+      const db = await getDb();
+      if (!db) return [];
+      const { landingPageSellers } = await import('../../drizzle/schema');
+      const { eq } = await import('drizzle-orm');
+      const rows = await db
+        .select()
+        .from(landingPageSellers)
+        .where(eq(landingPageSellers.landingPageId, input.landingPageId));
+      return rows.map((r) => ({ sellerId: r.sellerId, sellerName: r.sellerName ?? '' }));
+    }),
+
+  /**
+   * Atualiza os vendedores vinculados a uma landing page.
+   * Remove os vínculos anteriores e insere os novos.
+   * Usado no modal de edição de LP.
+   */
+  assignSellersToLandingPage: franchiseeProcedure
+    .input(z.object({
+      landingPageId: z.string(),
+      sellerIds: z.array(z.string()).min(1, 'Selecione ao menos um vendedor'),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Franquia não encontrada' });
+      // Verificar que a LP pertence à franquia
+      const { data: lp } = await supabaseAdmin
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('id', input.landingPageId)
+        .eq('franchise_id', franchiseId)
+        .single();
+      if (!lp) throw new TRPCError({ code: 'NOT_FOUND', message: 'Landing page não encontrada' });
+      // Verificar que todos os vendedores pertencem à franquia
+      const { data: sellers } = await supabaseAdmin
+        .from('profiles')
+        .select('id, name')
+        .eq('franchise_id', franchiseId)
+        .eq('role', 'seller')
+        .in('id', input.sellerIds);
+      if (!sellers || sellers.length === 0) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Nenhum vendedor válido selecionado' });
+      }
+      // Atualizar vínculos no TiDB
+      const { getDb } = await import('../db');
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Banco de dados indisponível' });
+      const { landingPageSellers } = await import('../../drizzle/schema');
+      const { eq } = await import('drizzle-orm');
+      // Remover vínculos anteriores
+      await db.delete(landingPageSellers).where(eq(landingPageSellers.landingPageId, input.landingPageId));
+      // Inserir novos vínculos
+      const sellerLinks = sellers.map((s) => ({
+        landingPageId: input.landingPageId,
+        sellerId: s.id,
+        sellerName: s.name,
+      }));
+      await db.insert(landingPageSellers).values(sellerLinks);
+      return { success: true, assignedSellers: sellers };
     }),
 
   updateLandingPage: franchiseeProcedure

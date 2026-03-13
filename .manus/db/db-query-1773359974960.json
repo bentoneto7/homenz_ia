@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS landing_page_sellers (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  landing_page_id VARCHAR(36) NOT NULL,\n  seller_id VARCHAR(36) NOT NULL,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE KEY uq_lp_seller (landing_page_id, seller_id),\n  INDEX idx_lps_landing_page_id (landing_page_id),\n  INDEX idx_lps_seller_id (seller_id)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute CREATE TABLE IF NOT EXISTS landing_page_sellers (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  landing_page_id VARCHAR(36) NOT NULL,\n  seller_id VARCHAR(36) NOT NULL,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE KEY uq_lp_seller (landing_page_id, seller_id),\n  INDEX idx_lps_landing_page_id (landing_page_id),\n  INDEX idx_lps_seller_id (seller_id)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 615
+}

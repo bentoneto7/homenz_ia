@@ -754,3 +754,21 @@
 - [x] Botão "Editar" na lista de landing pages do dashboard do franqueado
 - [x] Modal de edição inline com campos de título, procedimento, cidade e estado
 - [x] Salvar alterações sem criar nova LP (invalida cache e atualiza lista)
+
+## Seleção de Vendedores por Landing Page (Mar 12)
+- [ ] Tabela `landing_page_sellers` no Supabase (landing_page_id, seller_id, created_at)
+- [ ] Endpoint createLandingPage: recebe lista de seller_ids obrigatória (mín. 1)
+- [ ] Endpoint getLandingPageSellers: retorna vendedores de uma LP específica
+- [ ] Modal de criação de LP: step de seleção de vendedores (checkbox por vendedor)
+- [ ] Validação: LP não pode ser criada sem selecionar ao menos 1 vendedor
+- [ ] Modal de edição de LP: permite alterar vendedores selecionados
+- [ ] distributeLeadRoundRobin: usa vendedores da LP específica (não todos da franquia)
+- [ ] Fallback: se LP não tem vendedores, usa todos os ativos da franquia
+
+## Seleção de Vendedores por Landing Page
+- [x] Endpoints backend: getSellers, getLandingPageSellers, assignSellersToLandingPage
+- [x] Atualizar createLandingPageForFranchisee para receber sellerIds obrigatório
+- [x] leadDistribution.ts: priorizar vendedores vinculados à LP no round-robin
+- [x] Modal de criação de LP: seleção de vendedores com checkboxes
+- [x] Botão "Vendedores" em cada LP da lista para gerenciar vínculos
+- [x] Modal de gerenciamento de vendedores vinculados a LP existente

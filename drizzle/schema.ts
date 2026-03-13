@@ -721,3 +721,20 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
 });
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LANDING PAGE → VENDEDORES (Supabase IDs)
+// Mapeia quais vendedores (profiles.id do Supabase) recebem leads de cada LP
+// ─────────────────────────────────────────────────────────────────────────────
+export const landingPageSellers = mysqlTable("landing_page_sellers", {
+  id: int("id").autoincrement().primaryKey(),
+  // ID da landing page no Supabase (franchise_landing_pages.id)
+  landingPageId: varchar("landing_page_id", { length: 36 }).notNull(),
+  // ID do vendedor no Supabase (profiles.id)
+  sellerId: varchar("seller_id", { length: 36 }).notNull(),
+  // Nome do vendedor (cache para exibição)
+  sellerName: varchar("seller_name", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type LandingPageSeller = typeof landingPageSellers.$inferSelect;
+export type InsertLandingPageSeller = typeof landingPageSellers.$inferInsert;
