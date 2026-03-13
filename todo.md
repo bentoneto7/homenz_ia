@@ -772,3 +772,13 @@
 - [x] Modal de criação de LP: seleção de vendedores com checkboxes
 - [x] Botão "Vendedores" em cada LP da lista para gerenciar vínculos
 - [x] Modal de gerenciamento de vendedores vinculados a LP existente
+
+## Auditoria e Correções — Isolamento de Dados e UX
+- [x] Auditar todas as queries de leads para garantir filtro por franchise_id
+- [x] Auditar queries de pixel para garantir isolamento por franquia
+- [x] Bloquear criação de LP sem vendedor cadastrado (backend + UI clara)
+- [x] Exibir aviso em tela quando não há vendedores cadastrados
+- [x] Exibir WhatsApp da franquia no rodapé da landing page pública
+- [x] Garantir que pixel de cada franquia não afeta outras contas
+- [x] Corrigir bug toggleLandingPage (verifica ownership por franchise_id)
+- [x] Auditoria geral de bugs no fluxo completo (build sem erros)

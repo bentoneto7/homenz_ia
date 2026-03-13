@@ -338,11 +338,24 @@ function LandingPagesTab() {
           <p className="text-[#5A667A] text-sm mt-0.5">Crie páginas de captação para usar no tráfego pago</p>
         </div>
         <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-teal-50 text-[#00C1B8] text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#00C1B8]/30 transition-colors border border-[#14b8a6]/30"
+          onClick={() => {
+            if (!hasSellers) {
+              toast.error("Cadastre ao menos 1 vendedor na aba Time antes de criar uma landing page.");
+              return;
+            }
+            setShowCreate(true);
+          }}
+          disabled={sellersQuery.isLoading}
+          title={!hasSellers ? "Cadastre um vendedor primeiro" : "Criar nova landing page"}
+          className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-colors border ${
+            hasSellers
+              ? 'bg-teal-50 text-[#00C1B8] hover:bg-[#00C1B8]/30 border-[#14b8a6]/30'
+              : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+          }`}
         >
           <Plus className="w-4 h-4" />
           Nova Landing Page
+          {!hasSellers && !sellersQuery.isLoading && <AlertTriangle className="w-3.5 h-3.5 ml-1" />}
         </button>
       </div>
 

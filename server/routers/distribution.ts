@@ -296,14 +296,29 @@ export const distributionRouter = router({
     }),
 
   /**
-   * Ativa/desativa uma landing page (protegido)
+   * Ativa/desativa uma landing page (protegido — verifica ownership)
    */
   toggleLandingPage: homenzProcedure
     .input(z.object({
       landingPageId: z.string().uuid(),
       active: z.boolean(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const userRole = ctx.homenzUser.role;
+      const userFranchiseId = ctx.homenzUser.franchise_id;
+
+      // Verificar ownership: admin pode tudo, franqueado só altera a própria LP
+      if (userRole !== 'owner') {
+        const { data: lp } = await supabase
+          .from('franchise_landing_pages')
+          .select('franchise_id')
+          .eq('id', input.landingPageId)
+          .single();
+        if (!lp || (lp as { franchise_id: string }).franchise_id !== userFranchiseId) {
+          throw new Error('Acesso negado: esta landing page não pertence à sua franquia');
+        }
+      }
+
       const { error } = await supabase
         .from('franchise_landing_pages')
         .update({ active: input.active, updated_at: new Date().toISOString() })
