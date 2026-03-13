@@ -190,6 +190,44 @@ export async function distributeLeadRoundRobin(
       content: `Lead atribuído a ${selectedSeller.name} na franquia. Verifique o painel para acompanhar.`,
     }).catch(() => {}); // não bloquear se falhar
 
+    // 9. Enviar email de novo lead para o vendedor (se tiver email)
+    if (selectedSeller.email) {
+      try {
+        // Buscar dados completos do lead para o email
+        const { data: leadData } = await supabase
+          .from('leads')
+          .select('name, phone, hair_problem, lead_score, landing_page_id')
+          .eq('id', leadId)
+          .single();
+
+        if (leadData) {
+          // Buscar título da LP
+          let lpTitle = 'Landing Page';
+          if (leadData.landing_page_id) {
+            const { data: lpData } = await supabase
+              .from('franchise_landing_pages')
+              .select('city, state')
+              .eq('id', leadData.landing_page_id)
+              .single();
+            if (lpData) lpTitle = `LP ${lpData.city}/${lpData.state}`;
+          }
+
+          const { sendNewLeadNotification } = await import('./brevo');
+          await sendNewLeadNotification({
+            sellerEmail: selectedSeller.email,
+            sellerName: selectedSeller.name,
+            leadName: leadData.name,
+            leadPhone: leadData.phone,
+            leadScore: leadData.lead_score ?? 50,
+            hairProblem: leadData.hair_problem ?? 'Não informado',
+            landingPageTitle: lpTitle,
+          });
+        }
+      } catch (emailErr) {
+        console.error('[Brevo] Erro ao enviar email de novo lead:', emailErr);
+      }
+    }
+
     return {
       success: true,
       sellerId: selectedSeller.id,

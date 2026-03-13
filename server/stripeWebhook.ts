@@ -171,6 +171,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // p já está definido acima
   console.log(`[Stripe Webhook] ✅ Profile ${p.id} (${p.email}) activated with plan: ${franchisePlan}`);
 
+  // Enviar email de confirmação de pagamento via Brevo
+  try {
+    const { sendPaymentConfirmed } = await import('./brevo');
+    await sendPaymentConfirmed({
+      email: p.email,
+      name: p.name,
+      plan: franchisePlan,
+      planLabel: planId.toUpperCase(),
+    });
+  } catch (err) {
+    console.error('[Stripe Webhook] Error sending payment confirmation email:', err);
+  }
+
   // Notificar o dono da rede
   try {
     await notifyOwner({
@@ -242,6 +255,19 @@ async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
   }
 
   console.log(`[Stripe Webhook] Subscription deleted for profile ${profileId}`);
+
+  // Enviar email de cancelamento via Brevo
+  if (profile?.email) {
+    try {
+      const { sendSubscriptionCancelled } = await import('./brevo');
+      await sendSubscriptionCancelled({
+        email: profile.email,
+        name: profile.name ?? profile.email.split('@')[0],
+      });
+    } catch (err) {
+      console.error('[Stripe Webhook] Error sending cancellation email:', err);
+    }
+  }
 
   try {
     await notifyOwner({

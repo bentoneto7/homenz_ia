@@ -794,3 +794,15 @@
 - [x] Corrigir bug crítico: getLandingPage falhava por coluna pixel_id inexistente no Supabase
 - [x] Corrigir bug crítico: getFranchisePixel/updateFranchisePixel/getCapiToken usando fallback correto
 - [x] Fluxo completo testado ao vivo: lead criado com score 80 (hot), dados corretos no Supabase
+
+## Integração Brevo — Email Marketing (Mar 13) — CONCLUÍDO
+- [x] Configurar BREVO_API_KEY como secret (API key validada 200 OK)
+- [x] Criar helper server/brevo.ts com sendEmail genérico + 9 templates HTML responsivos
+- [x] Email: boas-vindas ao franqueado após cadastro (createFranchisee)
+- [x] Email: convite de vendedor com link de ativação (createSellerInvite)
+- [x] Email: aviso de trial expirando 1 e 3 dias antes (trialCron.ts)
+- [x] Email: confirmação de pagamento / upgrade de plano (stripeWebhook)
+- [x] Email: cancelamento de assinatura (stripeWebhook)
+- [x] Email: novo lead recebido para o vendedor com dados + WhatsApp direto (leadDistribution.ts)
+- [x] Email: recuperação de senha (forgotPassword no routers.ts)
+- [x] Build de produção: zero erros TypeScript

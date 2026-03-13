@@ -10,11 +10,72 @@ import { notifyOwner } from "./_core/notification";
 export function startTrialExpirationCron() {
   // Executa todo dia à meia-noite UTC
   cron.schedule("0 0 * * *", async () => {
-    console.log("[TrialCron] Verificando trials expirados...");
-    await expireTrials();
+    console.log("[TrialCron] Verificando trials expirados e enviando avisos...");
+    await Promise.all([
+      expireTrials(),
+      sendTrialWarningEmails(),
+    ]);
   });
 
   console.log("[TrialCron] Cron de expiração de trial iniciado (diário às 00:00 UTC)");
+}
+
+/**
+ * Envia avisos de trial expirando (3 dias e 1 dia antes)
+ * Deve ser chamado diariamente junto com expireTrials()
+ */
+export async function sendTrialWarningEmails() {
+  const now = new Date();
+  const in1Day = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString();
+  const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+  const in4Days = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString();
+
+  // Buscar franquias que expiram em 1 dia
+  const { data: expiring1 } = await supabaseAdmin
+    .from('franchises')
+    .select('id, name, owner_id')
+    .gte('trial_ends_at', now.toISOString())
+    .lte('trial_ends_at', in1Day)
+    .eq('active', true)
+    .in('plan', ['free']);
+
+  // Buscar franquias que expiram em 3 dias
+  const { data: expiring3 } = await supabaseAdmin
+    .from('franchises')
+    .select('id, name, owner_id')
+    .gte('trial_ends_at', in3Days)
+    .lte('trial_ends_at', in4Days)
+    .eq('active', true)
+    .in('plan', ['free']);
+
+  const allExpiring = [
+    ...(expiring1 || []).map(f => ({ ...f, daysLeft: 1 })),
+    ...(expiring3 || []).map(f => ({ ...f, daysLeft: 3 })),
+  ];
+
+  for (const franchise of allExpiring) {
+    if (!franchise.owner_id) continue;
+    const { data: owner } = await supabaseAdmin
+      .from('profiles')
+      .select('name, email')
+      .eq('id', franchise.owner_id)
+      .single();
+
+    if (!owner?.email) continue;
+
+    try {
+      const { sendTrialWarning } = await import('./brevo');
+      await sendTrialWarning({
+        email: owner.email,
+        name: owner.name ?? owner.email.split('@')[0],
+        clinicName: franchise.name,
+        daysLeft: franchise.daysLeft,
+      });
+      console.log(`[TrialCron] Aviso de trial enviado para ${owner.email} (${franchise.daysLeft} dias restantes)`);
+    } catch (err) {
+      console.error(`[TrialCron] Erro ao enviar aviso de trial para ${owner.email}:`, err);
+    }
+  }
 }
 
 export async function expireTrials() {

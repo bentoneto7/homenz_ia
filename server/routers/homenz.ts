@@ -445,7 +445,30 @@ export const homenzRouter = router({
       const fwdHost = headers["x-forwarded-host"];
       const fwdProto = headers["x-forwarded-proto"]?.split(",")[0]?.trim() ?? "https";
       const origin = fwdHost ? `${fwdProto}://${fwdHost}` : (headers["origin"] ?? "http://localhost:3000");
-      return { token, inviteUrl: `${origin}/join?token=${token}` };
+      const inviteUrl = `${origin}/join?token=${token}`;
+
+      // Enviar email de convite via Brevo (se email fornecido)
+      if (input.email) {
+        try {
+          const { sendSellerInvite } = await import('../brevo');
+          // Buscar nome da franquia
+          const { data: franchiseData } = await supabaseAdmin
+            .from('franchises')
+            .select('name')
+            .eq('id', franchiseId)
+            .single();
+          await sendSellerInvite({
+            email: input.email,
+            name: input.email.split('@')[0], // fallback se não tiver nome
+            clinicName: franchiseData?.name ?? 'Homenz',
+            inviteLink: inviteUrl,
+          });
+        } catch (emailErr) {
+          console.error('[Brevo] Erro ao enviar convite de vendedor:', emailErr);
+        }
+      }
+
+      return { token, inviteUrl };
     }),
 
   // ── Vendedor: visão dos leads ─────────────────────────────────────────────
@@ -749,6 +772,19 @@ export const homenzRouter = router({
         .from("franchises")
         .update({ owner_id: newUser.id })
         .eq("id", franchise.id);
+
+      // Enviar email de boas-vindas via Brevo
+      try {
+        const { sendWelcomeFranchisee } = await import('../brevo');
+        await sendWelcomeFranchisee({
+          email: input.email.toLowerCase(),
+          name: input.name,
+          clinicName: input.franchiseName,
+          trialDays: 15,
+        });
+      } catch (emailErr) {
+        console.error('[Brevo] Erro ao enviar boas-vindas ao franqueado:', emailErr);
+      }
 
       // Retornar dados para fazer login direto e redirecionar ao painel
       return {

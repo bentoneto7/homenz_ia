@@ -137,15 +137,27 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const token = await createPasswordResetToken(input.email);
         if (token) {
-          // Enviar email com link de recuperação
-          const origin = ctx.req.headers.origin || ctx.req.headers.referer?.replace(/\/[^/]*$/, '') || 'https://homenz.com.br';
+          // Enviar email com link de recuperação via Brevo
+          const origin = ctx.req.headers.origin || ctx.req.headers.referer?.replace(/\/[^/]*$/, '') || 'https://homenzadvanced.com';
           const resetUrl = `${origin}/recuperar-senha?token=${token}`;
-          // Usar notifyOwner como fallback — em produção substituir por serviço de email
           try {
-            const { invokeLLM } = await import('./_core/llm');
-            // Não temos serviço de email configurado, então logamos o link
-            console.log(`[ForgotPassword] Reset link for ${input.email}: ${resetUrl}`);
-          } catch {}
+            // Buscar nome do usuário
+            const { supabaseAdmin } = await import('./supabase');
+            const { data: profile } = await supabaseAdmin
+              .from('profiles')
+              .select('name')
+              .eq('email', input.email.toLowerCase())
+              .single();
+            const { sendPasswordReset } = await import('./brevo');
+            await sendPasswordReset({
+              email: input.email,
+              name: profile?.name ?? input.email.split('@')[0],
+              resetLink: resetUrl,
+            });
+            console.log(`[ForgotPassword] Email de recuperação enviado para ${input.email}`);
+          } catch (emailErr) {
+            console.error('[Brevo] Erro ao enviar email de recuperação:', emailErr);
+          }
         }
         // Sempre retornar sucesso para não revelar se o email existe
         return { success: true, message: "Se o e-mail estiver cadastrado, você receberá um link de recuperação." };
