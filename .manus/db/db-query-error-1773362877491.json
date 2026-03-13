@@ -1,0 +1,14 @@
+{
+  "query": "\n-- Criar tabela landing_page_sellers no Supabase\nCREATE TABLE IF NOT EXISTS public.landing_page_sellers (\n  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n  landing_page_id UUID NOT NULL REFERENCES public.franchise_landing_pages(id) ON DELETE CASCADE,\n  seller_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,\n  seller_name TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW(),\n  UNIQUE(landing_page_id, seller_id)\n);\n\n-- Índices para performance\nCREATE INDEX IF NOT EXISTS idx_lps_landing_page_id ON public.landing_page_sellers(landing_page_id);\nCREATE INDEX IF NOT EXISTS idx_lps_seller_id ON public.landing_page_sellers(seller_id);\n\n-- RLS: permitir acesso via service role\nALTER TABLE public.landing_page_sellers ENABLE ROW LEVEL SECURITY;\n\n-- Policy: service role tem acesso total\nCREATE POLICY IF NOT EXISTS \"service_role_all\" ON public.landing_page_sellers\n  FOR ALL USING (true);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute \n-- Criar tabela landing_page_sellers no Supabase\nCREATE TABLE IF NOT EXISTS public.landing_page_sellers (\n  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n  landing_page_id UUID NOT NULL REFERENCES public.franchise_landing_pages(id) ON DELETE CASCADE,\n  seller_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,\n  seller_name TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW(),\n  UNIQUE(landing_page_id, seller_id)\n);\n\n-- Índices para performance\nCREATE INDEX IF NOT EXISTS idx_lps_landing_page_id ON public.landing_page_sellers(landing_page_id);\nCREATE INDEX IF NOT EXISTS idx_lps_seller_id ON public.landing_page_sellers(seller_id);\n\n-- RLS: permitir acesso via service role\nALTER TABLE public.landing_page_sellers ENABLE ROW LEVEL SECURITY;\n\n-- Policy: service role tem acesso total\nCREATE POLICY IF NOT EXISTS \"service_role_all\" ON public.landing_page_sellers\n  FOR ALL USING (true);\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 3: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 2 column 10 near \"UUID DEFAULT gen_random_uuid() PRIMARY KEY,",
+    "  landing_page_id UUID NOT NULL REFERENCES public.franchise_landing_pages(id) ON DELETE CASCADE,",
+    "  seller_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,",
+    "  seller_name TEXT,",
+    "  created_at TIMESTAMPTZ DEFAULT NOW(),",
+    "  UNIQUE(landing_page_id, seller_id)",
+    ")\""
+  ]
+}

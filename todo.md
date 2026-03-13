@@ -782,3 +782,15 @@
 - [x] Garantir que pixel de cada franquia não afeta outras contas
 - [x] Corrigir bug toggleLandingPage (verifica ownership por franchise_id)
 - [x] Auditoria geral de bugs no fluxo completo (build sem erros)
+
+## Teste de Stress Pré-Lançamento (Mar 13) — CONCLUÍDO
+- [x] Script seed: 10 franquias + 20 vendedores cada + 10 LPs cada
+- [x] Vincular vendedores às LPs (landing_page_sellers)
+- [x] Submeter 100 leads (10 por franquia) via API
+- [x] Verificar round-robin: distribuição igualitária por LP (0 erros em 100 leads)
+- [x] Verificar isolamento: cada franquia vê apenas seus leads
+- [x] Verificar LP pública: WhatsApp, endereço, pixel isolado
+- [x] Build de produção sem erros (zero TypeScript errors)
+- [x] Corrigir bug crítico: getLandingPage falhava por coluna pixel_id inexistente no Supabase
+- [x] Corrigir bug crítico: getFranchisePixel/updateFranchisePixel/getCapiToken usando fallback correto
+- [x] Fluxo completo testado ao vivo: lead criado com score 80 (hot), dados corretos no Supabase

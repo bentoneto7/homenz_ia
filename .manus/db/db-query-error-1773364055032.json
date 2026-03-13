@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS pixel_id TEXT; ALTER TABLE public.franchise_landing_pages ADD COLUMN IF NOT EXISTS pixel_id TEXT;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user XSibAjs3EaqeCWT.c094be95d612 --database Cc4dLWyLaks57xa8R6kgEV --execute ALTER TABLE public.franchises ADD COLUMN IF NOT EXISTS pixel_id TEXT; ALTER TABLE public.franchise_landing_pages ADD COLUMN IF NOT EXISTS pixel_id TEXT;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1142 (42000) at line 1: ALTER command denied to user 'XSibAjs3EaqeCWT.c094be95d612'@'%' for table 'franchises'"
+  ]
+}

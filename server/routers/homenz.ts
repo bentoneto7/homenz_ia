@@ -803,17 +803,7 @@ export const homenzRouter = router({
       if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
       }
-      // Tentar ler pixel_id diretamente da tabela franchises
-      const { data: franchise } = await supabaseAdmin
-        .from('franchises')
-        .select('*')
-        .eq('id', input.franchiseId)
-        .single();
-      const pixelId = (franchise as Record<string, unknown> | null)?.pixel_id as string | null | undefined;
-      if (pixelId !== undefined) {
-        return { pixelId: pixelId || null };
-      }
-      // Fallback: ler de landing page especial
+      // Pixel armazenado em LP especial com slug __pixel_<franchiseId>__
       const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
       const { data: lp } = await supabaseAdmin
         .from('franchise_landing_pages')
@@ -839,15 +829,7 @@ export const homenzRouter = router({
       if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
       }
-      // Tentar atualizar pixel_id diretamente na tabela franchises
-      const { error: directErr } = await supabaseAdmin
-        .from('franchises')
-        .update({ pixel_id: input.pixelId || null } as Record<string, unknown>)
-        .eq('id', input.franchiseId);
-      if (!directErr) {
-        return { success: true, method: 'direct' };
-      }
-      // Fallback: persistir em landing page especial
+      // Pixel armazenado em LP especial com slug __pixel_<franchiseId>__
       const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
       const utmValue = input.pixelId ? `pixel:${input.pixelId}` : null;
       const { data: existing } = await supabaseAdmin
@@ -872,7 +854,7 @@ export const homenzRouter = router({
             utm_campaign: utmValue,
           });
       }
-      return { success: true, method: 'fallback' };
+      return { success: true, method: 'lp_config' };
     }),
 
   // ── Meta CAPI Token ────────────────────────────────────────────────────────
@@ -887,17 +869,7 @@ export const homenzRouter = router({
       if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
       }
-      // Tentar ler capi_access_token diretamente da tabela franchises
-      const { data: franchise } = await supabaseAdmin
-        .from('franchises')
-        .select('*')
-        .eq('id', input.franchiseId)
-        .single();
-      const capiToken = (franchise as Record<string, unknown> | null)?.capi_access_token as string | null | undefined;
-      if (capiToken !== undefined) {
-        return { capiToken: capiToken || null };
-      }
-      // Fallback: ler de landing page especial
+      // CAPI token armazenado em LP especial com slug __capi_<franchiseId>__
       const configSlug = `__capi_${input.franchiseId.replace(/-/g, '')}__`;
       const { data: lp } = await supabaseAdmin
         .from('franchise_landing_pages')
@@ -921,15 +893,7 @@ export const homenzRouter = router({
       if (homenzUser.role !== 'owner' && homenzUser.franchise_id !== input.franchiseId) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso negado' });
       }
-      // Tentar atualizar capi_access_token diretamente na tabela franchises
-      const { error: directErr } = await supabaseAdmin
-        .from('franchises')
-        .update({ capi_access_token: input.capiToken || null } as Record<string, unknown>)
-        .eq('id', input.franchiseId);
-      if (!directErr) {
-        return { success: true, method: 'direct' };
-      }
-      // Fallback: persistir em landing page especial
+      // CAPI token armazenado em LP especial com slug __capi_<franchiseId>__
       const configSlug = `__capi_${input.franchiseId.replace(/-/g, '')}__`;
       const capiValue = input.capiToken ? `capi:${input.capiToken}` : null;
       const { data: existing } = await supabaseAdmin

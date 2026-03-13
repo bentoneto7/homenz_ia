@@ -49,8 +49,8 @@ export const distributionRouter = router({
         .select(`
           id, slug, title, procedure, city, state, active,
           total_views, total_leads, utm_source, utm_medium, utm_campaign,
-          franchise_id, pixel_id,
-          franchises!inner(id, name, slug, city, state, phone, address, logo_url, pixel_id)
+          franchise_id,
+          franchises!inner(id, name, slug, city, state, phone, address, logo_url)
         `)
         .eq('slug', input.slug)
         .eq('active', true)
@@ -120,36 +120,17 @@ export const distributionRouter = router({
 
       // 3. Enviar evento via CAPI (server-side) se configurado
       try {
-        // Buscar pixel_id e capi_access_token da franquia
-        const { data: franchise } = await supabase
-          .from('franchises')
-          .select('*')
-          .eq('id', lp.franchise_id)
-          .single();
-        const franchiseData = franchise as Record<string, unknown> | null;
-        let pixelId = franchiseData?.pixel_id as string | null | undefined;
-        let capiToken = franchiseData?.capi_access_token as string | null | undefined;
-        // Fallback: ler de landing pages especiais
-        if (!pixelId) {
-          const configSlug = `__pixel_${lp.franchise_id.replace(/-/g, '')}__`;
-          const { data: pixelLp } = await supabase
-            .from('franchise_landing_pages')
-            .select('utm_campaign')
-            .eq('slug', configSlug)
-            .single();
-          const stored = (pixelLp as { utm_campaign?: string } | null)?.utm_campaign || null;
-          if (stored && stored.startsWith('pixel:')) pixelId = stored.slice(6);
-        }
-        if (!capiToken) {
-          const capiSlug = `__capi_${lp.franchise_id.replace(/-/g, '')}__`;
-          const { data: capiLp } = await supabase
-            .from('franchise_landing_pages')
-            .select('utm_campaign')
-            .eq('slug', capiSlug)
-            .single();
-          const stored = (capiLp as { utm_campaign?: string } | null)?.utm_campaign || null;
-          if (stored && stored.startsWith('capi:')) capiToken = stored.slice(5);
-        }
+        // Buscar pixel_id e capi_access_token de LPs especiais de configuração
+        const pixelSlug = `__pixel_${lp.franchise_id.replace(/-/g, '')}__`;
+        const capiSlug = `__capi_${lp.franchise_id.replace(/-/g, '')}__`;
+        const [{ data: pixelLp }, { data: capiLp }] = await Promise.all([
+          supabase.from('franchise_landing_pages').select('utm_campaign').eq('slug', pixelSlug).single(),
+          supabase.from('franchise_landing_pages').select('utm_campaign').eq('slug', capiSlug).single(),
+        ]);
+        const pixelStored = (pixelLp as { utm_campaign?: string } | null)?.utm_campaign || null;
+        const capiStored = (capiLp as { utm_campaign?: string } | null)?.utm_campaign || null;
+        let pixelId = pixelStored && pixelStored.startsWith('pixel:') ? pixelStored.slice(6) : null;
+        let capiToken = capiStored && capiStored.startsWith('capi:') ? capiStored.slice(5) : null;
         if (pixelId && capiToken) {
           const { sendCapiEvent, hashPhone } = await import('../metaCapi');
           const phoneHash = await hashPhone(input.phone);
@@ -419,11 +400,33 @@ export const distributionRouter = router({
       ) {
         throw new Error('Acesso negado');
       }
-      const { error } = await supabase
-        .from('franchises')
-        .update({ pixel_id: input.pixelId || null, updated_at: new Date().toISOString() })
-        .eq('id', input.franchiseId);
-      if (error) throw new Error(error.message);
+      // Pixel armazenado em LP especial com slug __pixel_<franchiseId>__
+      const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
+      const utmValue = input.pixelId ? `pixel:${input.pixelId}` : null;
+      // Tentar upsert da LP de configuração de pixel
+      const { data: existing } = await supabase
+        .from('franchise_landing_pages')
+        .select('id')
+        .eq('slug', configSlug)
+        .single();
+      if (existing) {
+        const { error } = await supabase
+          .from('franchise_landing_pages')
+          .update({ utm_campaign: utmValue, updated_at: new Date().toISOString() })
+          .eq('slug', configSlug);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase
+          .from('franchise_landing_pages')
+          .insert({
+            franchise_id: input.franchiseId,
+            slug: configSlug,
+            title: '__pixel_config__',
+            active: false,
+            utm_campaign: utmValue,
+          });
+        if (error) throw new Error(error.message);
+      }
       return { success: true };
     }),
 
@@ -441,13 +444,16 @@ export const distributionRouter = router({
       ) {
         throw new Error('Acesso negado');
       }
-      const { data, error } = await supabase
-        .from('franchises')
-        .select('pixel_id')
-        .eq('id', input.franchiseId)
+      // Pixel armazenado em LP especial com slug __pixel_<franchiseId>__
+      const configSlug = `__pixel_${input.franchiseId.replace(/-/g, '')}__`;
+      const { data: pixelLp } = await supabase
+        .from('franchise_landing_pages')
+        .select('utm_campaign')
+        .eq('slug', configSlug)
         .single();
-      if (error) throw new Error(error.message);
-      return { pixelId: (data as { pixel_id?: string | null })?.pixel_id || null };
+      const stored = (pixelLp as { utm_campaign?: string } | null)?.utm_campaign || null;
+      const pixelId = stored && stored.startsWith('pixel:') ? stored.slice(6) : null;
+      return { pixelId };
     }),
 
   /**
@@ -473,20 +479,14 @@ export const distributionRouter = router({
       if (userRole7 !== 'owner' && userFranchiseId7 !== (lp as { franchise_id: string }).franchise_id) {
         throw new Error('Acesso negado');
       }
-      // Tentar atualizar pixel_id diretamente
-      const { error: directErr } = await supabase
-        .from('franchise_landing_pages')
-        .update({ pixel_id: input.pixelId || null } as Record<string, unknown>)
-        .eq('id', input.landingPageId);
-      if (!directErr) return { success: true, method: 'direct' };
-      // Fallback: usar utm_campaign com prefixo especial
+      // Pixel armazenado em utm_campaign com prefixo lppixel:
       const utmValue = input.pixelId ? `lppixel:${input.pixelId}` : null;
       const { error: fallbackErr } = await supabase
         .from('franchise_landing_pages')
         .update({ utm_campaign: utmValue })
         .eq('id', input.landingPageId);
       if (fallbackErr) throw new Error(fallbackErr.message);
-      return { success: true, method: 'fallback' };
+      return { success: true, method: 'utm_campaign' };
     }),
 
   /**
@@ -555,11 +555,7 @@ export const distributionRouter = router({
         throw new Error('Acesso negado');
       }
       const lpData = lp as Record<string, unknown>;
-      // Tentar pixel_id direto
-      if (lpData.pixel_id !== undefined) {
-        return { pixelId: (lpData.pixel_id as string | null) || null };
-      }
-      // Fallback: ler do utm_campaign com prefixo lppixel:
+      // Pixel armazenado em utm_campaign com prefixo lppixel:
       const utm = lpData.utm_campaign as string | null;
       return { pixelId: utm && utm.startsWith('lppixel:') ? utm.slice(8) : null };
     }),
