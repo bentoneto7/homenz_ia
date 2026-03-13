@@ -806,3 +806,9 @@
 - [x] Email: novo lead recebido para o vendedor com dados + WhatsApp direto (leadDistribution.ts)
 - [x] Email: recuperação de senha (forgotPassword no routers.ts)
 - [x] Build de produção: zero erros TypeScript
+
+## Ajuste de Prompt — Foto "Depois" (Mar 13) — CONCLUÍDO
+- [x] Atualizar prompt de geração para sempre mostrar cabelo preenchido visto de cima/frente
+- [x] Garantir consistência: ângulo superior, densidade total, mesmo fundo da foto original
+- [x] Priorizar foto de cima (top) como referência para geração
+- [x] Instruição de ângulo adaptativa: top-down se tiver foto de cima, frontal inclinada se não tiver

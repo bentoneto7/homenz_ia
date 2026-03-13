@@ -826,30 +826,39 @@ Retorne JSON com os campos especificados.`,
           // Gerar imagem simulada pós-preenchimento
           const frontPhoto = photos.find((p) => p.photoType === "front") ?? photos[0];
           const topPhoto = photos.find((p) => p.photoType === "top");
-          const bestPhoto = topPhoto ?? frontPhoto; // foto do topo mostra melhor a calvície
+          // Sempre usar a foto de cima (top) como referência — mostra melhor o preenchimento capilar
+          // Se não tiver foto de cima, usar a frontal
+          const bestPhoto = topPhoto ?? frontPhoto;
           let afterImageUrl = bestPhoto.s3Url;
           try {
             // Timeout de 45s para não travar o processo
-            // Prompt agressivo e específico para transformação capilar visível
-            const baldnessInfo = analysis.baldnessLevel ? `The man has ${analysis.baldnessLevel} hair loss.` : "The man has visible hair thinning or baldness.";
-            const treatmentInfo = analysis.recommendedTreatment ? `Treatment: ${analysis.recommendedTreatment}.` : "Hair fiber filling and scalp micropigmentation.";
+            const baldnessInfo = analysis.baldnessLevel ? `The man has ${analysis.baldnessLevel} hair loss.` : "The man has visible hair thinning or baldness on the top of the head.";
+            const treatmentInfo = analysis.recommendedTreatment ? `Treatment applied: ${analysis.recommendedTreatment}.` : "Hair fiber filling and scalp micropigmentation applied.";
+            // Ângulo da foto de referência
+            const isTopAngle = !!topPhoto;
+            const angleInstruction = isTopAngle
+              ? "CAMERA ANGLE: top-down view of the head (bird's eye / overhead angle) — same angle as the original photo"
+              : "CAMERA ANGLE: slightly downward front view showing the top of the head — tilt the camera slightly down to show the hair coverage on top";
             const imgPromise = generateImage({
-              prompt: `HAIR RESTORATION SIMULATION — DRAMATIC BEFORE/AFTER TRANSFORMATION.
+              prompt: `HAIR RESTORATION SIMULATION — AFTER TREATMENT RESULT.
 ${baldnessInfo} ${treatmentInfo}
 
+${angleInstruction}
+
 TRANSFORMATION INSTRUCTIONS (follow strictly):
-- COMPLETELY FILL all bald, thinning, and receding areas with DENSE, THICK, NATURAL hair
-- The scalp must NOT be visible anywhere — full coverage of the entire head
-- Add significant hair VOLUME and DENSITY — this should be a DRAMATIC visible change
+- COMPLETELY FILL all bald, thinning, and receding areas on the TOP OF THE HEAD with DENSE, THICK, NATURAL hair
+- The scalp must NOT be visible anywhere — full coverage of the entire crown and top area
+- The result must clearly show the HAIR COVERAGE on the top of the head — this is the main focus
+- Add significant hair VOLUME and DENSITY on the crown — this should be a DRAMATIC visible change
 - Hair style: short masculine cut, natural-looking, well-groomed, modern
-- Hair color: match the existing hair color of the man
+- Hair color: match exactly the existing hair color of the man
 - The hairline should be sharp, defined, and natural-looking
-- Keep IDENTICAL: face, skin tone, facial features, eyes, nose, mouth, beard, glasses, background, lighting, angle
-- ONLY change the hair — everything else must be pixel-perfect identical
+- Keep IDENTICAL: face, skin tone, facial features, eyes, nose, mouth, beard, glasses, background, lighting
+- ONLY change the hair coverage — everything else must be pixel-perfect identical
 - Result must look like a real photograph, not a digital illustration
 - High resolution, photorealistic, professional quality
 
-IMPORTANT: The hair transformation MUST be clearly visible and dramatic. Do NOT make subtle changes.`,
+IMPORTANT: The hair transformation on the TOP OF THE HEAD must be clearly visible and dramatic. The viewer should immediately see the full hair coverage when looking at the top/crown area. Do NOT make subtle changes.`,
               originalImages: [{ url: bestPhoto.s3Url, mimeType: "image/jpeg" }],
             });
             const timeoutPromise = new Promise<never>((_, reject) =>
