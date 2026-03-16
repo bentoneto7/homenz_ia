@@ -108,3 +108,8 @@ temp/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
+
+# Manus-specific (não necessário fora do ambiente Manus)
+.manus/
+.manus-logs/
+client/public/__manus__/

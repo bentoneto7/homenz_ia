@@ -1,8 +1,12 @@
+/**
+ * OAuth callback legado (Manus OAuth).
+ * Fora do ambiente Manus, esta rota retorna 501 se OAUTH_SERVER_URL não estiver configurado.
+ * O sistema Homenz usa autenticação própria via JWT — veja server/routers.ts (auth.loginClinic).
+ */
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
-import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
-import { sdk } from "./sdk";
+import { ENV } from "./env";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -11,6 +15,12 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+    // Se OAUTH_SERVER_URL não estiver configurado, esta rota não está em uso
+    if (!ENV.oAuthServerUrl) {
+      res.status(501).json({ error: "OAuth not configured. Use /api/trpc/auth.loginClinic instead." });
+      return;
+    }
+
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 
@@ -20,6 +30,9 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
+      const { sdk } = await import("./sdk");
+      const db = await import("../db");
+
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
 
@@ -43,7 +56,6 @@ export function registerOAuthRoutes(app: Express) {
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
       res.redirect(302, "/");
     } catch (error) {
       console.error("[OAuth] Callback failed", error);

@@ -1,102 +1,123 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uses the Biz-provided storage proxy (Authorization: Bearer <token>)
+/**
+ * Storage helpers — usa AWS S3 (variáveis AWS_*) ou Supabase Storage (SUPABASE_*)
+ *
+ * Variáveis de ambiente:
+ *   AWS S3 (preferido):
+ *     AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET
+ *   Supabase Storage (alternativo):
+ *     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_STORAGE_BUCKET (default: "homenz")
+ */
 
-import { ENV } from './_core/env';
+import { ENV } from "./_core/env";
 
-type StorageConfig = { baseUrl: string; apiKey: string };
-
-function getStorageConfig(): StorageConfig {
-  const baseUrl = ENV.forgeApiUrl;
-  const apiKey = ENV.forgeApiKey;
-
-  if (!baseUrl || !apiKey) {
-    throw new Error(
-      "Storage proxy credentials missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY"
-    );
-  }
-
-  return { baseUrl: baseUrl.replace(/\/+$/, ""), apiKey };
-}
-
-function buildUploadUrl(baseUrl: string, relKey: string): URL {
-  const url = new URL("v1/storage/upload", ensureTrailingSlash(baseUrl));
-  url.searchParams.set("path", normalizeKey(relKey));
-  return url;
-}
-
-async function buildDownloadUrl(
-  baseUrl: string,
-  relKey: string,
-  apiKey: string
-): Promise<string> {
-  const downloadApiUrl = new URL(
-    "v1/storage/downloadUrl",
-    ensureTrailingSlash(baseUrl)
-  );
-  downloadApiUrl.searchParams.set("path", normalizeKey(relKey));
-  const response = await fetch(downloadApiUrl, {
-    method: "GET",
-    headers: buildAuthHeaders(apiKey),
-  });
-  return (await response.json()).url;
-}
-
-function ensureTrailingSlash(value: string): string {
-  return value.endsWith("/") ? value : `${value}/`;
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function normalizeKey(relKey: string): string {
   return relKey.replace(/^\/+/, "");
 }
 
-function toFormData(
+// ── AWS S3 ────────────────────────────────────────────────────────────────────
+
+async function s3Put(
+  key: string,
   data: Buffer | Uint8Array | string,
-  contentType: string,
-  fileName: string
-): FormData {
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
-  const form = new FormData();
-  form.append("file", blob, fileName || "file");
-  return form;
+  contentType: string
+): Promise<{ key: string; url: string }> {
+  const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
+  const bucket = process.env.AWS_S3_BUCKET!;
+  const region = process.env.AWS_REGION ?? "us-east-1";
+
+  const client = new S3Client({ region });
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: typeof data === "string" ? Buffer.from(data) : data,
+      ContentType: contentType,
+      ACL: "public-read",
+    })
+  );
+
+  const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+  return { key, url };
 }
 
-function buildAuthHeaders(apiKey: string): HeadersInit {
-  return { Authorization: `Bearer ${apiKey}` };
+async function s3GetUrl(key: string): Promise<string> {
+  const bucket = process.env.AWS_S3_BUCKET!;
+  const region = process.env.AWS_REGION ?? "us-east-1";
+  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
+
+// ── Supabase Storage ──────────────────────────────────────────────────────────
+
+async function supabasePut(
+  key: string,
+  data: Buffer | Uint8Array | string,
+  contentType: string
+): Promise<{ key: string; url: string }> {
+  const { createClient } = await import("@supabase/supabase-js");
+  const supabaseUrl = ENV.supabaseUrl || process.env.SUPABASE_URL!;
+  const serviceKey = ENV.supabaseServiceKey || process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "homenz";
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+  const buffer = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(key, buffer, { contentType, upsert: true });
+
+  if (error) throw new Error(`Supabase storage upload failed: ${error.message}`);
+
+  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(key);
+  return { key, url: urlData.publicUrl };
+}
+
+async function supabaseGetUrl(key: string): Promise<string> {
+  const { createClient } = await import("@supabase/supabase-js");
+  const supabaseUrl = ENV.supabaseUrl || process.env.SUPABASE_URL!;
+  const serviceKey = ENV.supabaseServiceKey || process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "homenz";
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(key);
+  return data.publicUrl;
+}
+
+// ── Detecção automática de provider ──────────────────────────────────────────
+
+function detectProvider(): "s3" | "supabase" | "none" {
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_S3_BUCKET) return "s3";
+  if (ENV.supabaseUrl && ENV.supabaseServiceKey) return "supabase";
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) return "supabase";
+  return "none";
+}
+
+// ── API pública ───────────────────────────────────────────────────────────────
 
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
-  const { baseUrl, apiKey } = getStorageConfig();
   const key = normalizeKey(relKey);
-  const uploadUrl = buildUploadUrl(baseUrl, key);
-  const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: buildAuthHeaders(apiKey),
-    body: formData,
-  });
+  const provider = detectProvider();
 
-  if (!response.ok) {
-    const message = await response.text().catch(() => response.statusText);
-    throw new Error(
-      `Storage upload failed (${response.status} ${response.statusText}): ${message}`
-    );
-  }
-  const url = (await response.json()).url;
-  return { key, url };
+  if (provider === "s3") return s3Put(key, data, contentType);
+  if (provider === "supabase") return supabasePut(key, data, contentType);
+
+  // Fallback: retorna data URL (apenas para desenvolvimento local sem storage configurado)
+  console.warn("[storage] Nenhum provider de storage configurado. Usando data URL temporária.");
+  const b64 = Buffer.isBuffer(data) ? data.toString("base64") : Buffer.from(data as any).toString("base64");
+  return { key, url: `data:${contentType};base64,${b64}` };
 }
 
-export async function storageGet(relKey: string): Promise<{ key: string; url: string; }> {
-  const { baseUrl, apiKey } = getStorageConfig();
+export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
   const key = normalizeKey(relKey);
-  return {
-    key,
-    url: await buildDownloadUrl(baseUrl, key, apiKey),
-  };
+  const provider = detectProvider();
+
+  if (provider === "s3") return { key, url: await s3GetUrl(key) };
+  if (provider === "supabase") return { key, url: await supabaseGetUrl(key) };
+
+  throw new Error("Nenhum provider de storage configurado.");
 }
