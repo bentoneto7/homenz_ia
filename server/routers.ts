@@ -828,48 +828,50 @@ Retorne JSON com os campos especificados.`,
           const topPhoto = photos.find((p) => p.photoType === "top");
           // Sempre usar a foto de cima (top) como referência — mostra melhor o preenchimento capilar
           // Se não tiver foto de cima, usar a frontal
-          const bestPhoto = topPhoto ?? frontPhoto;
+          // Sempre usar a foto frontal como base para o DEPOIS — garante mesma posição/ângulo
+          const bestPhoto = frontPhoto;
           let afterImageUrl = bestPhoto.s3Url;
           try {
-            // Timeout de 45s para não travar o processo
-            const baldnessInfo = analysis.baldnessLevel ? `The man has ${analysis.baldnessLevel} hair loss.` : "The man has visible hair thinning or baldness on the top of the head.";
-            const treatmentInfo = analysis.recommendedTreatment ? `Treatment applied: ${analysis.recommendedTreatment}.` : "Hair fiber filling and scalp micropigmentation applied.";
-            // Ângulo da foto de referência
-            const isTopAngle = !!topPhoto;
-            const angleInstruction = isTopAngle
-              ? "CAMERA ANGLE: top-down view of the head (bird's eye / overhead angle) — same angle as the original photo"
-              : "CAMERA ANGLE: slightly downward front view showing the top of the head — tilt the camera slightly down to show the hair coverage on top";
-            const imgPromise = generateImage({
-              prompt: `HAIR RESTORATION SIMULATION — AFTER TREATMENT RESULT.
-${baldnessInfo} ${treatmentInfo}
+            // Usar processamento Python para garantir que o DEPOIS é a mesma foto
+            // com apenas a densidade capilar aumentada — sem alterar rosto, posição ou acessórios
+            const { execFile } = await import("child_process");
+            const { promisify } = await import("util");
+            const { tmpdir } = await import("os");
+            const { join } = await import("path");
+            const { readFileSync, unlinkSync } = await import("fs");
+            const execFileAsync = promisify(execFile);
 
-${angleInstruction}
+            const tmpOutput = join(tmpdir(), `hair_after_${resultId}_${Date.now()}.png`);
+            const scriptPath = join(__dirname, "hair_processor.py");
 
-TRANSFORMATION INSTRUCTIONS (follow strictly):
-- COMPLETELY FILL all bald, thinning, and receding areas on the TOP OF THE HEAD with DENSE, THICK, NATURAL hair
-- The scalp must NOT be visible anywhere — full coverage of the entire crown and top area
-- The result must clearly show the HAIR COVERAGE on the top of the head — this is the main focus
-- Add significant hair VOLUME and DENSITY on the crown — this should be a DRAMATIC visible change
-- Hair style: short masculine cut, natural-looking, well-groomed, modern
-- Hair color: match exactly the existing hair color of the man
-- The hairline should be sharp, defined, and natural-looking
-- Keep IDENTICAL: face, skin tone, facial features, eyes, nose, mouth, beard, glasses, background, lighting
-- ONLY change the hair coverage — everything else must be pixel-perfect identical
-- Result must look like a real photograph, not a digital illustration
-- High resolution, photorealistic, professional quality
-
-IMPORTANT: The hair transformation on the TOP OF THE HEAD must be clearly visible and dramatic. The viewer should immediately see the full hair coverage when looking at the top/crown area. Do NOT make subtle changes.`,
-              originalImages: [{ url: bestPhoto.s3Url, mimeType: "image/jpeg" }],
-            });
-            const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Image generation timeout (45s)")), 45_000)
+            console.log("[AI] Running Python hair processor...");
+            const { stdout: _stdout, stderr } = await execFileAsync(
+              "python3",
+              [scriptPath, bestPhoto.s3Url, tmpOutput],
+              { timeout: 60_000 }
             );
-            const imgResult = await Promise.race([imgPromise, timeoutPromise]);
-            afterImageUrl = imgResult.url ?? frontPhoto.s3Url;
+            if (stderr) console.warn("[AI] Python stderr:", stderr);
+
+            // Upload resultado para S3
+            const processedBuffer = readFileSync(tmpOutput);
+            const { storagePut: storagePutFn } = await import("./storage");
+            const { url: processedUrl } = await storagePutFn(
+              `ai-results/${resultId}-after-${Date.now()}.png`,
+              processedBuffer,
+              "image/png"
+            );
+            afterImageUrl = processedUrl;
+            console.log("[AI] Python hair processing done:", processedUrl);
+
+            // Limpar arquivo temporário
+            try { unlinkSync(tmpOutput); } catch {}
           } catch (imgErr) {
-            console.warn("[AI] Image generation failed or timed out, using original photo:", imgErr);
+            console.warn("[AI] Python hair processing failed, using original photo:", imgErr);
             // afterImageUrl já está definido como frontPhoto.s3Url — continua normalmente
           }
+
+          // Geração por IA removida — causava pessoa diferente no DEPOIS
+          // O processamento Python acima garante 100% de coerência
 
           // Salvar resultado — usar SQL raw para evitar bug do Drizzle com TiDB em updates com campos JSON
           // IMPORTANTE: colunas em camelCase conforme schema MySQL
