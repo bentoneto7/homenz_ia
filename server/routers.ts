@@ -930,7 +930,7 @@ Retorne JSON com os campos especificados.`,
             metadata: { leadScore: analysis.leadScore, priority: analysis.priority, baldnessLevel: analysis.baldnessLevel },
             triggeredBy: "system",
           });
-          return { resultId, status: "done" };;
+          return { resultId, status: "done" };
         } catch (err) {
           // Log do erro real para facilitar debugging
           console.error(`[AI] processPhotos FAILED for lead ${lead.id}, resultId ${resultId}:`, err);
