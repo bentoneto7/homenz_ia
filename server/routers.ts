@@ -1278,9 +1278,15 @@ Retorne JSON com os campos especificados.`,
             eq(clinicAvailability.active, true)
           )).limit(1);
 
-        if (!avail[0]) return { slots: [], blocked: false };
+        // Fallback: se não há configuração, usar horário padrão Seg-Sex 08:00-18:00, Sáb 08:00-13:00
+        const defaultAvail = dayOfWeek >= 1 && dayOfWeek <= 5
+          ? { startTime: "08:00", endTime: "18:00", slotDurationMinutes: 60, breakBetweenMinutes: 0 }
+          : dayOfWeek === 6
+          ? { startTime: "08:00", endTime: "13:00", slotDurationMinutes: 60, breakBetweenMinutes: 0 }
+          : null; // Domingo sem atendimento
+        if (!avail[0] && !defaultAvail) return { slots: [], blocked: false };
 
-        const cfg = avail[0];
+        const cfg = avail[0] ?? defaultAvail!;
         const [startH, startM] = cfg.startTime.split(":").map(Number);
         const [endH, endM] = cfg.endTime.split(":").map(Number);
         const startMinutes = startH! * 60 + startM!;
