@@ -1,11 +1,12 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import HomenzLanding from "./pages/HomenzLanding";
+import HomenzLandingV2 from "./pages/HomenzLandingV2";
 import ClinicLanding from "./pages/funnel/ClinicLanding";
 import FunnelChat from "./pages/funnel/FunnelChat";
 import FunnelPhotos from "./pages/funnel/FunnelPhotos";
@@ -47,7 +48,12 @@ function Router() {
   return (
     <Switch>
       {/* Plataforma */}
-      <Route path="/" component={HomenzLanding} />
+      {/* LP de venda ATIVA (antiga HomenzLandingV2, promovida em 17/06) */}
+      <Route path="/" component={HomenzLandingV2} />
+      {/* /v2 mantido como atalho histórico → redireciona pra raiz (links já compartilhados) */}
+      <Route path="/v2"><Redirect to="/" /></Route>
+      {/* LP antiga ARQUIVADA/INATIVA — fora da vitrine, mantida só para referência em /v1 */}
+      <Route path="/v1" component={HomenzLanding} />
       <Route path="/plataforma" component={Home} />
       <Route path="/cadastro" component={CadastroFranqueado} />
       <Route path="/cadastro-clinica" component={ClinicOnboarding} />
@@ -86,6 +92,9 @@ function Router() {
         <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
       </Route>
       <Route path="/franqueado/leads">
+        <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
+      </Route>
+      <Route path="/franqueado/desempenho">
         <ProtectedRoute allowedRoles={["franchisee"]}><FranchiseeDashboard /></ProtectedRoute>
       </Route>
       <Route path="/franqueado/vendedores">

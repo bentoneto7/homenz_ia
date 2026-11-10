@@ -55,6 +55,74 @@ const franchiseeProcedure = supabaseProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
+// ── Temperatura por AÇÃO (decisão Bento 17/06) ───────────────────────────────
+// Régua canônica idêntica à do front (client/src/lib/leadTemperature.ts ->
+// getActionTemperature) e à reimplementação inline do sellerDashboard:
+//   hot  = agendou (funnel_step scheduled/confirmed/completed ou appointment_at)
+//   warm = chegou na foto/IA (photos_*/ai_*/schedule_started ou tem photo_url), sem agendar
+//   cold = abandonou antes das fotos
+// O tempo só ESFRIA (nunca esquenta) leads ainda não atendidos: MORNO parado
+// > 24h e sem atendimento cai para FRIO. Desfecho de atendimento (resolved/closed_*)
+// some da disputa de atenção -> cold. Centralizado aqui pra franchiseeStats,
+// networkStats e sellerDashboard usarem a MESMA régua.
+const SCHEDULED_STEPS = new Set(["scheduled", "confirmed", "completed"]);
+const PHOTO_OR_DEEPER_STEPS = new Set([
+  "photos_started", "photos_uploaded", "photos_done", "photos_completed",
+  "ai_processing", "ai_ready", "ai_done", "ai_failed", "schedule_started",
+]);
+
+type ActionTempLead = {
+  funnel_step?: string | null;
+  appointment_at?: string | null;
+  photo_url?: string | null;
+  attendance_status?: string | null;
+  last_activity_at?: string | null;
+  created_at?: string | null;
+};
+
+function actionTemperature(lead: ActionTempLead, now = Date.now()): "hot" | "warm" | "cold" {
+  // Desfecho de atendimento: não disputa mais atenção.
+  if (lead.attendance_status && !["open", "in_progress"].includes(lead.attendance_status)) {
+    return "cold";
+  }
+  const step = lead.funnel_step ?? "";
+  let temp: "hot" | "warm" | "cold";
+  if (lead.appointment_at || SCHEDULED_STEPS.has(step)) temp = "hot";
+  else if (PHOTO_OR_DEEPER_STEPS.has(step) || lead.photo_url) temp = "warm";
+  else temp = "cold";
+  // Decaimento por inatividade: QUENTE nunca esfria; MORNO parado > 24h e sem
+  // atendimento cai para FRIO.
+  if (temp === "warm" && (!lead.attendance_status || lead.attendance_status === "open")) {
+    const ref = new Date(lead.last_activity_at ?? lead.created_at ?? now).getTime();
+    if ((now - ref) / 3_600_000 > 24) temp = "cold";
+  }
+  return temp;
+}
+
+// Conjuntos de funnel_step equivalentes (TiDB + Supabase) para contar marcos do
+// funil sem perder leads por nomes diferentes do mesmo estágio.
+const STEP_CHAT_STARTED = new Set([
+  "chat_started", "chat_done", "chat_completed",
+  "photos_started", "photos_uploaded", "photos_done", "photos_completed",
+  "ai_processing", "ai_ready", "ai_done", "ai_failed",
+  "schedule_started", "scheduled", "confirmed", "completed",
+]);
+const STEP_CHAT_DONE = new Set([
+  "chat_done", "chat_completed",
+  "photos_started", "photos_uploaded", "photos_done", "photos_completed",
+  "ai_processing", "ai_ready", "ai_done", "ai_failed",
+  "schedule_started", "scheduled", "confirmed", "completed",
+]);
+const STEP_PHOTOS = new Set([
+  "photos_started", "photos_uploaded", "photos_done", "photos_completed",
+  "ai_processing", "ai_ready", "ai_done", "ai_failed",
+  "schedule_started", "scheduled", "confirmed", "completed",
+]);
+const STEP_AI = new Set([
+  "ai_processing", "ai_ready", "ai_done", "ai_failed",
+  "schedule_started", "scheduled", "confirmed", "completed",
+]);
+
 // ── Router principal ─────────────────────────────────────────────────────────
 
 export const homenzRouter = router({
@@ -202,7 +270,16 @@ export const homenzRouter = router({
   networkStats: ownerProcedure
     .query(async () => {
       const stats = await getNetworkStats();
-      
+
+      // Temperatura por AÇÃO (mesma régua do vendedor/franquia, #11): sobrescreve o
+      // campo gravado por score antes de qualquer contagem da rede.
+      const nowNet = Date.now();
+      for (const l of stats.leads) {
+        (l as { temperature?: string }).temperature = actionTemperature(l as ActionTempLead, nowNet);
+      }
+      const isScheduledNet = (l: { appointment_at?: string | null; funnel_step?: string | null }) =>
+        !!l.appointment_at || SCHEDULED_STEPS.has(l.funnel_step ?? "");
+
       // Calcular métricas por franquia
       const franchisesWithStats = stats.franchises.map((f) => {
         const franchiseLeads = stats.leads.filter((l) => l.franchise_id === f.id);
@@ -210,7 +287,7 @@ export const homenzRouter = router({
         const hot = franchiseLeads.filter((l) => l.temperature === "hot").length;
         const warm = franchiseLeads.filter((l) => l.temperature === "warm").length;
         const cold = franchiseLeads.filter((l) => l.temperature === "cold").length;
-        const scheduled = franchiseLeads.filter((l) => l.funnel_step === "scheduled").length;
+        const scheduled = franchiseLeads.filter(isScheduledNet).length;
         const avgScore = franchiseLeads.length > 0
           ? Math.round(franchiseLeads.reduce((acc, l) => acc + (l.lead_score || 0), 0) / franchiseLeads.length)
           : 0;
@@ -241,7 +318,7 @@ export const homenzRouter = router({
         });
 
       const totalLeads = stats.leads.length;
-      const totalScheduled = stats.leads.filter((l) => l.funnel_step === "scheduled").length;
+      const totalScheduled = stats.leads.filter(isScheduledNet).length;
       const totalSellers = stats.sellers.length;
       const totalFranchises = stats.franchises.length;
       const avgScore = totalLeads > 0
@@ -301,53 +378,151 @@ export const homenzRouter = router({
       // Owner pode ver qualquer franquia; franqueado só vê a sua
       const targetFranchiseId = franchiseId!;
 
-      const [franchise, leads, sellers, metrics] = await Promise.all([
+      const [franchise, leads, sellers, metrics, lpRes] = await Promise.all([
         getFranchiseById(targetFranchiseId),
         getLeadsByFranchise(targetFranchiseId),
         getSellersByFranchise(targetFranchiseId),
         getAllSellerMetrics(targetFranchiseId),
+        supabaseAdmin
+          .from("franchise_landing_pages")
+          .select("slug, title, total_views, active")
+          .eq("franchise_id", targetFranchiseId),
       ]);
+      const landingPages = (lpRes.data ?? []) as { slug: string; title: string | null; total_views: number | null; active: boolean }[];
+
+      // Temperatura por AÇÃO (decisão Bento 17/06): a profundidade no funil define
+      // o nível, não o score gravado. Sobrescreve l.temperature ANTES de qualquer
+      // contagem, alinhando a franquia à mesma régua do vendedor (#11).
+      const now = Date.now();
+      for (const l of leads) {
+        l.temperature = actionTemperature(l as ActionTempLead, now);
+      }
 
       const hot = leads.filter((l) => l.temperature === "hot").length;
       const warm = leads.filter((l) => l.temperature === "warm").length;
       const cold = leads.filter((l) => l.temperature === "cold").length;
-      const scheduled = leads.filter((l) => l.funnel_step === "scheduled").length;
+      // "Agendado" = tem agendamento real OU step de agendamento (cobre TiDB+Supabase)
+      const isScheduled = (l: typeof leads[number]) => !!l.appointment_at || SCHEDULED_STEPS.has(l.funnel_step);
+      const scheduled = leads.filter(isScheduled).length;
       const avgScore = leads.length > 0
         ? Math.round(leads.reduce((acc, l) => acc + (l.lead_score || 0), 0) / leads.length)
         : 0;
 
-      // Enriquecer métricas com nome do vendedor
+      // Enriquecer métricas + conversão AO VIVO por vendedor (a tabela seller_metrics
+      // depende de um job que não roda; calculamos dos leads como no sellerDashboard).
       const sellersWithMetrics = sellers.map((s) => {
         const m = metrics.find((m) => m.seller_id === s.id);
+        const sellerLeads = leads.filter((l) => l.assigned_to === s.id);
+        const sellerScheduled = sellerLeads.filter(isScheduled).length;
+        const sellerWorked = sellerLeads.filter((l) => l.attendance_status && l.attendance_status !== "open").length;
+        const sellerWon = sellerLeads.filter((l) => l.attendance_status === "closed_sale").length;
+        const liveConversion = sellerLeads.length ? Math.round((sellerScheduled / sellerLeads.length) * 100) : 0;
         return {
           ...s,
-          metrics: m ?? null,
-          leadsAssigned: leads.filter((l) => l.assigned_to === s.id).length,
+          // Mescla: métricas vivas (assigned/scheduled/conversão) por cima do que houver gravado
+          metrics: {
+            ...(m ?? {}),
+            leads_assigned: sellerLeads.length,
+            leads_scheduled: sellerScheduled,
+            leads_contacted: m?.leads_contacted ?? sellerWorked,
+            leads_confirmed: m?.leads_confirmed ?? sellerWon,
+            conversion_rate: liveConversion,
+            avg_response_minutes: m?.avg_response_minutes ?? 0,
+            score: m?.score ?? (sellerLeads.length ? Math.round(sellerLeads.reduce((a, l) => a + (l.lead_score ?? 0), 0) / sellerLeads.length) : 0),
+          },
+          leadsAssigned: sellerLeads.length,
+          // Métricas vivas espelhadas para o kanban/analytics da franquia
+          live: {
+            assigned: sellerLeads.length,
+            worked: sellerWorked,
+            scheduled: sellerScheduled,
+            won: sellerWon,
+            open: sellerLeads.filter((l) => !l.attendance_status || l.attendance_status === "open").length,
+            conversion: liveConversion,
+            hot: sellerLeads.filter((l) => l.temperature === "hot").length,
+          },
         };
       });
 
-      // Funil de conversão
-      const funnelSteps = [
-        { step: "Leads recebidos", key: "all" },
-        { step: "Chat iniciado", key: "chat_started" },
-        { step: "Chat concluído", key: "chat_done" },
-        { step: "Fotos enviadas", key: "photos_done" },
-        { step: "IA processada", key: "ai_done" },
-        { step: "Agendado", key: "scheduled" },
+      // Funil de conversão (robusto a nomes de step do TiDB e do Supabase)
+      const funnelSteps: { step: string; key: string; set: Set<string> | null }[] = [
+        { step: "Leads recebidos", key: "all", set: null },
+        { step: "Chat iniciado", key: "chat_started", set: STEP_CHAT_STARTED },
+        { step: "Chat concluído", key: "chat_done", set: STEP_CHAT_DONE },
+        { step: "Fotos enviadas", key: "photos_done", set: STEP_PHOTOS },
+        { step: "IA processada", key: "ai_done", set: STEP_AI },
+        { step: "Agendado", key: "scheduled", set: SCHEDULED_STEPS },
       ];
-
-      const funnel = funnelSteps.map((f, i) => {
-        const count = f.key === "all" 
-          ? leads.length 
-          : leads.filter((l) => l.funnel_step === f.key || 
-              (f.key === "chat_started" && ["chat_started", "chat_done", "photos_started", "photos_done", "ai_processing", "ai_done", "schedule_started", "scheduled"].includes(l.funnel_step))
-            ).length;
+      const funnel = funnelSteps.map((f) => {
+        const count = f.set === null
+          ? leads.length
+          : leads.filter((l) => f.set!.has(l.funnel_step) || (f.key === "scheduled" && !!l.appointment_at)).length;
         return {
-          ...f,
+          step: f.step,
+          key: f.key,
           count,
           pct: leads.length > 0 ? Math.round((count / leads.length) * 100) : 0,
         };
       });
+
+      // ── Analytics da franquia (métricas pedidas pelo Bento, call 17/06) ──────
+      // Marcos do funil (leads que CHEGARAM em cada etapa), fotos enviadas e
+      // IA processada — derivados dos leads + flags concretas (photo_url).
+      const chatsIniciados = leads.filter((l) => STEP_CHAT_STARTED.has(l.funnel_step)).length;
+      const chatsConcluidos = leads.filter((l) => STEP_CHAT_DONE.has(l.funnel_step)).length;
+      // Fotos enviadas: tem photo_url OU passou pela etapa de fotos
+      const fotosEnviadas = leads.filter((l) => !!l.photo_url || STEP_PHOTOS.has(l.funnel_step)).length;
+      const iaProcessadas = leads.filter((l) => STEP_AI.has(l.funnel_step)).length;
+
+      // Conversão por vendedor + VENDEDOR CAMPEÃO (mais agendamentos; desempate por conversão)
+      const sellerPerformance = sellersWithMetrics
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          assigned: s.live.assigned,
+          scheduled: s.live.scheduled,
+          won: s.live.won,
+          conversion: s.live.conversion,
+        }))
+        .sort((a, b) => b.scheduled - a.scheduled || b.conversion - a.conversion || b.assigned - a.assigned);
+      const champion = sellerPerformance.find((s) => s.assigned > 0) ?? null;
+
+      // Páginas de captação: visualizações + leads atribuídos pela campanha (utm_campaign = slug)
+      // e conversão (leads/views). A página com maior conversão sobe ao topo.
+      const pages = landingPages
+        .filter((lp) => !lp.slug.startsWith("__")) // ignora LPs de config (pixel/capi/testcode)
+        .map((lp) => {
+          const views = lp.total_views ?? 0;
+          const pageLeads = leads.filter((l) => l.utm_campaign === lp.slug).length;
+          const pageScheduled = leads.filter((l) => l.utm_campaign === lp.slug && isScheduled(l)).length;
+          return {
+            slug: lp.slug,
+            title: lp.title ?? lp.slug,
+            views,
+            leads: pageLeads,
+            scheduled: pageScheduled,
+            // taxa de captação = leads / visualizações
+            conversion: views > 0 ? Math.round((pageLeads / views) * 100) : 0,
+          };
+        })
+        .sort((a, b) => b.conversion - a.conversion || b.leads - a.leads);
+      const totalViews = pages.reduce((a, p) => a + p.views, 0);
+      const topPage = pages.find((p) => p.leads > 0) ?? pages[0] ?? null;
+
+      const analytics = {
+        leadsRecebidos: leads.length,
+        chatsIniciados,
+        chatsConcluidos,
+        fotosEnviadas,
+        iaProcessadas,
+        agendamentos: scheduled,
+        conversionRate: leads.length > 0 ? Math.round((scheduled / leads.length) * 100) : 0,
+        totalViews,
+        champion,
+        sellerPerformance,
+        pages,
+        topPage,
+      };
 
       // Calcular dias restantes do trial
       let trialDaysLeft: number | null = null;
@@ -364,9 +539,28 @@ export const homenzRouter = router({
       // Assinante pago = plano diferente de "free" (webhook do Stripe atualiza o campo plan)
       const hasPaidPlan = !!franchise?.plan && franchise.plan !== "free";
 
+      // Leads completos para o KANBAN da franquia (#14) — só os campos que o board
+      // usa, leves para o payload. Inclui o vendedor responsável (assigned_to) para
+      // o card mostrar "quem está atendendo".
+      const kanbanLeads = leads.map((l) => ({
+        id: l.id,
+        name: l.name,
+        phone: l.phone,
+        hair_problem: l.hair_problem ?? null,
+        lead_score: l.lead_score,
+        temperature: l.temperature,
+        funnel_step: l.funnel_step,
+        attendance_status: l.attendance_status ?? null,
+        appointment_at: l.appointment_at ?? null,
+        assigned_to: l.assigned_to ?? null,
+        last_activity_at: l.last_activity_at,
+        created_at: l.created_at,
+      }));
+
       return {
         franchise,
-        leads: leads.slice(0, 20), // últimos 20 leads
+        leads: leads.slice(0, 20), // últimos 20 leads (aba Leads)
+        allLeads: kanbanLeads,     // todos os leads (Kanban de desempenho)
         sellers: sellersWithMetrics,
         stats: {
           totalLeads: leads.length,
@@ -378,6 +572,7 @@ export const homenzRouter = router({
           conversionRate: leads.length > 0 ? Math.round((scheduled / leads.length) * 100) : 0,
         },
         funnel,
+        analytics,
         trial: {
           active: trialActive,
           daysLeft: trialDaysLeft,
@@ -479,14 +674,50 @@ export const homenzRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito a vendedores" });
       }
 
-      const [leads, metrics] = await Promise.all([
-        getLeadsBySeller(ctx.homenzUser.id),
+      const [leads, storedMetrics, franchise] = await Promise.all([
+        getLeadsBySeller(ctx.homenzUser.id, ctx.homenzUser.franchise_id ?? undefined),
         getSellerMetrics(ctx.homenzUser.id, ctx.homenzUser.franchise_id!),
+        ctx.homenzUser.franchise_id ? getFranchiseById(ctx.homenzUser.franchise_id) : Promise.resolve(null),
       ]);
+
+      // Temperatura por AÇÃO (decisão Bento 17/06): a profundidade no funil define
+      // o nível, não o tempo. Régua canônica centralizada em actionTemperature
+      // (mesma usada por franchiseeStats e networkStats, alinhada ao front
+      // client/src/lib/leadTemperature.ts -> getActionTemperature).
+      const now = Date.now();
+      for (const l of leads) {
+        l.temperature = actionTemperature(l as ActionTempLead, now);
+      }
 
       const hot = leads.filter((l) => l.temperature === "hot");
       const warm = leads.filter((l) => l.temperature === "warm");
       const cold = leads.filter((l) => l.temperature === "cold");
+
+      // Métricas do mês AO VIVO a partir dos leads. A tabela seller_metrics
+      // depende de um job que não roda (só tinha seed de março) — o vendedor
+      // via tudo zerado. O que existir nela ainda complementa (score/resposta).
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthLeads = leads.filter((l) => new Date(l.created_at) >= monthStart);
+      const worked = monthLeads.filter((l) => l.attendance_status && l.attendance_status !== "open").length;
+      const scheduled = monthLeads.filter((l) => l.appointment_at || l.funnel_step === "scheduled").length;
+      const won = monthLeads.filter((l) => l.attendance_status === "closed_sale").length;
+      const avgScore = monthLeads.length
+        ? Math.round(monthLeads.reduce((s, l) => s + (l.lead_score ?? 0), 0) / monthLeads.length)
+        : 0;
+      const metrics = {
+        ...(storedMetrics ?? {}),
+        leads_assigned: monthLeads.length,
+        leads_contacted: worked,
+        leads_scheduled: scheduled,
+        leads_confirmed: won,
+        // Conversão = AGENDAMENTO (não venda): marketing entrega lead qualificado,
+        // a venda é presencial e responsabilidade do vendedor. (pedido Bento 15/06)
+        conversion_rate: monthLeads.length ? Math.round((scheduled / monthLeads.length) * 100) : 0,
+        avg_response_minutes: storedMetrics?.avg_response_minutes ?? 0,
+        score: storedMetrics?.score ?? avgScore,
+      };
 
       return {
         leads: { hot, warm, cold, all: leads },
@@ -496,8 +727,13 @@ export const homenzRouter = router({
           hotLeads: hot.length,
           warmLeads: warm.length,
           coldLeads: cold.length,
-          scheduledLeads: leads.filter((l) => l.funnel_step === "scheduled").length,
+          scheduledLeads: leads.filter((l) => l.appointment_at || l.funnel_step === "scheduled").length,
         },
+        // Contexto da unidade p/ preencher as mensagens sugeridas no card (#12)
+        franchise: franchise
+          ? { name: franchise.name, city: franchise.city, address: franchise.address ?? null }
+          : null,
+        sellerName: ctx.homenzUser.name,
       };
     }),
 
@@ -525,6 +761,30 @@ export const homenzRouter = router({
         triggeredBy: "seller",
         sellerId: ctx.homenzUser.id,
       });
+      return { success: true };
+    }),
+
+  // Encerramento de atendimento pelo vendedor (status + observações)
+  updateLeadClosing: supabaseProcedure
+    .input(z.object({
+      leadId: z.string().uuid(),
+      attendanceStatus: z.enum(["open", "in_progress", "resolved", "closed_sale", "closed_no_sale", "contact_later"]),
+      closingNotes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // "open" (em aberto) e "in_progress" (em atendimento) NÃO encerram — lead ainda em trabalho
+      const isClosing = input.attendanceStatus !== "open" && input.attendanceStatus !== "in_progress";
+      const { error } = await supabaseAdmin
+        .from("leads")
+        .update({
+          attendance_status: input.attendanceStatus,
+          closing_notes: input.closingNotes ?? null,
+          closed_at: isClosing ? new Date().toISOString() : null,
+          closed_by: isClosing ? ctx.homenzUser.id : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", input.leadId);
+      if (error) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
       return { success: true };
     }),
 
@@ -589,6 +849,80 @@ export const homenzRouter = router({
         .update({ status: input.status, updated_at: new Date().toISOString() })
         .eq('id', input.appointmentId);
       if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      return { success: true };
+    }),
+
+  // ── Vendedor/franqueado: solicitar agendamento (clínica confirma) ────────
+
+  // Horários livres da franquia do usuário para uma data (vendedor e franqueado).
+  getAvailableSlots: supabaseProcedure
+    .input(z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      tzOffsetMinutes: z.number().int().min(-720).max(840).default(-180),
+    }))
+    .query(async ({ ctx, input }) => {
+      const franchiseId = ctx.homenzUser.franchise_id;
+      if (!franchiseId) return { slots: [] as { time: string; available: boolean; datetime: string }[] };
+      const weekday = new Date(`${input.date}T12:00:00`).getDay();
+      let hours: number[] = [];
+      if (weekday >= 1 && weekday <= 5) hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+      else if (weekday === 6) hours = [8, 9, 10, 11, 12];
+      const dayStartUtc = new Date(new Date(`${input.date}T00:00:00Z`).getTime() - input.tzOffsetMinutes * 60_000);
+      const dayEndUtc = new Date(dayStartUtc.getTime() + 24 * 60 * 60_000);
+      const { data: taken } = await supabaseAdmin
+        .from('appointments')
+        .select('scheduled_at, status')
+        .eq('franchise_id', franchiseId)
+        .gte('scheduled_at', dayStartUtc.toISOString())
+        .lt('scheduled_at', dayEndUtc.toISOString());
+      const busy = new Set(
+        (taken ?? [])
+          .filter((a) => !['cancelled', 'no_show'].includes(a.status as string))
+          .map((a) => {
+            const utc = new Date(a.scheduled_at as string);
+            return (utc.getUTCHours() + Math.floor(input.tzOffsetMinutes / 60) + 24) % 24;
+          })
+      );
+      return {
+        slots: hours.map((h) => {
+          const time = `${String(h).padStart(2, '0')}:00`;
+          return { time, available: !busy.has(h), datetime: `${input.date}T${time}:00` };
+        }),
+      };
+    }),
+
+  // Vendedor (ou franqueado) solicita um agendamento para um lead. Cai como
+  // 'pending'; a clínica confirma no painel de Agendamentos.
+  requestAppointment: supabaseProcedure
+    .input(z.object({
+      leadId: z.string().uuid(),
+      datetime: z.string(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { data: lead } = await supabaseAdmin
+        .from('leads')
+        .select('id, franchise_id, assigned_to')
+        .eq('id', input.leadId)
+        .single();
+      if (!lead) throw new TRPCError({ code: 'NOT_FOUND', message: 'Lead não encontrado' });
+      const sellerId = (lead as { assigned_to: string | null }).assigned_to ?? ctx.homenzUser.id;
+      const { error } = await supabaseAdmin
+        .from('appointments')
+        .insert({
+          lead_id: input.leadId,
+          franchise_id: (lead as { franchise_id: string }).franchise_id,
+          seller_id: sellerId,
+          scheduled_at: input.datetime,
+          duration_minutes: 60,
+          notes: input.notes ?? 'Agendado pelo vendedor',
+          status: 'pending',
+        });
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      await supabaseAdmin
+        .from('leads')
+        .update({ funnel_step: 'scheduled', updated_at: new Date().toISOString() })
+        .eq('id', input.leadId);
       return { success: true };
     }),
 
@@ -673,6 +1007,138 @@ export const homenzRouter = router({
         await db.insert(landingPageSellers).values(sellerLinks);
       }
       return { ...data, assignedSellers: sellers };
+    }),
+
+  // ── Criação manual de clínica (venda 1:1; faturamento enviado por fora) ────
+  // Form interno do owner — substitui a contratação self-service da landing.
+  createClinicManual: ownerProcedure
+    .input(z.object({
+      franchiseName: z.string().min(2, "Nome da clínica obrigatório"),
+      city: z.string().min(2, "Cidade obrigatória"),
+      state: z.string().length(2, "Estado deve ter 2 letras"),
+      plan: z.enum(["free", "starter", "pro", "network"]).default("pro"),
+      ownerName: z.string().min(2, "Nome do responsável obrigatório"),
+      ownerEmail: z.string().email("Email inválido"),
+      ownerWhatsapp: z.string().min(10, "WhatsApp inválido"),
+      servicePhone: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const email = input.ownerEmail.toLowerCase();
+      const { data: existing } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
+      if (existing) {
+        throw new TRPCError({ code: "CONFLICT", message: "Email já cadastrado" });
+      }
+
+      const baseSlug = input.franchiseName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+      // Sem trial: conta manual já entra ativa no plano combinado no 1:1
+      const { data: franchise, error: franchiseErr } = await supabaseAdmin
+        .from("franchises")
+        .insert({
+          name: input.franchiseName,
+          slug,
+          city: input.city,
+          state: input.state.toUpperCase(),
+          plan: input.plan,
+          active: true,
+          ...(input.servicePhone ? { phone: input.servicePhone } : {}),
+        })
+        .select("id")
+        .single();
+      if (franchiseErr || !franchise) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao criar clínica: ${franchiseErr?.message}` });
+      }
+
+      // Senha temporária — o owner repassa no 1:1 e o franqueado troca depois
+      const tempPassword = `Hz-${Math.random().toString(36).slice(2, 8)}${Math.floor(Math.random() * 90 + 10)}`;
+      const passwordHash = await hashPassword(tempPassword);
+      const { data: newUser, error: userErr } = await supabaseAdmin
+        .from("profiles")
+        .insert({
+          name: input.ownerName,
+          email,
+          password_hash: passwordHash,
+          role: "franchisee" as UserRole,
+          franchise_id: franchise.id,
+          phone: input.ownerWhatsapp,
+          active: true,
+        })
+        .select("id")
+        .single();
+      if (userErr || !newUser) {
+        await supabaseAdmin.from("franchises").delete().eq("id", franchise.id);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro ao criar usuário: ${userErr?.message}` });
+      }
+
+      await supabaseAdmin.from("franchises").update({ owner_id: newUser.id }).eq("id", franchise.id);
+
+      // Vendedor inicial — recebe os leads (o responsável também vende no começo).
+      // Login = email com sufixo "+vendedor" e a mesma senha temporária.
+      const sellerEmail = email.replace("@", "+vendedor@");
+      const { data: seller } = await supabaseAdmin
+        .from("profiles")
+        .insert({
+          name: input.ownerName,
+          email: sellerEmail,
+          password_hash: passwordHash,
+          role: "seller" as UserRole,
+          franchise_id: franchise.id,
+          phone: input.ownerWhatsapp,
+          active: true,
+        })
+        .select("id")
+        .single();
+
+      // Landing page pronta — o link /l/:slug já funciona e distribui para o vendedor
+      const lpSlug = `${slug}-diagnostico`;
+      const { data: lp } = await supabaseAdmin
+        .from("franchise_landing_pages")
+        .insert({
+          franchise_id: franchise.id,
+          slug: lpSlug,
+          title: `Diagnóstico Capilar — ${input.franchiseName}`,
+          procedure: "crescimento-capilar",
+          city: input.city,
+          state: input.state.toUpperCase(),
+          utm_campaign: lpSlug,
+          active: true,
+        })
+        .select("id")
+        .single();
+
+      // Vincula o vendedor à LP (round-robin distribui os leads para ele)
+      if (seller && lp) {
+        try {
+          const { getDb } = await import("../db");
+          const db = await getDb();
+          if (db) {
+            const { landingPageSellers } = await import("../../drizzle/schema");
+            await db.insert(landingPageSellers).values({ landingPageId: lp.id, sellerId: seller.id, sellerName: input.ownerName });
+          }
+        } catch (e) {
+          console.error("[createClinicManual] vínculo LP-vendedor falhou:", e);
+        }
+      }
+
+      return {
+        franchiseId: franchise.id,
+        franchiseSlug: slug,
+        landingPageSlug: lp ? lpSlug : null,
+        ownerEmail: email,
+        sellerEmail,
+        tempPassword,
+        message: "Clínica criada com link de captação pronto para teste.",
+      };
     }),
 
   // ── Registro público de franqueado ─────────────────────────────────────────
@@ -1107,14 +1573,25 @@ export const homenzRouter = router({
 
       const { data: newLeads } = await supabaseAdmin
         .from('leads')
-        .select('id, name, phone, lead_score, temperature, created_at')
+        .select('id, name, phone, lead_score, temperature, funnel_step, photo_url, attendance_status, last_activity_at, created_at')
         .eq('assigned_to', ctx.homenzUser.id)
         .gt('created_at', since)
         .order('created_at', { ascending: false });
 
+      // Temperatura por AÇÃO (#11) também na notificação de lead novo (emoji do sino).
+      const nowNL = Date.now();
+      const enriched = (newLeads ?? []).map((l) => ({
+        id: l.id as string,
+        name: l.name as string,
+        phone: l.phone as string,
+        lead_score: l.lead_score as number,
+        temperature: actionTemperature(l as ActionTempLead, nowNL),
+        created_at: l.created_at as string,
+      }));
+
       return {
-        count: newLeads?.length ?? 0,
-        newLeads: newLeads ?? [],
+        count: enriched.length,
+        newLeads: enriched,
       };
     }),
 

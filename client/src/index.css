@@ -369,3 +369,198 @@
 .flame-warm { color: #F97316; }
 .flame-cold { color: #3B82F6; }
 .flame-dead { color: #94A3B8; }
+
+/* ============================================================
+ * FUNIL PÚBLICO HOMENZ — tema "navy cirúrgica premium"
+ * Escopado em .funnel-theme; NÃO afeta o painel admin.
+ * Direção/tokens documentados em DESIGN.md (raiz).
+ * ============================================================ */
+.funnel-theme {
+  /* Cor (OKLCH) — overridáveis por franquia (white-label) via style inline */
+  /* Navy = azul da marca Homenz (#01499B, hue ~258) escurecido para dark premium */
+  --fn-bg: oklch(0.17 0.030 258);
+  --fn-surface: oklch(0.21 0.034 258);
+  --fn-elevated: oklch(0.27 0.038 258);
+  --fn-ink: oklch(0.97 0.006 250);
+  --fn-body: oklch(0.88 0.012 250);
+  --fn-muted: oklch(0.72 0.020 250);
+  /* Accent = azul da marca Homenz (#004A9D). Clareado no tema escuro p/ contraste. */
+  --fn-accent: oklch(0.56 0.16 258);
+  --fn-accent-press: oklch(0.48 0.15 258);
+  --fn-accent-ink: #FFFFFF;
+  /* Azul oficial da marca Homenz (#004A9D, do site homenz.com.br) */
+  --fn-brand-blue: #004A9D;
+  --fn-brand-blue-ink: #FFFFFF;
+  --fn-line: oklch(1 0 0 / 0.10);
+  --fn-line-strong: oklch(1 0 0 / 0.18);
+  --fn-success: oklch(0.62 0.16 258);
+  /* Erro de validação: vermelho AA sobre as superfícies do tema (não usar o accent) */
+  --fn-danger: oklch(0.72 0.17 22);
+
+  /* Tipografia */
+  --fn-font-display: "Clash Display", "Hanken Grotesk", system-ui, sans-serif;
+  --fn-font-body: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
+
+  /* Forma */
+  --fn-r-pill: 999px;
+  --fn-r-card: 14px;
+
+  background: var(--fn-bg);
+  color: var(--fn-body);
+  font-family: var(--fn-font-body);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Profundidade/vida: luz ambiente teal fixa + grão sutil (não glassmorphism).
+   Fica atrás do conteúdo, não scrolla — sensação de fonte de luz premium. */
+.funnel-theme::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 48% at 88% -5%, oklch(0.50 0.15 258 / 0.16), transparent 68%),
+    radial-gradient(46% 42% at 6% 102%, oklch(0.45 0.13 258 / 0.14), transparent 70%),
+    radial-gradient(circle at center, oklch(1 0 0 / 0.018) 1px, transparent 1.4px);
+  background-size: 100% 100%, 100% 100%, 22px 22px;
+}
+
+/* ── MODO CLARO ──
+ * Alterna via atributo [data-fn-theme="light"] no <html> (toggle sol/lua do funil).
+ * Mesma marca (navy + teal), superfície clara, contraste AA. Só sobrescreve tokens —
+ * todos os .funnel-theme respondem de uma vez. */
+[data-fn-theme="light"] .funnel-theme {
+  /* Fundo levemente azulado (feel do app original) — balões brancos destacam */
+  --fn-bg: oklch(0.975 0.012 250);
+  --fn-surface: oklch(1 0 0);
+  --fn-elevated: oklch(0.965 0.010 250);
+  --fn-ink: oklch(0.25 0.045 258);
+  --fn-body: oklch(0.42 0.025 250);
+  --fn-muted: oklch(0.54 0.022 250);
+  --fn-accent: #004A9D;
+  --fn-accent-press: #003A7D;
+  --fn-accent-ink: #FFFFFF;
+  --fn-brand-blue: #004A9D;
+  --fn-brand-blue-ink: #FFFFFF;
+  --fn-line: oklch(0.25 0.04 258 / 0.12);
+  --fn-line-strong: oklch(0.25 0.04 258 / 0.22);
+  --fn-success: oklch(0.45 0.15 258);
+  --fn-danger: oklch(0.50 0.19 25);
+}
+
+/* Glow ambiente claro: degradê azul Homenz + teal (mais "marca") */
+[data-fn-theme="light"] .funnel-theme::before {
+  background:
+    radial-gradient(60% 50% at 92% -8%, oklch(0.52 0.16 258 / 0.12), transparent 66%),
+    radial-gradient(60% 55% at 4% 104%, oklch(0.52 0.16 258 / 0.12), transparent 70%),
+    radial-gradient(circle at center, oklch(0.25 0.04 258 / 0.02) 1px, transparent 1.4px);
+  background-size: 100% 100%, 100% 100%, 22px 22px;
+}
+
+.funnel-theme h1,
+.funnel-theme h2,
+.funnel-theme h3 {
+  font-family: var(--fn-font-display);
+  color: var(--fn-ink);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.funnel-theme ::placeholder { color: var(--fn-muted); opacity: 1; }
+
+/* Scrollbar na paleta do funil (não o branco padrão do navegador) */
+.funnel-theme,
+.funnel-theme * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fn-line-strong) transparent;
+}
+.funnel-theme *::-webkit-scrollbar { width: 8px; height: 8px; }
+.funnel-theme *::-webkit-scrollbar-track { background: transparent; }
+.funnel-theme *::-webkit-scrollbar-thumb {
+  background: var(--fn-line-strong);
+  border-radius: 99px;
+}
+.funnel-theme *::-webkit-scrollbar-thumb:hover { background: var(--fn-muted); }
+
+/* Foco de teclado visível (a11y) — os inputs/botões usam outline-none */
+.funnel-theme :is(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--fn-accent);
+  outline-offset: 2px;
+}
+/* Feedback de clique nos CTAs primários */
+.funnel-theme .fn-cta-glow:active { transform: translateY(1px); }
+/* Hover só em dispositivos com hover real (touch não "gruda" o estado).
+   !important para vencer o background inline dos botões. */
+@media (hover: hover) {
+  .funnel-theme .fn-cta-glow:hover:not(:disabled) { background: var(--fn-accent-press) !important; }
+}
+
+/* Reveal de entrada — realça conteúdo já visível (não esconde) */
+@keyframes fn-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.funnel-theme .fn-rise {
+  animation: fn-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.funnel-theme .fn-rise-1 { animation-delay: 0.05s; }
+.funnel-theme .fn-rise-2 { animation-delay: 0.12s; }
+.funnel-theme .fn-rise-3 { animation-delay: 0.20s; }
+.funnel-theme .fn-rise-4 { animation-delay: 0.28s; }
+
+/* Glow sutil do CTA primário */
+.funnel-theme .fn-cta-glow {
+  box-shadow: 0 8px 30px -8px oklch(0.56 0.16 258 / 0.45);
+}
+
+/* Opção de resposta estilo iOS: pill de vidro (brilho no topo + profundidade) */
+.funnel-theme .fn-option {
+  border: 1px solid var(--fn-line);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.85),
+    0 1px 2px oklch(0.42 0.15 258 / 0.05),
+    0 8px 18px -10px oklch(0.42 0.15 258 / 0.22);
+  transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.funnel-theme .fn-option:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--fn-accent) 35%, var(--fn-line));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 1),
+    0 2px 4px oklch(0.42 0.15 258 / 0.07),
+    0 14px 26px -10px oklch(0.42 0.15 258 / 0.32);
+}
+.funnel-theme .fn-option:active { transform: translateY(0) scale(0.985); }
+
+/* Entrada de cada mensagem do chat (delight) */
+@keyframes fn-pop {
+  from { opacity: 0; transform: translateY(7px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.funnel-theme .fn-msg { animation: fn-pop 0.34s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Pulse do indicador de urgência (escassez "ao vivo") */
+@keyframes fn-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+.funnel-theme .fn-pulse { animation: fn-pulse 1.6s ease-in-out infinite; }
+
+/* Hover-lift reutilizável (cards, opções) */
+.funnel-theme .fn-lift {
+  transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+.funnel-theme .fn-lift:hover { transform: translateY(-2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel-theme .fn-msg { animation: fn-pop 0.01s both; }
+  .funnel-theme .fn-lift:hover { transform: none; }
+  .funnel-theme .fn-pulse { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel-theme .fn-rise { animation: fn-rise 0.01s both; }
+}

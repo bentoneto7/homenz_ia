@@ -1,20 +1,14 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, CheckCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle, Warning, ArrowRight } from "@phosphor-icons/react";
 import { useLocation } from "wouter";
+import { AuthShell, AuthField, AuthButton, AUTH } from "./auth/authKit";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
   const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -57,133 +51,74 @@ export default function ResetPassword() {
 
   if (!token && !success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <AlertTriangle className="h-12 w-12 text-yellow-500" />
-              <div>
-                <p className="font-medium">Link inválido</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Este link de recuperação é inválido ou já foi utilizado.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate("/esqueci-senha")}
-              >
-                Solicitar novo link
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell variant="centered" title="Link inválido" subtitle="Este link de recuperação é inválido ou já foi utilizado.">
+        <div className="flex flex-col items-center gap-4 py-2 text-center">
+          <Warning weight="fill" className="w-12 h-12" style={{ color: "#D97706" }} />
+          <AuthButton variant="primary" onClick={() => navigate("/esqueci-senha")}>
+            Solicitar novo link
+            <ArrowRight weight="bold" className="w-4 h-4 ml-0.5" />
+          </AuthButton>
+        </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        {/* Logo / Marca */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Homenz</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Plataforma de Clínicas Capilares</p>
+    <AuthShell variant="centered" title="Nova senha" subtitle="Escolha uma nova senha para sua conta.">
+      {success ? (
+        <div className="flex flex-col items-center gap-4 py-2 text-center">
+          <CheckCircle weight="fill" className="w-12 h-12" style={{ color: AUTH.tealFill }} />
+          <div>
+            <p className="font-semibold" style={{ color: AUTH.ink }}>Senha redefinida com sucesso!</p>
+            <p className="text-sm mt-1" style={{ color: AUTH.muted }}>Você já pode fazer login com sua nova senha.</p>
+          </div>
+          <AuthButton variant="primary" onClick={() => navigate("/login-clinica")} className="mt-1">
+            Ir para o login
+            <ArrowRight weight="bold" className="w-4 h-4 ml-0.5" />
+          </AuthButton>
         </div>
-
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Nova senha</CardTitle>
-            <CardDescription>
-              Escolha uma nova senha para sua conta.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {success ? (
-              <div className="flex flex-col items-center gap-4 py-4 text-center">
-                <CheckCircle className="h-12 w-12 text-green-500" />
-                <div>
-                  <p className="font-medium">Senha redefinida com sucesso!</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Você já pode fazer login com sua nova senha.
-                  </p>
-                </div>
-                <Button
-                  className="mt-2 w-full"
-                  onClick={() => navigate("/login-clinica")}
-                >
-                  Ir para o login
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nova senha</Label>
-                  <div className="relative">
-                    <Input
-                      id="newPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Mínimo 6 caracteres"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="pr-10"
-                      required
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar nova senha</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="Repita a nova senha"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {confirmPassword && newPassword !== confirmPassword && (
-                    <p className="text-xs text-destructive">As senhas não coincidem</p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={resetMutation.isPending || (!!confirmPassword && newPassword !== confirmPassword)}
-                >
-                  {resetMutation.isPending ? "Salvando..." : "Redefinir senha"}
-                </Button>
-              </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "rgba(220,38,38,0.06)", color: "#B91C1C", border: "1px solid rgba(220,38,38,0.2)" }}>
+              {error}
+            </div>
+          )}
+          <AuthField
+            id="new-password"
+            label="Nova senha"
+            type="password"
+            value={newPassword}
+            onChange={setNewPassword}
+            placeholder="Mínimo 6 caracteres"
+            autoComplete="new-password"
+            required
+          />
+          <div>
+            <AuthField
+              id="confirm-password"
+              label="Confirmar nova senha"
+              type="password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder="Repita a nova senha"
+              autoComplete="new-password"
+              required
+            />
+            {confirmPassword && newPassword !== confirmPassword && (
+              <p className="text-xs mt-1.5" style={{ color: "#B91C1C" }}>As senhas não coincidem</p>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+          <AuthButton
+            type="submit"
+            variant="primary"
+            loading={resetMutation.isPending}
+            disabled={!!confirmPassword && newPassword !== confirmPassword}
+          >
+            {resetMutation.isPending ? "Salvando..." : "Redefinir senha"}
+          </AuthButton>
+        </form>
+      )}
+    </AuthShell>
   );
 }

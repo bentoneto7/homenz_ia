@@ -38,7 +38,19 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Funil público (landing): Clash Display (títulos) + Hanken Grotesk (corpo) -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
+    <!-- Tema do funil antes do primeiro paint: o default do CSS é dark, mas o funil
+         abre claro — sem isto há flash dark->light no carregamento -->
+    <script>
+      try {
+        document.documentElement.setAttribute(
+          "data-fn-theme",
+          localStorage.getItem("fn-theme") === "dark" ? "dark" : "light"
+        );
+      } catch (e) {}
+    </script>
   </head>
 
   <body>

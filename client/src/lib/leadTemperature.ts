@@ -70,6 +70,71 @@ export function getLeadTemperature(lastActivityAt: Date | string): LeadTemperatu
   return "frozen";
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPERATURA POR AÇÃO (decisão do cliente Bento, 17/06)
+// A temperatura de CHEGADA do lead é a PROFUNDIDADE de interação no funil, não o
+// tempo. Só existem 3 níveis (sem "Inativo"):
+//   • QUENTE = agendou a consulta
+//   • MORNO  = passou da etapa de foto (enviou foto / viu o resultado da IA) mas
+//              ainda não agendou
+//   • FRIO   = abandonou antes das fotos (≤ ~metade do formulário)
+// O tempo de inatividade ainda pode ESFRIAR (nunca esquentar) um lead que segue
+// sem atendimento — ver applyInactivityDecay. A duplicata desta régua no backend
+// (server/routers/homenz.ts → sellerDashboard) precisa ser mantida idêntica.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ActionTemperature = "hot" | "warm" | "cold";
+
+// funnel_step que indicam "já agendou" (QUENTE). Cobre TiDB e Supabase.
+const SCHEDULED_STEPS = new Set(["scheduled", "confirmed", "completed"]);
+// funnel_step a partir da etapa de foto/IA (MORNO quando ainda não agendou).
+const PHOTO_OR_DEEPER_STEPS = new Set([
+  "photos_started", "photos_uploaded", "photos_done", "photos_completed",
+  "ai_processing", "ai_ready", "ai_done", "ai_failed",
+  "schedule_started",
+]);
+
+/**
+ * Temperatura por AÇÃO a partir da progressão do lead no funil.
+ * Não depende de tempo — é só a profundidade alcançada.
+ */
+export function getActionTemperature(lead: {
+  funnel_step?: string | null;
+  appointment_at?: string | null;
+  photo_url?: string | null;
+}): ActionTemperature {
+  const step = lead.funnel_step ?? "";
+  // QUENTE: agendou (por step ou por ter agendamento real registrado)
+  if (lead.appointment_at || SCHEDULED_STEPS.has(step)) return "hot";
+  // MORNO: chegou na etapa de foto/IA ou enviou foto, mas não agendou
+  if (PHOTO_OR_DEEPER_STEPS.has(step) || lead.photo_url) return "warm";
+  // FRIO: abandonou antes das fotos (landing, chat_*, form_*, etc.)
+  return "cold";
+}
+
+/**
+ * Esfria (nunca esquenta) um lead por inatividade. Regras:
+ * - QUENTE (agendou) NUNCA esfria por tempo: agendamento é compromisso firme e
+ *   segue como a maior prioridade do vendedor até a consulta acontecer.
+ * - Só esfria enquanto o lead NÃO está em atendimento (open). Lead já trabalhado
+ *   pelo vendedor não é rebaixado por tempo.
+ * - MORNO parado > 24h e sem atendimento cai para FRIO.
+ */
+export function applyInactivityDecay(
+  base: ActionTemperature,
+  opts: { lastActivityAt?: string | null; createdAt?: string | null; attendanceStatus?: string | null },
+): ActionTemperature {
+  // Agendou: prioridade máxima, sem decaimento por tempo.
+  if (base === "hot") return "hot";
+  // Em atendimento ou desfecho: respeita a temperatura por ação, sem decaimento.
+  if (opts.attendanceStatus && opts.attendanceStatus !== "open") return base;
+  const ref = new Date(opts.lastActivityAt ?? opts.createdAt ?? Date.now()).getTime();
+  const hoursAgo = (Date.now() - ref) / (1000 * 60 * 60);
+  // MORNO parado > 24h sem atendimento esfria para FRIO.
+  if (base === "warm" && hoursAgo > 24) return "cold";
+  return base;
+}
+
 export function getMinutesAgo(date: Date | string): number {
   return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60));
 }
@@ -133,6 +198,27 @@ export const FUNNEL_STEP_LABELS: Record<FunnelStep, string> = {
   completed: "Consulta Realizada",
   cancelled: "Cancelado",
 };
+
+// O funil da franquia (Supabase) usa alguns nomes de step diferentes do mapa
+// acima (TiDB). Cobrimos ambos para nunca exibir o valor cru em inglês.
+const FUNNEL_STEP_LABELS_EXTRA: Record<string, string> = {
+  chat_completed: "Chat Concluído",
+  form_completed: "Formulário Concluído",
+  photos_completed: "Fotos Enviadas",
+  ai_failed: "Falha na IA",
+  abandoned: "Abandonado",
+  no_show: "Não Compareceu",
+};
+
+/** Rótulo pt-BR de um estágio do funil, cobrindo TiDB e Supabase. */
+export function funnelStepLabel(step?: string | null): string {
+  if (!step) return "—";
+  return (
+    (FUNNEL_STEP_LABELS as Record<string, string>)[step] ??
+    FUNNEL_STEP_LABELS_EXTRA[step] ??
+    step.replace(/_/g, " ")
+  );
+}
 
 export const FUNNEL_STEP_ORDER: FunnelStep[] = [
   "landing", "form_started", "form_done",

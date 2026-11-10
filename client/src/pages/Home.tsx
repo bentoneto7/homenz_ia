@@ -85,7 +85,7 @@ export default function Home() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => navigate("/c/demo")}
+              onClick={() => navigate("/l/uberaba-demo")}
               className="text-base px-8"
             >
               Ver demo do funil

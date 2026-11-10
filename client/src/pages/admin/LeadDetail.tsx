@@ -3,10 +3,11 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, Mail, TrendingUp, Camera, Brain, Calendar } from "lucide-react";
+import { ArrowLeft, Phone, Mail, TrendingUp, Camera, Brain, Calendar, MessageCircle } from "lucide-react";
+import { buildWhatsappUrl, defaultLeadGreeting } from "@/lib/whatsapp";
 
 const STEP_LABELS: Record<string, string> = {
-  landing: "Landing", chat_started: "Chat iniciado", chat_completed: "Chat completo",
+  landing: "Chegou na Landing", chat_started: "Chat iniciado", chat_completed: "Chat completo",
   photos_started: "Fotos iniciadas", photos_done: "Fotos enviadas",
   ai_processing: "IA processando", ai_done: "IA concluída",
   scheduled: "Agendado", confirmed: "Confirmado", completed: "Concluído", abandoned: "Abandonado",
@@ -82,6 +83,16 @@ export default function AdminLeadDetail() {
               <Phone className="w-4 h-4 text-muted-foreground" />
               <a href={`tel:${lead.phone}`} className="hover:text-primary">{lead.phone}</a>
             </div>
+            {lead.phone && (
+              <a
+                href={buildWhatsappUrl(lead.phone, defaultLeadGreeting(lead.name))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 w-fit px-3 py-2 rounded-lg bg-[#25D366] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              >
+                <MessageCircle className="w-4 h-4" /> Falar no WhatsApp
+              </a>
+            )}
             {lead.email && (
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-muted-foreground" />
@@ -157,7 +168,7 @@ export default function AdminLeadDetail() {
                 aiResult.processingStatus === "processing" ? "bg-amber-500/20 text-amber-600" :
                 "bg-red-500/20 text-red-600"
               }`}>
-                {aiResult.processingStatus}
+                {aiResult.processingStatus === "done" ? "Concluída" : aiResult.processingStatus === "processing" ? "Processando" : "Erro"}
               </span>
             </div>
 

@@ -6,10 +6,10 @@ import { useLocation, Link } from "wouter";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Search, ChevronRight, ArrowLeft, TrendingUp, Phone } from "lucide-react";
+import { Users, Search, ChevronRight, ArrowLeft, TrendingUp, Phone, Megaphone } from "lucide-react";
 
 const STEP_LABELS: Record<string, string> = {
-  landing: "Landing",
+  landing: "Chegou na Landing",
   chat_started: "Chat iniciado",
   chat_completed: "Chat completo",
   photos_started: "Fotos iniciadas",
@@ -50,8 +50,8 @@ export default function AdminLeads() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Button className="gradient-gold text-white border-0" onClick={() => window.location.href = '/login-clinica'}>Entrar</Button>
+      <div className="min-h-[100dvh] flex items-center justify-center">
+        <Button onClick={() => window.location.href = '/login-clinica'}>Entrar</Button>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function AdminLeads() {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-[100dvh] bg-background text-foreground">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
@@ -120,8 +120,7 @@ export default function AdminLeads() {
         ) : (
           <div className="space-y-2">
             {filtered.map((lead) => (
-              <Link key={lead.id} href={`/painel/leads/${lead.id}`}>
-                <a className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-all group">
+              <Link key={lead.id} href={`/painel/leads/${lead.id}`} className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-all group">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-bold text-primary">
                       {lead.name.charAt(0).toUpperCase()}
@@ -140,7 +139,10 @@ export default function AdminLeads() {
                         {lead.phone}
                       </span>
                       {lead.utmSource && (
-                        <span className="text-primary">📊 {lead.utmSource}</span>
+                        <span className="flex items-center gap-1 text-primary">
+                          <Megaphone className="w-3 h-3" />
+                          {lead.utmSource}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -158,7 +160,6 @@ export default function AdminLeads() {
                     </p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-                </a>
               </Link>
             ))}
           </div>

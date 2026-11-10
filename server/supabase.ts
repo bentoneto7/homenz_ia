@@ -1,16 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
+import { createDbClient } from "./dbClient";
 
-const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 
 // Cliente com service role (backend — acesso total)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+export const supabaseAdmin = createDbClient(supabaseServiceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
 // Cliente com anon key (frontend — acesso restrito)
-export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);
+export const supabasePublic = createDbClient(supabaseAnonKey);
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -65,12 +64,21 @@ export interface Lead {
   temperature: "hot" | "warm" | "cold";
   funnel_step: string;
   chat_answers?: Record<string, unknown>;
+  photo_url?: string;
+  attendance_status?: "open" | "resolved" | "closed_sale" | "closed_no_sale" | "contact_later";
+  closing_notes?: string;
+  closed_at?: string;
+  closed_by?: string;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;
   last_activity_at: string;
   created_at: string;
   updated_at: string;
+  // Data do agendamento real do lead (tabela `appointments`, scheduled_at do 1º
+  // agendamento não-cancelado). Opcional/retrocompatível: só é preenchido por
+  // getLeadsByFranchise; ausência (undefined/null) = lead sem agendamento.
+  appointment_at?: string | null;
 }
 
 export interface SellerMetrics {
@@ -210,17 +218,71 @@ export async function getLeadsByFranchise(franchiseId: string): Promise<Lead[]> 
     .eq("franchise_id", franchiseId)
     .order("created_at", { ascending: false });
   if (error) return [];
-  return data as Lead[];
+  const leads = (data as Lead[]) ?? [];
+
+  // Enriquecer cada lead com a data do agendamento real (tabela `appointments`).
+  // Pegamos o 1º agendamento não-cancelado por lead (ordenado por scheduled_at).
+  const { data: appts } = await supabaseAdmin
+    .from("appointments")
+    .select("lead_id, scheduled_at, status")
+    .eq("franchise_id", franchiseId)
+    .neq("status", "cancelled")
+    .order("scheduled_at", { ascending: true });
+
+  if (appts && appts.length > 0) {
+    const apptByLead = new Map<string, string>();
+    for (const a of appts as { lead_id: string; scheduled_at: string }[]) {
+      if (a.lead_id && !apptByLead.has(a.lead_id)) {
+        apptByLead.set(a.lead_id, a.scheduled_at);
+      }
+    }
+    for (const lead of leads) {
+      lead.appointment_at = apptByLead.get(lead.id) ?? null;
+    }
+  }
+
+  return leads;
 }
 
-export async function getLeadsBySeller(sellerId: string): Promise<Lead[]> {
-  const { data, error } = await supabaseAdmin
-    .from("leads")
-    .select("*")
-    .eq("assigned_to", sellerId)
-    .order("lead_score", { ascending: false });
+export async function getLeadsBySeller(sellerId: string, franchiseId?: string): Promise<Lead[]> {
+  // O vendedor vê os leads atribuídos a ele E os leads SEM dono (assigned_to null)
+  // da própria franquia. Rede de segurança: se a distribuição não conseguiu atribuir
+  // um lead (ex.: entrou antes de existir vendedor na unidade), ele NÃO some — o
+  // franqueado já via esses leads (por franchise_id); agora o vendedor da unidade
+  // também vê, em vez de ficar "desligado" de um lead que a clínica enxerga.
+  let q = supabaseAdmin.from("leads").select("*");
+  q = franchiseId
+    ? q.or(`assigned_to.eq.${sellerId},and(assigned_to.is.null,franchise_id.eq.${franchiseId})`)
+    : q.eq("assigned_to", sellerId);
+  // Ordem de CHEGADA (created_at desc), igual ao painel da franquia (getLeadsByFranchise) —
+  // não por score. (pedido do Bento 18/06: "exibir os leads igual no painel da franquia")
+  const { data, error } = await q.order("created_at", { ascending: false });
   if (error) return [];
-  return data as Lead[];
+  const leads = (data as Lead[]) ?? [];
+
+  // Mesmo enriquecimento da visão do franqueado: data real do agendamento
+  // (1º appointment não-cancelado por lead). O vendedor precisa ver a agenda.
+  if (leads.length > 0) {
+    const { data: appts } = await supabaseAdmin
+      .from("appointments")
+      .select("lead_id, scheduled_at, status")
+      .in("lead_id", leads.map((l) => l.id))
+      .neq("status", "cancelled")
+      .order("scheduled_at", { ascending: true });
+
+    if (appts && appts.length > 0) {
+      const apptByLead = new Map<string, string>();
+      for (const a of appts as { lead_id: string; scheduled_at: string }[]) {
+        if (a.lead_id && !apptByLead.has(a.lead_id)) {
+          apptByLead.set(a.lead_id, a.scheduled_at);
+        }
+      }
+      for (const lead of leads) {
+        lead.appointment_at = apptByLead.get(lead.id) ?? null;
+      }
+    }
+  }
+  return leads;
 }
 
 export async function getSellerMetrics(sellerId: string, franchiseId: string): Promise<SellerMetrics | null> {
@@ -314,9 +376,25 @@ export async function getNetworkStats() {
     .from("franchises")
     .select("*");
 
+  // Campos extras (appointment_at via appointments abaixo, photo_url, status, atividade)
+  // necessários para recalcular a temperatura por AÇÃO no router (mesma régua do vendedor).
   const { data: leads } = await supabaseAdmin
     .from("leads")
-    .select("id, temperature, lead_score, funnel_step, franchise_id");
+    .select("id, temperature, lead_score, funnel_step, franchise_id, photo_url, attendance_status, last_activity_at, created_at");
+
+  // Agendamentos reais (1º não-cancelado por lead) p/ marcar QUENTE corretamente.
+  const { data: appts } = await supabaseAdmin
+    .from("appointments")
+    .select("lead_id, scheduled_at, status")
+    .neq("status", "cancelled")
+    .order("scheduled_at", { ascending: true });
+  const apptByLead = new Map<string, string>();
+  for (const a of (appts ?? []) as { lead_id: string; scheduled_at: string }[]) {
+    if (a.lead_id && !apptByLead.has(a.lead_id)) apptByLead.set(a.lead_id, a.scheduled_at);
+  }
+  for (const l of (leads ?? []) as Lead[]) {
+    l.appointment_at = apptByLead.get(l.id) ?? null;
+  }
 
   const { data: sellers } = await supabaseAdmin
     .from("profiles")

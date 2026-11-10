@@ -12,13 +12,10 @@
  * 8. Atualiza o índice no round-robin
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createDbClient } from './dbClient';
 import { notifyOwner } from './_core/notification';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createDbClient(process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export interface DistributeLeadInput {
   leadId: string;
@@ -30,6 +27,8 @@ export interface DistributeLeadResult {
   success: boolean;
   sellerId?: string;
   sellerName?: string;
+  /** WhatsApp/telefone do vendedor — exibido ao lead na tela de sucesso do funil */
+  sellerPhone?: string;
   sellerPosition?: number;
   totalSellers?: number;
   error?: string;
@@ -71,7 +70,7 @@ export async function distributeLeadRoundRobin(
   const { leadId, franchiseId, landingPageId } = input;
 
   try {
-    let sellers: { id: string; name: string; email?: string }[] = [];
+    let sellers: { id: string; name: string; email?: string; phone?: string }[] = [];
     let distributionScope = 'franchise'; // para o log
 
     // 1. Se houver landingPageId, tentar buscar vendedores vinculados à LP
@@ -81,7 +80,7 @@ export async function distributeLeadRoundRobin(
         // Verificar que os vendedores ainda estão ativos no Supabase
         const { data: activeSellers } = await supabase
           .from('profiles')
-          .select('id, name, email')
+          .select('id, name, email, phone')
           .eq('franchise_id', franchiseId)
           .eq('role', 'seller')
           .eq('active', true)
@@ -93,7 +92,7 @@ export async function distributeLeadRoundRobin(
             .filter((lps) => activeSellers.some((as) => as.id === lps.id))
             .map((lps) => {
               const active = activeSellers.find((as) => as.id === lps.id)!;
-              return { id: active.id, name: active.name, email: active.email };
+              return { id: active.id, name: active.name, email: active.email, phone: active.phone };
             });
           distributionScope = `lp:${landingPageId}`;
         }
@@ -104,7 +103,7 @@ export async function distributeLeadRoundRobin(
     if (sellers.length === 0) {
       const { data: allSellers, error: sellersError } = await supabase
         .from('profiles')
-        .select('id, name, email')
+        .select('id, name, email, phone')
         .eq('franchise_id', franchiseId)
         .eq('role', 'seller')
         .eq('active', true)
@@ -118,24 +117,41 @@ export async function distributeLeadRoundRobin(
       distributionScope = 'franchise';
     }
 
-    // 3. Buscar estado atual do round-robin da franquia
-    // Usamos uma chave composta: franchise_id + scope para separar RR por LP
-    const rrKey = distributionScope === 'franchise' ? franchiseId : `${franchiseId}__${landingPageId}`;
-    
-    const { data: rrData, error: rrError } = await supabase
-      .from('franchise_round_robin')
-      .select('id, last_seller_index, total_distributed')
-      .eq('franchise_id', rrKey)
-      .single();
+    // 3. Buscar estado atual do round-robin
+    // ⚠️ franchise_round_robin.franchise_id é uuid — NÃO aceita chave composta
+    // "franchiseId__landingPageId" (era o bug "invalid input syntax for type uuid",
+    // que abortava a distribuição de toda LP com vendedores próprios).
+    // Para escopo por LP, derivamos o índice do lead_distribution_log (sem DDL):
+    // o nº de distribuições já feitas nesse escopo dá a próxima posição da fila.
+    let rrData: { id: string; last_seller_index: number; total_distributed: number } | null = null;
+    let nextIndex: number;
 
-    if (rrError && rrError.code !== 'PGRST116') {
-      // PGRST116 = not found (primeira vez) — não é erro
-      throw new Error('Erro ao buscar round-robin: ' + rrError.message);
+    if (distributionScope === 'franchise') {
+      const { data, error: rrError } = await supabase
+        .from('franchise_round_robin')
+        .select('id, last_seller_index, total_distributed')
+        .eq('franchise_id', franchiseId)
+        .single();
+
+      if (rrError && rrError.code !== 'PGRST116') {
+        // PGRST116 = not found (primeira vez) — não é erro
+        throw new Error('Erro ao buscar round-robin: ' + rrError.message);
+      }
+      rrData = data;
+      nextIndex = ((rrData?.last_seller_index ?? -1) + 1) % sellers.length;
+    } else {
+      const { count, error: logError } = await supabase
+        .from('lead_distribution_log')
+        .select('id', { count: 'exact', head: true })
+        .eq('franchise_id', franchiseId)
+        .like('notes', `%[escopo: ${distributionScope}]%`);
+
+      if (logError) {
+        throw new Error('Erro ao buscar histórico de distribuição da LP: ' + logError.message);
+      }
+      nextIndex = (count ?? 0) % sellers.length;
     }
 
-    // 4. Calcular próximo índice (circular)
-    const currentIndex = rrData?.last_seller_index ?? -1;
-    const nextIndex = (currentIndex + 1) % sellers.length;
     const selectedSeller = sellers[nextIndex];
 
     // 5. Atualizar o lead com o vendedor atribuído
@@ -150,26 +166,29 @@ export async function distributeLeadRoundRobin(
 
     if (leadUpdateError) throw new Error('Erro ao atualizar lead: ' + leadUpdateError.message);
 
-    // 6. Atualizar ou inserir o estado do round-robin
-    const totalDistributed = (rrData?.total_distributed ?? 0) + 1;
-    
-    if (rrData) {
-      await supabase
-        .from('franchise_round_robin')
-        .update({
-          last_seller_index: nextIndex,
-          total_distributed: totalDistributed,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('franchise_id', rrKey);
-    } else {
-      await supabase
-        .from('franchise_round_robin')
-        .insert({
-          franchise_id: rrKey,
-          last_seller_index: nextIndex,
-          total_distributed: totalDistributed,
-        });
+    // 6. Atualizar ou inserir o estado do round-robin (só no escopo da franquia —
+    // o escopo por LP é derivado do log e não persiste nesta tabela, ver passo 3)
+    if (distributionScope === 'franchise') {
+      const totalDistributed = (rrData?.total_distributed ?? 0) + 1;
+
+      if (rrData) {
+        await supabase
+          .from('franchise_round_robin')
+          .update({
+            last_seller_index: nextIndex,
+            total_distributed: totalDistributed,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('franchise_id', franchiseId);
+      } else {
+        await supabase
+          .from('franchise_round_robin')
+          .insert({
+            franchise_id: franchiseId,
+            last_seller_index: nextIndex,
+            total_distributed: totalDistributed,
+          });
+      }
     }
 
     // 7. Registrar no log de distribuição
@@ -232,6 +251,7 @@ export async function distributeLeadRoundRobin(
       success: true,
       sellerId: selectedSeller.id,
       sellerName: selectedSeller.name,
+      sellerPhone: selectedSeller.phone,
       sellerPosition: nextIndex + 1,
       totalSellers: sellers.length,
     };
@@ -357,6 +377,17 @@ function calculateInitialScore(data: {
 
   // Problema específico mencionado (+5)
   if (data.hairProblem && data.hairProblem.length > 10) score += 5;
+
+  // Sinais de urgência/intenção extraídos das respostas do quiz
+  const summary = (data.chatSummary || '').toLowerCase();
+  // Quadro mais avançado = maior necessidade (+5)
+  if (/calvície|avançad|área toda|espalhado/.test(summary)) score += 5;
+  // Problema antigo (3+ anos) = já buscou solução, mais maduro pra decisão (+5)
+  if (/3 a 5 anos|mais de 5 anos/.test(summary)) score += 5;
+  // Já tentou tratamento antes = ciente e disposto a investir (+5)
+  if (/minoxidil|remédios|finasterida|transplante|micropigment|outros tratamentos/.test(summary)) score += 5;
+  // Expectativa de solução definitiva = pronto pra procedimento (+5)
+  if (/natural e duradouro|sem cirurgia|autoestima/.test(summary)) score += 5;
 
   return Math.min(score, 100);
 }

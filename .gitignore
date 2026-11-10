@@ -108,3 +108,12 @@ temp/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
+.screenshots/
+
+# Tooling local de agente (skills, plans, settings) — não versionar no produto
+.claude/
+PROGRESS.md
+
+# Railway deploy secrets
+.env.railway.local
+.homenz-assets/

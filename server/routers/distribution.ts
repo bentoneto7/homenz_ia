@@ -5,7 +5,7 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../_core/trpc';
 import { TRPCError } from '@trpc/server';
-import { createClient } from '@supabase/supabase-js';
+import { createDbClient } from '../dbClient';
 import {
   createAndDistributeLead,
   distributeLeadRoundRobin,
@@ -13,6 +13,7 @@ import {
 } from '../leadDistribution';
 import { trackPixelEvent, getPixelEventStats } from '../pixelEvents';
 import { verifyToken } from '../supabase';
+import { generateFranchiseAiResult } from '../franchiseAiResult';
 
 // Middleware que aceita JWT do sistema Homenz (Bearer token)
 const homenzProcedure = publicProcedure.use(async ({ ctx, next }) => {
@@ -32,10 +33,7 @@ const homenzProcedure = publicProcedure.use(async ({ ctx, next }) => {
   return next({ ctx: { ...ctx, homenzUser: user } });
 });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createDbClient(process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export const distributionRouter = router({
   /**
@@ -47,9 +45,7 @@ export const distributionRouter = router({
       const { data, error } = await supabase
         .from('franchise_landing_pages')
         .select(`
-          id, slug, title, procedure, city, state, active,
-          total_views, total_leads, utm_source, utm_medium, utm_campaign,
-          franchise_id,
+          *,
           franchises!inner(id, name, slug, city, state, phone, address, logo_url)
         `)
         .eq('slug', input.slug)
@@ -66,6 +62,24 @@ export const distributionRouter = router({
         .update({ total_views: (data.total_views || 0) + 1 })
         .eq('id', data.id);
 
+      return data;
+    }),
+
+  // Gera (ou retorna) a análise + antes/depois por IA de um lead do funil da franquia
+  generateAiResult: publicProcedure
+    .input(z.object({ leadId: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      return generateFranchiseAiResult(input.leadId);
+    }),
+
+  getAiResult: publicProcedure
+    .input(z.object({ leadId: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const { data } = await supabase
+        .from('franchise_ai_results')
+        .select('*')
+        .eq('lead_id', input.leadId)
+        .maybeSingle();
       return data;
     }),
 
@@ -113,8 +127,12 @@ export const distributionRouter = router({
         chatSummary: input.chatSummary,
         city: lp.city,
         state: lp.state,
-        utmSource: input.utmSource || lp.utm_source || 'direct',
-        utmMedium: input.utmMedium || lp.utm_medium || 'organic',
+        // UTM reflete a ORIGEM REAL do tráfego (parâmetros da URL). Sem utm_source na URL
+        // = acesso direto → 'direct'/'none'; NÃO herda o utm_source/medium fixo da LP —
+        // senão todo acesso direto/teste virava a fonte configurada na LP (a demo marcava
+        // TODOS os leads como 'instagram'). O utm_campaign segue identificando a LP.
+        utmSource: input.utmSource || 'direct',
+        utmMedium: input.utmMedium || 'none',
         utmCampaign: input.utmCampaign || lp.utm_campaign || input.landingPageSlug,
       });
 
@@ -172,8 +190,121 @@ export const distributionRouter = router({
         success: true,
         leadId: result.leadId,
         assignedTo: result.distribution.sellerName,
+        // Vendedor atribuído na hora — o funil mostra o WhatsApp dele ao lead
+        assignedSellerName: result.distribution.sellerName,
+        assignedSellerPhone: result.distribution.sellerPhone,
         message: 'Seu contato foi registrado! Em breve nossa equipe entrará em contato.',
       };
+    }),
+
+  /**
+   * Horários disponíveis da franquia para o lead agendar direto no funil (público).
+   * Mesma régua de horário padrão do funil da clínica: Seg-Sex 08-18, Sáb 08-13.
+   */
+  getFranchiseSlots: publicProcedure
+    .input(z.object({
+      landingPageSlug: z.string(),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      /** Offset do fuso do visitante em minutos (ex.: BRT = -180). Slots e
+       *  ocupação são calculados no fuso DELE; o server pode estar em UTC. */
+      tzOffsetMinutes: z.number().int().min(-720).max(840).default(-180),
+    }))
+    .query(async ({ input }) => {
+      const { data: lp } = await supabase
+        .from('franchise_landing_pages')
+        .select('franchise_id')
+        .eq('slug', input.landingPageSlug)
+        .single();
+      if (!lp) throw new Error('Landing page não encontrada');
+
+      const weekday = new Date(`${input.date}T12:00:00`).getDay();
+      let hours: number[] = [];
+      if (weekday >= 1 && weekday <= 5) hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+      else if (weekday === 6) hours = [8, 9, 10, 11, 12];
+
+      // Janela do dia LOCAL convertida pra UTC (date é o dia no fuso do visitante)
+      const dayStartUtc = new Date(new Date(`${input.date}T00:00:00Z`).getTime() - input.tzOffsetMinutes * 60_000);
+      const dayEndUtc = new Date(dayStartUtc.getTime() + 24 * 60 * 60_000);
+
+      const { data: taken } = await supabase
+        .from('appointments')
+        .select('scheduled_at, status')
+        .eq('franchise_id', (lp as { franchise_id: string }).franchise_id)
+        .gte('scheduled_at', dayStartUtc.toISOString())
+        .lt('scheduled_at', dayEndUtc.toISOString());
+
+      // Hora ocupada no fuso do visitante
+      const busy = new Set(
+        (taken ?? [])
+          .filter((a) => !['cancelled', 'no_show'].includes(a.status as string))
+          .map((a) => {
+            const utc = new Date(a.scheduled_at as string);
+            return (utc.getUTCHours() + Math.floor(input.tzOffsetMinutes / 60) + 24) % 24;
+          })
+      );
+
+      return {
+        slots: hours.map((h) => {
+          const time = `${String(h).padStart(2, '0')}:00`;
+          return { time, available: !busy.has(h), datetime: `${input.date}T${time}:00` };
+        }),
+      };
+    }),
+
+  /**
+   * Lead agenda a própria avaliação no funil (público).
+   * Cria o appointment no Supabase (cai no calendário do franqueado) já
+   * vinculado ao vendedor que recebeu o lead no round-robin.
+   */
+  scheduleFranchiseAppointment: publicProcedure
+    .input(z.object({
+      leadId: z.string().uuid(),
+      datetime: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const { data: lead } = await supabase
+        .from('leads')
+        .select('id, franchise_id, assigned_to')
+        .eq('id', input.leadId)
+        .single();
+      if (!lead) throw new Error('Lead não encontrado');
+
+      // Vendedor do appointment: o atribuído ao lead; sem distribuição, o 1º ativo da franquia
+      let sellerId = (lead as { assigned_to: string | null }).assigned_to;
+      if (!sellerId) {
+        const { data: fallback } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('franchise_id', (lead as { franchise_id: string }).franchise_id)
+          .eq('role', 'seller')
+          .eq('active', true)
+          .order('created_at', { ascending: true })
+          .limit(1);
+        sellerId = fallback?.[0]?.id ?? null;
+      }
+      if (!sellerId) throw new Error('Nenhum vendedor disponível para o agendamento');
+
+      const { data: appt, error } = await supabase
+        .from('appointments')
+        .insert({
+          lead_id: lead.id,
+          franchise_id: (lead as { franchise_id: string }).franchise_id,
+          seller_id: sellerId,
+          scheduled_at: input.datetime,
+          duration_minutes: 60,
+          notes: 'Agendado pelo próprio lead no funil',
+          status: 'pending',
+        })
+        .select('id, scheduled_at')
+        .single();
+      if (error) throw new Error('Não foi possível agendar: ' + error.message);
+
+      await supabase
+        .from('leads')
+        .update({ funnel_step: 'scheduled', updated_at: new Date().toISOString() })
+        .eq('id', lead.id);
+
+      return { success: true, appointmentId: appt.id, scheduledAt: appt.scheduled_at as string };
     }),
 
   /**
@@ -487,6 +618,49 @@ export const distributionRouter = router({
         .eq('id', input.landingPageId);
       if (fallbackErr) throw new Error(fallbackErr.message);
       return { success: true, method: 'utm_campaign' };
+    }),
+
+  // White-label: textos, fotos e endereço customizados da landing por franquia
+  updateLandingPageBranding: homenzProcedure
+    .input(z.object({
+      landingPageId: z.string().uuid(),
+      heroTitle: z.string().max(200).nullable().optional(),
+      heroSubtitle: z.string().max(500).nullable().optional(),
+      heroImageUrl: z.string().url().nullable().optional(),
+      ctaText: z.string().max(60).nullable().optional(),
+      customAddress: z.string().max(300).nullable().optional(),
+      customPhone: z.string().max(40).nullable().optional(),
+      customLogoUrl: z.string().url().nullable().optional(),
+      galleryPhotos: z.array(z.object({ url: z.string().url(), caption: z.string().optional() })).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // Verificar ownership da landing page
+      const { data: lp } = await supabase
+        .from('franchise_landing_pages')
+        .select('franchise_id')
+        .eq('id', input.landingPageId)
+        .single();
+      if (!lp) throw new Error('Landing page não encontrada');
+      if (ctx.homenzUser.role !== 'owner' && ctx.homenzUser.franchise_id !== (lp as { franchise_id: string }).franchise_id) {
+        throw new Error('Acesso negado');
+      }
+      // Monta o patch só com os campos enviados (undefined = não altera)
+      const patch: Record<string, unknown> = {};
+      if (input.heroTitle !== undefined) patch.hero_title = input.heroTitle;
+      if (input.heroSubtitle !== undefined) patch.hero_subtitle = input.heroSubtitle;
+      if (input.heroImageUrl !== undefined) patch.hero_image_url = input.heroImageUrl;
+      if (input.ctaText !== undefined) patch.cta_text = input.ctaText;
+      if (input.customAddress !== undefined) patch.custom_address = input.customAddress;
+      if (input.customPhone !== undefined) patch.custom_phone = input.customPhone;
+      if (input.customLogoUrl !== undefined) patch.custom_logo_url = input.customLogoUrl;
+      if (input.galleryPhotos !== undefined) patch.gallery_photos = input.galleryPhotos;
+      if (Object.keys(patch).length === 0) return { success: true };
+      const { error } = await supabase
+        .from('franchise_landing_pages')
+        .update(patch)
+        .eq('id', input.landingPageId);
+      if (error) throw new Error(error.message);
+      return { success: true };
     }),
 
   /**

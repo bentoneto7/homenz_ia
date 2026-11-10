@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleStripeWebhook } from "../stripeWebhook";
 import { uploadRouter } from "../uploadRoutes";
+import { filesRouter } from "../filesRoutes";
 import { startTrialExpirationCron } from "../trialCron";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -45,6 +46,9 @@ async function startServer() {
 
   // Upload de fotos de leads (multipart/form-data)
   app.use(uploadRouter);
+
+  // Endereço estável dos arquivos do bucket (redireciona para link assinado)
+  app.use(filesRouter);
 
   // tRPC API
   app.use(

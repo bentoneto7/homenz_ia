@@ -26,6 +26,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
   franchisee: [
     { label: "Dashboard", href: "/franqueado", icon: <LayoutDashboard className="w-4 h-4" /> },
     { label: "Leads", href: "/franqueado/leads", icon: <Target className="w-4 h-4" /> },
+    { label: "Desempenho", href: "/franqueado/desempenho", icon: <BarChart3 className="w-4 h-4" /> },
     { label: "Vendedores", href: "/franqueado/vendedores", icon: <Users className="w-4 h-4" /> },
     { label: "Agendamentos", href: "/franqueado/agendamentos", icon: <Calendar className="w-4 h-4" /> },
     { label: "Analytics", href: "/franqueado/analytics", icon: <TrendingUp className="w-4 h-4" /> },

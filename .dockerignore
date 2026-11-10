@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+.git
+.manus
+*.log
+npm-debug.log*
+.DS_Store
+scripts/legacy

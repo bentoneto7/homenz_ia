@@ -32,6 +32,13 @@ export default function NetworkDashboardSupabase() {
   const { user, isOwner, loading: authLoading } = useHomenzAuth();
   const [selectedFranchise, setSelectedFranchise] = useState<string | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  // Criação manual de clínica (venda 1:1) — form interno, fora da landing
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    franchiseName: "", city: "", state: "", plan: "pro" as "free" | "starter" | "pro" | "network",
+    ownerName: "", ownerEmail: "", ownerWhatsapp: "", servicePhone: "",
+  });
+  const [createdAccess, setCreatedAccess] = useState<{ email: string; tempPassword: string; landingUrl: string | null } | null>(null);
 
   const statsQuery = trpc.homenz.networkStats.useQuery(undefined, {
     enabled: isOwner,
@@ -43,6 +50,15 @@ export default function NetworkDashboardSupabase() {
       navigator.clipboard.writeText(data.inviteUrl).catch(() => {});
       toast.success("Link copiado: " + data.inviteUrl);
       setShowInviteModal(false);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const createClinicMutation = trpc.homenz.createClinicManual.useMutation({
+    onSuccess: (data) => {
+      setCreatedAccess({ email: data.ownerEmail, tempPassword: data.tempPassword, landingUrl: data.landingPageSlug ? `/l/${data.landingPageSlug}` : null });
+      statsQuery.refetch();
+      toast.success("Clínica criada e ativa");
     },
     onError: (err) => toast.error(err.message),
   });
@@ -105,13 +121,22 @@ export default function NetworkDashboardSupabase() {
         <div>
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <h3 className="text-lg font-bold text-[#0A2540]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Ranking de Franquias</h3>
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-2 bg-[#00C1B8] text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-[#009E96] transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Convidar Franqueado
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => { setCreatedAccess(null); setShowCreateModal(true); }}
+                className="flex items-center gap-2 bg-[#004A9D] text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-[#003580] transition-colors"
+              >
+                <Building2 className="w-4 h-4" />
+                Criar clínica
+              </button>
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center gap-2 bg-[#00C1B8] text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-[#009E96] transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Convidar Franqueado
+              </button>
+            </div>
           </div>
 
           {franchises.length === 0 ? (
@@ -258,6 +283,94 @@ export default function NetworkDashboardSupabase() {
             </table>
           </div>
         </div>
+
+        {/* Modal de criação manual de clínica (venda 1:1) */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+              {createdAccess ? (
+                <>
+                  <h3 className="text-xl font-bold text-[#0A2540] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>Clínica criada</h3>
+                  <p className="text-[#5A667A] text-sm mb-5">
+                    Conta ativa, sem trial. Envie o acesso abaixo ao responsável (a senha é temporária; oriente a troca no primeiro login).
+                  </p>
+                  <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 mb-5 space-y-1 text-sm">
+                    <p><span className="text-[#5A667A]">Login:</span> <strong className="text-[#0A2540]">{createdAccess.email}</strong></p>
+                    <p><span className="text-[#5A667A]">Senha temporária:</span> <strong className="text-[#0A2540]">{createdAccess.tempPassword}</strong></p>
+                    {createdAccess.landingUrl && (
+                      <p className="pt-1.5 border-t border-[#E2E8F0] mt-1.5"><span className="text-[#5A667A]">Link de captação:</span> <a href={createdAccess.landingUrl} target="_blank" rel="noopener noreferrer" className="text-[#004A9D] font-semibold underline break-all">{window.location.origin}{createdAccess.landingUrl}</a></p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`Acesso Homenz IA\nLogin: ${createdAccess.email}\nSenha temporária: ${createdAccess.tempPassword}\nEntrar: ${window.location.origin}/login` + (createdAccess.landingUrl ? `\n\nLink de captação: ${window.location.origin}${createdAccess.landingUrl}` : "")).catch(() => {});
+                        toast.success("Acesso copiado");
+                      }}
+                      className="flex-1 py-3 rounded-full bg-[#004A9D] text-white font-bold text-sm hover:bg-[#003580] transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Copy className="w-4 h-4" /> Copiar acesso
+                    </button>
+                    <button
+                      onClick={() => { setShowCreateModal(false); setCreatedAccess(null); setCreateForm({ franchiseName: "", city: "", state: "", plan: "pro", ownerName: "", ownerEmail: "", ownerWhatsapp: "", servicePhone: "" }); }}
+                      className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-bold text-[#0A2540] mb-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>Criar clínica manualmente</h3>
+                  <p className="text-[#5A667A] text-sm mb-5">
+                    Venda 1:1: a conta entra ativa no plano escolhido, sem trial e sem cobrança automática (faturamento enviado por você).
+                  </p>
+                  <div className="space-y-3 mb-5">
+                    <input value={createForm.franchiseName} onChange={(e) => setCreateForm(f => ({ ...f, franchiseName: e.target.value }))} placeholder="Nome da clínica" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                    <div className="grid grid-cols-[1fr_90px] gap-3">
+                      <input value={createForm.city} onChange={(e) => setCreateForm(f => ({ ...f, city: e.target.value }))} placeholder="Cidade" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                      <input value={createForm.state} onChange={(e) => setCreateForm(f => ({ ...f, state: e.target.value.toUpperCase().slice(0, 2) }))} placeholder="UF" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                    </div>
+                    <select value={createForm.plan} onChange={(e) => setCreateForm(f => ({ ...f, plan: e.target.value as typeof f.plan }))} className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] bg-white focus:outline-none focus:border-[#004A9D]">
+                      <option value="free">Plano: Grátis</option>
+                      <option value="starter">Plano: Unidade</option>
+                      <option value="pro">Plano: Unidade Pro</option>
+                      <option value="network">Plano: Rede</option>
+                    </select>
+                    <div className="border-t border-[#E2E8F0] pt-3 space-y-3">
+                      <input value={createForm.ownerName} onChange={(e) => setCreateForm(f => ({ ...f, ownerName: e.target.value }))} placeholder="Nome do responsável" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                      <input type="email" value={createForm.ownerEmail} onChange={(e) => setCreateForm(f => ({ ...f, ownerEmail: e.target.value }))} placeholder="Email do responsável (vira o login)" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                      <input value={createForm.ownerWhatsapp} onChange={(e) => setCreateForm(f => ({ ...f, ownerWhatsapp: e.target.value }))} placeholder="WhatsApp do responsável" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                      <input value={createForm.servicePhone} onChange={(e) => setCreateForm(f => ({ ...f, servicePhone: e.target.value }))} placeholder="WhatsApp de atendimento da unidade (opcional)" className="w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0A2540] focus:outline-none focus:border-[#004A9D]" />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowCreateModal(false)} className="flex-1 py-3 rounded-xl border border-[#E2E8F0] text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8] transition-all text-sm font-medium">
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={() => createClinicMutation.mutate({
+                        franchiseName: createForm.franchiseName,
+                        city: createForm.city,
+                        state: createForm.state,
+                        plan: createForm.plan,
+                        ownerName: createForm.ownerName,
+                        ownerEmail: createForm.ownerEmail,
+                        ownerWhatsapp: createForm.ownerWhatsapp,
+                        servicePhone: createForm.servicePhone || undefined,
+                      })}
+                      disabled={createClinicMutation.isPending || !createForm.franchiseName || !createForm.city || createForm.state.length !== 2 || !createForm.ownerName || !createForm.ownerEmail || !createForm.ownerWhatsapp}
+                      className="flex-1 py-3 rounded-full bg-[#004A9D] text-white font-bold text-sm hover:bg-[#003580] transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                    >
+                      {createClinicMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
+                      Criar clínica
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Modal de convite */}
         {showInviteModal && (

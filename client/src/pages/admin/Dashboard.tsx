@@ -2,8 +2,10 @@ import { useClinicAuth } from "@/hooks/useClinicAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { useLocation, Link } from "wouter";
-import { Users, Calendar, Bell, TrendingUp, ChevronRight, Copy, ExternalLink, Scissors, Settings, LogOut } from "lucide-react";
+import { Users, Calendar, Bell, TrendingUp, ChevronRight, Copy, ExternalLink, Scissors, Settings, LogOut, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { buildWhatsappUrl, defaultLeadGreeting } from "@/lib/whatsapp";
+import { funnelStepLabel } from "@/lib/leadTemperature";
 
 function StatCard({ title, value, sub, icon, color }: {
   title: string; value: string | number; sub?: string; icon: React.ReactNode; color: string;
@@ -98,11 +100,9 @@ export default function AdminDashboard() {
             { href: "/painel/notificacoes", icon: <Bell className="w-4 h-4" />, label: `Notificações${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
             { href: "/painel/configuracoes", icon: <Settings className="w-4 h-4" />, label: "Configurações" },
           ].map((item) => (
-            <Link key={item.href} href={item.href}>
-              <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors text-sm">
-                {item.icon}
-                {item.label}
-              </a>
+            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors text-sm">
+              {item.icon}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -189,10 +189,8 @@ export default function AdminDashboard() {
             <div className="bg-card border border-border rounded-xl">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h2 className="font-semibold text-sm">Leads recentes</h2>
-                <Link href="/painel/leads">
-                  <a className="text-xs text-primary hover:underline flex items-center gap-1">
-                    Ver todos <ChevronRight className="w-3 h-3" />
-                  </a>
+                <Link href="/painel/leads" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Ver todos <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
               <div className="divide-y divide-border">
@@ -205,7 +203,19 @@ export default function AdminDashboard() {
                     <div key={lead.id} className="flex items-center justify-between p-3 hover:bg-muted/30 transition-colors">
                       <div>
                         <p className="text-sm font-medium">{lead.name}</p>
-                        <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                        {lead.phone ? (
+                          <a
+                            href={buildWhatsappUrl(lead.phone, defaultLeadGreeting(lead.name))}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 text-xs text-[#25D366] hover:underline font-medium"
+                          >
+                            <MessageCircle className="w-3 h-3" /> {lead.phone}
+                          </a>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">—</p>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className={`text-xs px-2 py-0.5 rounded-full ${
@@ -213,7 +223,7 @@ export default function AdminDashboard() {
                           lead.funnelStep === "ai_done" ? "bg-blue-500/20 text-blue-500" :
                           "bg-muted text-muted-foreground"
                         }`}>
-                          {lead.funnelStep}
+                          {funnelStepLabel(lead.funnelStep)}
                         </div>
                         {lead.leadScore && (
                           <p className={`text-xs mt-0.5 font-medium ${
@@ -234,10 +244,8 @@ export default function AdminDashboard() {
             <div className="bg-card border border-border rounded-xl">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h2 className="font-semibold text-sm">Notificações</h2>
-                <Link href="/painel/notificacoes">
-                  <a className="text-xs text-primary hover:underline flex items-center gap-1">
-                    Ver todas <ChevronRight className="w-3 h-3" />
-                  </a>
+                <Link href="/painel/notificacoes" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Ver todas <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
               <div className="divide-y divide-border">

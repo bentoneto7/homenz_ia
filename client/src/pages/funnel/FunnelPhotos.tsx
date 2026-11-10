@@ -4,26 +4,47 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
   Camera,
-  RotateCcw,
+  ArrowCounterClockwise,
   Check,
-  ChevronRight,
+  CaretRight,
   Lock,
-  Sparkles,
-  AlertCircle,
+  Sparkle,
+  WarningCircle,
   Info,
   Sun,
   X,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
   Lightbulb,
-} from "lucide-react";
+  User,
+  ArrowUp,
+  ArrowLeft,
+  ArrowRight,
+  FolderOpen,
+  Flask,
+  PushPin,
+  Scissors,
+  House,
+  DeviceMobile,
+  Ruler,
+  Prohibit,
+  MagnifyingGlass,
+  IconContext,
+} from "@phosphor-icons/react";
+import { useFunnelTheme } from "./useFunnelTheme";
+import { FunnelThemeToggle } from "./FunnelThemeToggle";
 
 type PhotoType = "front" | "top" | "left" | "right";
+
+const accentTint = "color-mix(in oklab, var(--fn-accent) 12%, transparent)";
+const accentLine = "color-mix(in oklab, var(--fn-accent) 30%, transparent)";
+// Cor do guia sobre o vídeo (fundo preto) — teal da marca, fixa
+const GUIDE = "#3B82F6";
 
 const PHOTO_STEPS: {
   type: PhotoType;
   label: string;
-  icon: string;
+  Icon: typeof Camera;
   instruction: string;
   guide: string;
   tip: string;
@@ -34,7 +55,7 @@ const PHOTO_STEPS: {
   {
     type: "front",
     label: "Frente",
-    icon: "👤",
+    Icon: User,
     instruction: "Olhe diretamente para a câmera com o rosto centralizado",
     guide: "Centralize seu rosto no círculo",
     tip: "Câmera na altura exata dos olhos",
@@ -61,7 +82,7 @@ const PHOTO_STEPS: {
   {
     type: "top",
     label: "Topo",
-    icon: "⬆️",
+    Icon: ArrowUp,
     instruction: "Braço estendido acima da cabeça, câmera apontando para baixo",
     guide: "Mostre o topo da cabeça centralizado",
     tip: "Peça ajuda a alguém para fotografar de cima",
@@ -86,7 +107,7 @@ const PHOTO_STEPS: {
   {
     type: "left",
     label: "Lado Esquerdo",
-    icon: "◀️",
+    Icon: ArrowLeft,
     instruction: "Perfil exato 90° — orelha esquerda completamente visível",
     guide: "Mantenha a orelha visível no centro",
     tip: "Perfil fechado 90° — não meio perfil",
@@ -111,7 +132,7 @@ const PHOTO_STEPS: {
   {
     type: "right",
     label: "Lado Direito",
-    icon: "▶️",
+    Icon: ArrowRight,
     instruction: "Perfil exato 90° — orelha direita completamente visível",
     guide: "Mantenha a orelha visível no centro",
     tip: "Mesma iluminação da foto anterior",
@@ -134,11 +155,21 @@ const PHOTO_STEPS: {
   },
 ];
 
+const GENERAL_RULES: { Icon: typeof Camera; text: string }[] = [
+  { Icon: Scissors, text: "Cabelo SECO e natural — sem gel, pomada ou fixador" },
+  { Icon: House, text: "Fundo neutro: parede branca, cinza ou bege — sem estampas" },
+  { Icon: DeviceMobile, text: "Use a câmera TRASEIRA do celular — melhor qualidade" },
+  { Icon: Ruler, text: "Distância: 40 a 60 cm do rosto / cabeça" },
+  { Icon: Prohibit, text: "Sem óculos, bonés, chapéus ou acessórios na cabeça" },
+  { Icon: MagnifyingGlass, text: "Resolução mínima: 720p — não usar zoom digital" },
+];
+
 type ScreenState = "disclaimer" | "rules" | "capture";
 
 export default function FunnelPhotos() {
   const { slug, token } = useParams<{ slug: string; token: string }>();
   const [, navigate] = useLocation();
+  const { mode, toggle } = useFunnelTheme();
   const [screen, setScreen] = useState<ScreenState>("disclaimer");
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [capturedPhotos, setCapturedPhotos] = useState<Record<PhotoType, string | null>>({
@@ -231,7 +262,7 @@ export default function FunnelPhotos() {
         base64: dataUrl,
       });
       setCapturedPhotos((prev) => ({ ...prev, [currentStep.type]: dataUrl }));
-      toast.success(`✅ Foto ${currentStep.label} capturada!`);
+      toast.success(`Foto ${currentStep.label} capturada!`);
       if (currentPhotoIndex < PHOTO_STEPS.length - 1) {
         setCurrentPhotoIndex((i) => i + 1);
       }
@@ -260,7 +291,7 @@ export default function FunnelPhotos() {
           base64: dataUrl,
         });
         setCapturedPhotos((prev) => ({ ...prev, [currentStep.type]: dataUrl }));
-        toast.success(`✅ Foto ${currentStep.label} enviada!`);
+        toast.success(`Foto ${currentStep.label} enviada!`);
         if (currentPhotoIndex < PHOTO_STEPS.length - 1) {
           setCurrentPhotoIndex((i) => i + 1);
         }
@@ -274,33 +305,39 @@ export default function FunnelPhotos() {
     reader.readAsDataURL(file);
   };
 
+  // Remove o dark mode do painel (shadcn) — o funil tem o próprio tema (.funnel-theme)
   useEffect(() => {
     document.documentElement.classList.remove("dark");
     localStorage.removeItem("theme");
-    return () => {};
   }, []);
+
+  const floatingToggle = (
+    <FunnelThemeToggle mode={mode} onToggle={toggle} className="fixed top-4 right-4 z-30" />
+  );
 
   // ── TELA 1: DISCLAIMER ─────────────────────────────────────────────────────
   if (screen === "disclaimer") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540]">
+      <IconContext.Provider value={{ weight: "duotone" }}>
+      <div className="funnel-theme min-h-[100dvh]">
+        {floatingToggle}
         <div className="max-w-lg mx-auto px-4 py-8">
           {/* Logo / Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#004A9D] mb-3">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3" style={{ background: "var(--fn-accent)" }}>
+              <Sparkle className="w-7 h-7" weight="fill" style={{ color: "var(--fn-accent-ink)" }} />
             </div>
-            <h1 className="text-xl font-bold text-[#0A2540]">Avaliação Capilar</h1>
-            <p className="text-sm text-[#5A667A] mt-1">Antes de enviar suas fotos, leia com atenção</p>
+            <h1 className="text-xl font-bold" style={{ color: "var(--fn-ink)" }}>Avaliação Capilar</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--fn-muted)" }}>Antes de enviar suas fotos, leia com atenção</p>
           </div>
 
           {/* Disclaimer card */}
-          <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-5 mb-4">
+          <div className="rounded-2xl p-5 mb-4" style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)" }}>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-full bg-[#EBF4FF] flex items-center justify-center flex-shrink-0">
-                <Info className="w-3.5 h-3.5 text-[#004A9D]" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: accentTint }}>
+                <Info className="w-3.5 h-3.5" style={{ color: "var(--fn-accent)" }} />
               </div>
-              <h2 className="font-bold text-sm text-[#0A2540]">Ao enviar suas fotos, você concorda:</h2>
+              <h2 className="font-bold text-sm" style={{ color: "var(--fn-ink)" }}>Ao enviar suas fotos, você concorda:</h2>
             </div>
             <ol className="space-y-3">
               {[
@@ -311,23 +348,23 @@ export default function FunnelPhotos() {
                 "Um especialista Homenz entrará em contato para apresentar o protocolo ideal para o seu caso.",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#004A9D] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center mt-0.5" style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}>
                     {i + 1}
                   </span>
-                  <p className="text-xs text-[#5A667A] leading-relaxed">{item}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--fn-muted)" }}>{item}</p>
                 </li>
               ))}
             </ol>
           </div>
 
           {/* Important note */}
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-            <div className="flex items-start gap-2">
-              <span className="text-amber-500 text-base flex-shrink-0">⚠️</span>
+          <div className="rounded-2xl p-4 mb-6" style={{ background: "color-mix(in oklab, #f59e0b 10%, transparent)", border: "1px solid color-mix(in oklab, #f59e0b 22%, transparent)" }}>
+            <div className="flex items-start gap-2.5">
+              <WarningCircle className="w-5 h-5 flex-shrink-0 mt-0.5" weight="fill" style={{ color: "#f59e0b" }} />
               <div>
-                <p className="text-xs font-bold text-amber-800 mb-1">Realidade dos nossos tratamentos</p>
-                <p className="text-xs text-amber-700 leading-relaxed">
-                  Trabalhamos com o cabelo <strong>existente</strong> como referência visual. Nossos tratamentos potencializam, preenchem e harmonizam o que já existe. Casos com calvície total em determinada região limitam o resultado visual nessa área — mas você <strong>sempre</strong> será encaminhado ao nosso time para avaliação completa.
+                <p className="text-xs font-bold mb-1" style={{ color: "var(--fn-ink)" }}>Realidade dos nossos tratamentos</p>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--fn-muted)" }}>
+                  Trabalhamos com o cabelo <strong style={{ color: "var(--fn-body)" }}>existente</strong> como referência visual. Nossos tratamentos potencializam, preenchem e harmonizam o que já existe. Casos com calvície total em determinada região limitam o resultado visual nessa área — mas você <strong style={{ color: "var(--fn-body)" }}>sempre</strong> será encaminhado ao nosso time para avaliação completa.
                 </p>
               </div>
             </div>
@@ -335,116 +372,123 @@ export default function FunnelPhotos() {
 
           <button
             onClick={() => setScreen("rules")}
-            className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
+            className="fn-cta-glow w-full font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-opacity"
+            style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}
           >
             Entendi — ver como fotografar
-            <ChevronRight className="w-5 h-5" />
+            <CaretRight className="w-5 h-5" weight="bold" />
           </button>
         </div>
       </div>
+      </IconContext.Provider>
     );
   }
 
   // ── TELA 2: REGRAS GERAIS + ILUMINAÇÃO ────────────────────────────────────
   if (screen === "rules") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540]">
+      <IconContext.Provider value={{ weight: "duotone" }}>
+      <div className="funnel-theme min-h-[100dvh]">
+        {floatingToggle}
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#004A9D] mb-3">
-              <Camera className="w-7 h-7 text-white" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3" style={{ background: "var(--fn-accent)" }}>
+              <Camera className="w-7 h-7" style={{ color: "var(--fn-accent-ink)" }} />
             </div>
-            <h1 className="text-xl font-bold text-[#0A2540]">Como fotografar corretamente</h1>
-            <p className="text-sm text-[#5A667A] mt-1">Siga estas regras para obter a melhor análise</p>
+            <h1 className="text-xl font-bold" style={{ color: "var(--fn-ink)" }}>Como fotografar corretamente</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--fn-muted)" }}>Siga estas regras para obter a melhor análise</p>
           </div>
 
           {/* Regras gerais */}
-          <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-5 mb-4">
-            <h2 className="font-bold text-sm text-[#0A2540] mb-3">📌 Regras gerais — válidas para as 4 fotos</h2>
-            <div className="space-y-2">
-              {[
-                { icon: "💇", text: "Cabelo SECO e natural — sem gel, pomada ou fixador" },
-                { icon: "🏠", text: "Fundo neutro: parede branca, cinza ou bege — sem estampas" },
-                { icon: "📱", text: "Use a câmera TRASEIRA do celular — melhor qualidade" },
-                { icon: "📏", text: "Distância: 40 a 60 cm do rosto / cabeça" },
-                { icon: "🚫", text: "Sem óculos, bonés, chapéus ou acessórios na cabeça" },
-                { icon: "🔍", text: "Resolução mínima: 720p — não usar zoom digital" },
-              ].map((rule, i) => (
+          <div className="rounded-2xl p-5 mb-4" style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)" }}>
+            <h2 className="font-bold text-sm mb-3 flex items-center gap-1.5" style={{ color: "var(--fn-ink)" }}>
+              <PushPin className="w-4 h-4" style={{ color: "var(--fn-accent)" }} /> Regras gerais — válidas para as 4 fotos
+            </h2>
+            <div className="space-y-2.5">
+              {GENERAL_RULES.map((rule, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <span className="text-base flex-shrink-0">{rule.icon}</span>
-                  <p className="text-xs text-[#5A667A] leading-relaxed">{rule.text}</p>
+                  <rule.Icon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "var(--fn-accent)" }} />
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--fn-muted)" }}>{rule.text}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Guia de iluminação */}
-          <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm p-5 mb-6">
+          <div className="rounded-2xl p-5 mb-6" style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)" }}>
             <div className="flex items-center gap-2 mb-3">
-              <Sun className="w-4 h-4 text-amber-500" />
-              <h2 className="font-bold text-sm text-[#0A2540]">Guia de iluminação</h2>
+              <Sun className="w-4 h-4" weight="fill" style={{ color: "#f59e0b" }} />
+              <h2 className="font-bold text-sm" style={{ color: "var(--fn-ink)" }}>Guia de iluminação</h2>
             </div>
-            <p className="text-[10px] text-[#5A667A] mb-3">A iluminação é o fator que mais compromete a análise. Uma boa foto pode fazer a diferença entre Norwood III e V na leitura da IA.</p>
+            <p className="text-[10px] mb-3" style={{ color: "var(--fn-muted)" }}>A iluminação é o fator que mais compromete a análise. Uma boa foto pode fazer a diferença entre Norwood III e V na leitura da IA.</p>
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1.5" />
-                <p className="text-[10px] font-bold text-emerald-800 mb-1">✅ Ideal</p>
-                <p className="text-[9px] text-emerald-700 leading-tight">Luz natural indireta (janela lateral) ou ring light frontal a 50–70 cm</p>
+              <div className="rounded-xl p-3 text-center" style={{ background: "color-mix(in oklab, var(--fn-accent) 10%, transparent)", border: "1px solid color-mix(in oklab, var(--fn-accent) 22%, transparent)" }}>
+                <CheckCircle className="w-4 h-4 mx-auto mb-1.5" weight="fill" style={{ color: "var(--fn-accent)" }} />
+                <p className="text-[10px] font-bold mb-1" style={{ color: "var(--fn-accent)" }}>Ideal</p>
+                <p className="text-[9px] leading-tight" style={{ color: "var(--fn-muted)" }}>Luz natural indireta (janela lateral) ou ring light frontal a 50–70 cm</p>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                <AlertCircle className="w-4 h-4 text-amber-500 mx-auto mb-1.5" />
-                <p className="text-[10px] font-bold text-amber-800 mb-1">⚠️ Aceitável</p>
-                <p className="text-[9px] text-amber-700 leading-tight">Lâmpada LED no teto, sem sombras fortes, ambiente bem iluminado</p>
+              <div className="rounded-xl p-3 text-center" style={{ background: "color-mix(in oklab, #f59e0b 10%, transparent)", border: "1px solid color-mix(in oklab, #f59e0b 22%, transparent)" }}>
+                <WarningCircle className="w-4 h-4 mx-auto mb-1.5" weight="fill" style={{ color: "#fbbf24" }} />
+                <p className="text-[10px] font-bold mb-1" style={{ color: "#fbbf24" }}>Aceitável</p>
+                <p className="text-[9px] leading-tight" style={{ color: "var(--fn-muted)" }}>Lâmpada LED no teto, sem sombras fortes, ambiente bem iluminado</p>
               </div>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
-                <XCircle className="w-4 h-4 text-red-500 mx-auto mb-1.5" />
-                <p className="text-[10px] font-bold text-red-800 mb-1">❌ Inválido</p>
-                <p className="text-[9px] text-red-700 leading-tight">Contraluz, flash direto, sombras no couro cabeludo, ambiente escuro</p>
+              <div className="rounded-xl p-3 text-center" style={{ background: "color-mix(in oklab, #ef4444 10%, transparent)", border: "1px solid color-mix(in oklab, #ef4444 22%, transparent)" }}>
+                <XCircle className="w-4 h-4 mx-auto mb-1.5" weight="fill" style={{ color: "#f87171" }} />
+                <p className="text-[10px] font-bold mb-1" style={{ color: "#f87171" }}>Inválido</p>
+                <p className="text-[9px] leading-tight" style={{ color: "var(--fn-muted)" }}>Contraluz, flash direto, sombras no couro cabeludo, ambiente escuro</p>
               </div>
             </div>
-            <div className="mt-3 flex items-start gap-2 bg-amber-50 rounded-lg p-2.5">
-              <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <p className="text-[10px] text-amber-700">Evite luz amarela incandescente no teto — satura a cor do couro cabeludo.</p>
+            <div className="mt-3 flex items-start gap-2 rounded-lg p-2.5" style={{ background: "color-mix(in oklab, #f59e0b 8%, transparent)" }}>
+              <Lightbulb className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" weight="fill" style={{ color: "#fbbf24" }} />
+              <p className="text-[10px]" style={{ color: "var(--fn-muted)" }}>Evite luz amarela incandescente no teto — satura a cor do couro cabeludo.</p>
             </div>
           </div>
 
           <button
             onClick={() => setScreen("capture")}
-            className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors"
+            className="fn-cta-glow w-full font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-opacity"
+            style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}
           >
             <Camera className="w-5 h-5" />
             Pronto — começar a fotografar
-            <ChevronRight className="w-5 h-5" />
+            <CaretRight className="w-5 h-5" weight="bold" />
           </button>
         </div>
       </div>
+      </IconContext.Provider>
     );
   }
 
   // ── TELA 3: CAPTURA DAS FOTOS ─────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#EBF4FF] via-white to-[#F0FDF9] text-[#0A2540]">
+    <IconContext.Provider value={{ weight: "duotone" }}>
+    <div className="funnel-theme min-h-[100dvh]">
+      {floatingToggle}
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-3 shadow-sm">
+      <div
+        className="sticky top-0 z-10 px-4 py-3"
+        style={{ background: "color-mix(in oklab, var(--fn-bg) 88%, transparent)", backdropFilter: "blur(8px)", borderBottom: "1px solid var(--fn-line)" }}
+      >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="font-bold text-sm text-[#0A2540]">Captura de Fotos</h1>
-              <p className="text-xs text-[#5A667A]">Envie suas fotos para avaliação capilar</p>
+              <h1 className="font-bold text-sm" style={{ color: "var(--fn-ink)" }}>Captura de Fotos</h1>
+              <p className="text-xs" style={{ color: "var(--fn-muted)" }}>Envie suas fotos para avaliação capilar</p>
             </div>
-            <span className="text-sm font-bold text-[#004A9D]">{capturedCount}/4</span>
+            <span className="text-sm font-bold pr-12" style={{ color: "var(--fn-accent)" }}>{capturedCount}/4</span>
           </div>
           <div className="flex gap-1.5">
             {PHOTO_STEPS.map((s, i) => (
               <div
                 key={s.type}
-                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                  capturedPhotos[s.type]
-                    ? "bg-emerald-500"
+                className="h-1.5 flex-1 rounded-full transition-all duration-500"
+                style={{
+                  background: capturedPhotos[s.type]
+                    ? "var(--fn-success)"
                     : i === currentPhotoIndex
-                    ? "bg-[#004A9D]"
-                    : "bg-[#E2E8F0]"
-                }`}
+                    ? "var(--fn-accent)"
+                    : "var(--fn-line)",
+                }}
               />
             ))}
           </div>
@@ -454,7 +498,7 @@ export default function FunnelPhotos() {
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Camera view */}
         {isCameraOpen ? (
-          <div className="animate-in fade-in duration-300">
+          <div className="fn-msg">
             <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] shadow-2xl">
               <video
                 ref={videoRef}
@@ -465,7 +509,7 @@ export default function FunnelPhotos() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-52 h-64 rounded-full border-2 border-[#D4A843]/80 border-dashed shadow-[0_0_20px_rgba(212,168,67,0.3)]" />
+                <div className="w-52 h-64 rounded-full border-2 border-dashed" style={{ borderColor: `${GUIDE}cc`, boxShadow: `0 0 20px ${GUIDE}4d` }} />
               </div>
               <div className="absolute inset-0 pointer-events-none">
                 {[
@@ -479,16 +523,17 @@ export default function FunnelPhotos() {
                     className="absolute flex flex-col items-center"
                     style={{ left: pt.x, top: pt.y, transform: "translate(-50%, -50%)" }}
                   >
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#D4A843] shadow-[0_0_8px_rgba(212,168,67,0.8)] animate-pulse" />
-                    <span className="text-[9px] text-[#D4A843] font-bold mt-0.5 bg-black/60 px-1 rounded">
+                    <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: GUIDE, boxShadow: `0 0 8px ${GUIDE}cc` }} />
+                    <span className="text-[9px] font-bold mt-0.5 bg-black/60 px-1 rounded" style={{ color: GUIDE }}>
                       {pt.label}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="absolute top-3 left-0 right-0 text-center px-4">
-                <div className="bg-black/70 backdrop-blur rounded-full px-4 py-1.5 inline-block">
-                  <p className="text-xs font-medium text-white">{currentStep.icon} {currentStep.label}</p>
+                <div className="bg-black/70 backdrop-blur rounded-full px-4 py-1.5 inline-flex items-center gap-1.5">
+                  <currentStep.Icon className="w-3.5 h-3.5 text-white" />
+                  <p className="text-xs font-medium text-white">{currentStep.label}</p>
                 </div>
               </div>
               <div className="absolute bottom-4 left-0 right-0 text-center px-4">
@@ -503,18 +548,20 @@ export default function FunnelPhotos() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={closeCamera}
-                className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#E2E8F0] rounded-xl py-3.5 text-sm text-[#5A667A] hover:bg-[#EBF4FF] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm transition-colors"
+                style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)", color: "var(--fn-muted)" }}
               >
-                <RotateCcw className="w-4 h-4" />
+                <ArrowCounterClockwise className="w-4 h-4" />
                 Cancelar
               </button>
               <button
                 onClick={capturePhoto}
                 disabled={uploading}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#004A9D] hover:bg-[#003d85] text-white font-bold rounded-xl py-3.5 text-sm disabled:opacity-60 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 font-bold rounded-xl py-3.5 text-sm disabled:opacity-60 transition-opacity"
+                style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}
               >
                 {uploading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--fn-accent-ink)", borderTopColor: "transparent" }} />
                 ) : (
                   <>
                     <Camera className="w-4 h-4" />
@@ -528,62 +575,79 @@ export default function FunnelPhotos() {
           <>
             {/* Photo grid */}
             <div className="grid grid-cols-2 gap-3 mb-5">
-              {PHOTO_STEPS.map((step, i) => (
-                <div
-                  key={step.type}
-                  onClick={() => {
-                    if (!capturedPhotos[step.type]) {
-                      setCurrentPhotoIndex(i);
-                      openCamera();
-                    }
-                  }}
-                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                    capturedPhotos[step.type]
-                      ? "border-emerald-500"
-                      : i === currentPhotoIndex
-                      ? "border-[#004A9D] border-dashed shadow-[0_0_12px_rgba(0,74,157,0.15)]"
-                      : "border-[#E2E8F0]"
-                  }`}
-                >
-                  {capturedPhotos[step.type] ? (
-                    <>
-                      <img
-                        src={capturedPhotos[step.type]!}
-                        alt={step.label}
-                        className="w-full h-full object-cover scale-x-[-1]"
-                      />
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-white" />
+              {PHOTO_STEPS.map((step, i) => {
+                const captured = !!capturedPhotos[step.type];
+                const isCurrent = i === currentPhotoIndex;
+                return (
+                  <div
+                    key={step.type}
+                    onClick={() => {
+                      if (!capturedPhotos[step.type]) {
+                        setCurrentPhotoIndex(i);
+                        openCamera();
+                      }
+                    }}
+                    className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed transition-all cursor-pointer"
+                    style={{
+                      borderColor: captured
+                        ? "var(--fn-success)"
+                        : isCurrent
+                        ? "var(--fn-accent)"
+                        : "var(--fn-line)",
+                      borderStyle: captured ? "solid" : isCurrent ? "dashed" : "solid",
+                    }}
+                  >
+                    {capturedPhotos[step.type] ? (
+                      <>
+                        <img
+                          src={capturedPhotos[step.type]!}
+                          alt={step.label}
+                          className="w-full h-full object-cover scale-x-[-1]"
+                        />
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "var(--fn-success)" }}>
+                          <Check className="w-3.5 h-3.5 text-white" weight="bold" />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-2 py-2 flex items-center justify-between gap-1">
+                          <p className="text-xs text-white font-semibold truncate">{step.label}</p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentPhotoIndex(i);
+                              openCamera();
+                            }}
+                            className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-white/25 backdrop-blur px-2 py-0.5 text-[10px] font-bold text-white hover:bg-white/40 active:scale-95 transition-all"
+                          >
+                            <ArrowCounterClockwise className="w-3 h-3" weight="bold" /> Refazer
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-2" style={{ background: isCurrent ? accentTint : "var(--fn-elevated)" }}>
+                        <step.Icon className="w-8 h-8" style={{ color: isCurrent ? "var(--fn-accent)" : "var(--fn-muted)" }} />
+                        <p className="text-xs font-medium text-center px-2" style={{ color: "var(--fn-muted)" }}>{step.label}</p>
+                        {isCurrent && (
+                          <span className="text-[10px] font-semibold animate-pulse" style={{ color: "var(--fn-accent)" }}>Toque para fotografar</span>
+                        )}
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
-                        <p className="text-xs text-white font-semibold">{step.label}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className={`w-full h-full flex flex-col items-center justify-center gap-2 ${i === currentPhotoIndex ? "bg-[#EBF4FF]" : "bg-[#F8FAFC]"}`}>
-                      <span className="text-3xl">{step.icon}</span>
-                      <p className="text-xs font-medium text-center px-2 text-[#5A667A]">{step.label}</p>
-                      {i === currentPhotoIndex && (
-                        <span className="text-[10px] text-[#004A9D] font-semibold animate-pulse">Toque para fotografar</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Camera error */}
             {cameraError && (
-              <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
-                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 rounded-xl p-4 mb-4" style={{ background: "color-mix(in oklab, #f59e0b 10%, transparent)", border: "1px solid color-mix(in oklab, #f59e0b 22%, transparent)" }}>
+                <WarningCircle className="w-5 h-5 flex-shrink-0 mt-0.5" weight="fill" style={{ color: "#fbbf24" }} />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-700">Câmera não disponível</p>
-                  <p className="text-xs text-[#5A667A] mt-0.5">Permita o acesso à câmera ou envie uma foto da galeria.</p>
+                  <p className="text-sm font-medium" style={{ color: "var(--fn-ink)" }}>Não detectamos uma câmera</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--fn-muted)" }}>Conecte uma câmera, permita o acesso ou abra esta página no seu celular. Você também pode enviar uma foto da galeria.</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 text-xs text-[#004A9D] font-semibold underline"
+                    className="mt-2 text-xs font-semibold underline inline-flex items-center gap-1"
+                    style={{ color: "var(--fn-accent)" }}
                   >
-                    📁 Enviar foto da galeria
+                    <FolderOpen className="w-3.5 h-3.5" /> Enviar foto da galeria
                   </button>
                 </div>
               </div>
@@ -591,62 +655,63 @@ export default function FunnelPhotos() {
 
             {/* Current step instruction card with do/don't */}
             {!allCaptured && (
-              <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 mb-4">
+              <div className="rounded-xl p-4 mb-4" style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)" }}>
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <p className="text-xs text-[#5A667A] uppercase tracking-wide font-semibold">Próxima foto</p>
-                    <p className="font-bold text-sm mt-0.5">
-                      {currentStep.icon} Foto {currentPhotoIndex + 1} de 4: {currentStep.label}
+                    <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: "var(--fn-muted)" }}>Próxima foto</p>
+                    <p className="font-bold text-sm mt-0.5 flex items-center gap-1.5" style={{ color: "var(--fn-ink)" }}>
+                      <currentStep.Icon className="w-4 h-4" style={{ color: "var(--fn-accent)" }} /> Foto {currentPhotoIndex + 1} de 4: {currentStep.label}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowInstructions(!showInstructions)}
-                    className="flex items-center gap-1 text-[10px] text-[#004A9D] font-semibold bg-[#EBF4FF] px-2.5 py-1.5 rounded-lg"
+                    className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg"
+                    style={{ background: accentTint, color: "var(--fn-accent)" }}
                   >
                     <Info className="w-3 h-3" />
                     {showInstructions ? "Fechar" : "Ver dicas"}
                   </button>
                 </div>
-                <p className="text-xs text-[#5A667A]">{currentStep.instruction}</p>
+                <p className="text-xs" style={{ color: "var(--fn-muted)" }}>{currentStep.instruction}</p>
 
                 {showInstructions && (
-                  <div className="mt-3 space-y-3 animate-in fade-in duration-200">
+                  <div className="mt-3 space-y-3 fn-msg">
                     {/* Do list */}
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-700 mb-1.5 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Como fazer
+                      <p className="text-[10px] font-bold mb-1.5 flex items-center gap-1" style={{ color: "var(--fn-accent)" }}>
+                        <CheckCircle className="w-3 h-3" weight="fill" /> Como fazer
                       </p>
                       <div className="space-y-1">
                         {currentStep.doList.map((item, i) => (
                           <div key={i} className="flex items-start gap-1.5">
-                            <Check className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-[10px] text-[#5A667A]">{item}</p>
+                            <Check className="w-3 h-3 flex-shrink-0 mt-0.5" weight="bold" style={{ color: "var(--fn-accent)" }} />
+                            <p className="text-[10px]" style={{ color: "var(--fn-muted)" }}>{item}</p>
                           </div>
                         ))}
                       </div>
                     </div>
                     {/* Don't list */}
                     <div>
-                      <p className="text-[10px] font-bold text-red-600 mb-1.5 flex items-center gap-1">
-                        <XCircle className="w-3 h-3" /> Evitar
+                      <p className="text-[10px] font-bold mb-1.5 flex items-center gap-1" style={{ color: "#f87171" }}>
+                        <XCircle className="w-3 h-3" weight="fill" /> Evitar
                       </p>
                       <div className="space-y-1">
                         {currentStep.dontList.map((item, i) => (
                           <div key={i} className="flex items-start gap-1.5">
-                            <X className="w-3 h-3 text-red-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-[10px] text-[#5A667A]">{item}</p>
+                            <X className="w-3 h-3 flex-shrink-0 mt-0.5" weight="bold" style={{ color: "#f87171" }} />
+                            <p className="text-[10px]" style={{ color: "var(--fn-muted)" }}>{item}</p>
                           </div>
                         ))}
                       </div>
                     </div>
                     {/* AI analysis */}
-                    <div className="bg-[#EBF4FF] rounded-lg p-2.5">
-                      <p className="text-[10px] font-bold text-[#004A9D] mb-1.5 flex items-center gap-1">
-                        🔬 O que será avaliado nesta foto
+                    <div className="rounded-lg p-2.5" style={{ background: accentTint }}>
+                      <p className="text-[10px] font-bold mb-1.5 flex items-center gap-1" style={{ color: "var(--fn-accent)" }}>
+                        <Flask className="w-3 h-3" weight="fill" /> O que será avaliado nesta foto
                       </p>
                       <div className="space-y-1">
                         {currentStep.aiAnalysis.map((item, i) => (
-                          <p key={i} className="text-[10px] text-[#5A667A]">• {item}</p>
+                          <p key={i} className="text-[10px]" style={{ color: "var(--fn-muted)" }}>• {item}</p>
                         ))}
                       </div>
                     </div>
@@ -669,18 +734,19 @@ export default function FunnelPhotos() {
               <button
                 onClick={handleFinalize}
                 disabled={triggerAI.isPending}
-                className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
+                className="fn-cta-glow w-full font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity"
+                style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}
               >
                 {triggerAI.isPending ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: "var(--fn-accent-ink)", borderTopColor: "transparent" }} />
                     Enviando...
                   </>
                 ) : (
                   <>
-                    <ChevronRight className="w-5 h-5" />
+                    <Sparkle className="w-5 h-5" weight="fill" />
                     Enviar fotos
-                    <ChevronRight className="w-5 h-5" />
+                    <CaretRight className="w-5 h-5" weight="bold" />
                   </>
                 )}
               </button>
@@ -689,10 +755,11 @@ export default function FunnelPhotos() {
                 <button
                   onClick={openCamera}
                   disabled={uploading}
-                  className="w-full bg-[#004A9D] hover:bg-[#003d85] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                  className="fn-cta-glow w-full font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 transition-opacity disabled:opacity-60"
+                  style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}
                 >
                   {uploading ? (
-                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Enviando...</>
+                    <><div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: "var(--fn-accent-ink)", borderTopColor: "transparent" }} /> Enviando...</>
                   ) : (
                     <><Camera className="w-5 h-5" /> Tirar foto: {currentStep.label}</>
                   )}
@@ -700,17 +767,18 @@ export default function FunnelPhotos() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="w-full bg-white border border-[#E2E8F0] text-[#5A667A] font-medium py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#F8FAFC] transition-colors disabled:opacity-60"
+                  className="w-full font-medium py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
+                  style={{ background: "var(--fn-surface)", border: "1px solid var(--fn-line)", color: "var(--fn-muted)" }}
                 >
-                  📁 Enviar foto da galeria
+                  <FolderOpen className="w-4 h-4" /> Enviar foto da galeria
                 </button>
               </div>
             )}
 
             {/* Privacy note */}
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Lock className="w-3.5 h-3.5 text-[#A0AABB]" />
-              <p className="text-xs text-[#A0AABB]">
+              <Lock className="w-3.5 h-3.5" style={{ color: "var(--fn-muted)" }} />
+              <p className="text-xs" style={{ color: "var(--fn-muted)" }}>
                 Suas fotos são criptografadas e usadas apenas para sua avaliação
               </p>
             </div>
@@ -718,5 +786,6 @@ export default function FunnelPhotos() {
         )}
       </div>
     </div>
+    </IconContext.Provider>
   );
 }

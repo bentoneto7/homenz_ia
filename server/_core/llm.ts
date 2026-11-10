@@ -220,6 +220,41 @@ const assertApiKey = () => {
   }
 };
 
+const FAL_CHAT_URL = "https://fal.run/openrouter/router/openai/v1/chat/completions";
+
+type LlmTarget = {
+  url: string;
+  authorization: string;
+  model: string;
+  extraPayload: Record<string, unknown>;
+};
+
+/**
+ * Onde o LLM roda. O padrão é o proxy da Manus (legado). Com LLM_PROVIDER=fal, usa o
+ * endpoint compatível com OpenAI da fal (OpenRouter por baixo), autenticado com a
+ * FAL_KEY que o app já tem para as imagens.
+ */
+const resolveLlmTarget = (): LlmTarget => {
+  if (process.env.LLM_PROVIDER === "fal") {
+    const falKey = process.env.FAL_KEY;
+    if (!falKey) throw new Error("FAL_KEY is not configured");
+    return {
+      url: FAL_CHAT_URL,
+      authorization: `Key ${falKey}`,
+      model: process.env.LLM_MODEL || "google/gemini-2.5-flash",
+      extraPayload: { max_tokens: 8192 },
+    };
+  }
+
+  assertApiKey();
+  return {
+    url: resolveApiUrl(),
+    authorization: `Bearer ${ENV.forgeApiKey}`,
+    model: "gemini-2.5-flash",
+    extraPayload: { max_tokens: 32768, thinking: { budget_tokens: 128 } },
+  };
+};
+
 const normalizeResponseFormat = ({
   responseFormat,
   response_format,
@@ -266,7 +301,7 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+  const target = resolveLlmTarget();
 
   const {
     messages,
@@ -280,7 +315,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: target.model,
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,10 +331,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  Object.assign(payload, target.extraPayload);
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -312,11 +344,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(target.url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: target.authorization,
     },
     body: JSON.stringify(payload),
   });

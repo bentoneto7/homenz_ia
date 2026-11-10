@@ -5,7 +5,8 @@ import { useLocation } from "wouter";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Calendar, ArrowLeft, Check, X, Clock } from "lucide-react";
+import { Calendar, ArrowLeft, Check, X, Clock, MessageCircle } from "lucide-react";
+import { buildWhatsappUrl, defaultLeadGreeting } from "@/lib/whatsapp";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Pendente", confirmed: "Confirmado", cancelled: "Cancelado",
@@ -90,8 +91,18 @@ export default function AdminAppointments() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Lead ID: {appt.leadId} · {appt.consultationType}
+                        {appt.leadName ?? `Lead ID: ${appt.leadId}`} · {appt.consultationType}
                       </p>
+                      {appt.leadPhone && (
+                        <a
+                          href={buildWhatsappUrl(appt.leadPhone, defaultLeadGreeting(appt.leadName))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 mt-1 text-xs text-[#25D366] hover:underline font-medium"
+                        >
+                          <MessageCircle className="w-3 h-3" /> Falar no WhatsApp
+                        </a>
+                      )}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[appt.status] ?? "bg-muted text-muted-foreground"}`}>
                       {STATUS_LABELS[appt.status] ?? appt.status}
