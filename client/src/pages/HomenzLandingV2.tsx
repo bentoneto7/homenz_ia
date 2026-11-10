@@ -316,14 +316,14 @@ function AIBeforeAfter({ src, alt, delay = 0 }: { src: string; alt: string; dela
 type ChatMsg = { from: "bot" | "user"; text: string };
 type ChatStep = { kind: "bot"; text: string } | { kind: "opts"; options: string[] } | { kind: "pick"; text: string };
 const CHAT_SCRIPT: ChatStep[] = [
-  { kind: "bot", text: "Olá! Vou avaliar seu caso em 2 minutos. 👋" },
+  { kind: "bot", text: "Olá! Vou avaliar seu caso em 2 minutos." },
   { kind: "bot", text: "Qual é a sua principal preocupação?" },
   { kind: "opts", options: ["Entradas na testa", "Queda progressiva", "Calvície avançada"] },
   { kind: "pick", text: "Entradas na testa" },
   { kind: "bot", text: "Entendi. Há quanto tempo você percebe?" },
   { kind: "opts", options: ["Menos de 1 ano", "1 a 3 anos", "Mais de 3 anos"] },
   { kind: "pick", text: "1 a 3 anos" },
-  { kind: "bot", text: "Perfeito! Já tenho seu perfil. Vamos ver seu resultado por IA? ✨" },
+  { kind: "bot", text: "Perfeito! Já tenho seu perfil. Vamos ver seu resultado por IA?" },
 ];
 
 function ChatBubble({ m }: { m: ChatMsg }) {

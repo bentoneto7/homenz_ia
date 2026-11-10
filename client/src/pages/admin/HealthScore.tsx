@@ -2,15 +2,15 @@ import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { TrendingUp, Users, Calendar, MapPin, Camera, Zap, ClipboardList, Trophy, Star, AlertTriangle, CheckCircle, ChevronRight } from "lucide-react";
+import { TrendingUp, Users, Calendar, MapPin, Camera, Zap, ClipboardList, Trophy, Star, AlertTriangle, CheckCircle, ChevronRight, Medal, TriangleAlert, CircleAlert, Lightbulb, Frown, Meh, Smile, Laugh, Rocket, type LucideIcon } from "lucide-react";
 
-const GRADE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; emoji: string; message: string }> = {
-  S: { label: "S", color: "text-yellow-600", bg: "bg-yellow-50", border: "border-yellow-300", emoji: "🏆", message: "Clínica de elite! Performance excepcional em todas as dimensões." },
-  A: { label: "A", color: "text-green-600", bg: "bg-green-50", border: "border-green-300", emoji: "🥇", message: "Excelente! Você está entre as melhores clínicas da rede." },
-  B: { label: "B", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-300", emoji: "🥈", message: "Bom desempenho. Pequenos ajustes podem te levar ao próximo nível." },
-  C: { label: "C", color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-300", emoji: "⚡", message: "Desempenho médio. Foque nas dimensões com menor pontuação." },
-  D: { label: "D", color: "text-red-500", bg: "bg-red-50", border: "border-red-300", emoji: "⚠️", message: "Atenção necessária. Revise o processo de atendimento e follow-up." },
-  F: { label: "F", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", emoji: "🔴", message: "Dados insuficientes ou performance crítica. Comece fazendo o check-in diário." },
+const GRADE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: LucideIcon; message: string }> = {
+  S: { label: "S", color: "text-yellow-600", bg: "bg-yellow-50", border: "border-yellow-300", icon: Trophy, message: "Clínica de elite! Performance excepcional em todas as dimensões." },
+  A: { label: "A", color: "text-green-600", bg: "bg-green-50", border: "border-green-300", icon: Trophy, message: "Excelente! Você está entre as melhores clínicas da rede." },
+  B: { label: "B", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-300", icon: Medal, message: "Bom desempenho. Pequenos ajustes podem te levar ao próximo nível." },
+  C: { label: "C", color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-300", icon: Zap, message: "Desempenho médio. Foque nas dimensões com menor pontuação." },
+  D: { label: "D", color: "text-red-500", bg: "bg-red-50", border: "border-red-300", icon: TriangleAlert, message: "Atenção necessária. Revise o processo de atendimento e follow-up." },
+  F: { label: "F", color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", icon: CircleAlert, message: "Dados insuficientes ou performance crítica. Comece fazendo o check-in diário." },
 };
 
 const DIMENSIONS = [
@@ -67,7 +67,7 @@ export default function HealthScore() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-3xl">{grade.emoji}</span>
+                <grade.icon className={`w-8 h-8 ${grade.color}`} aria-hidden="true" />
                 <span className="text-4xl font-bold text-gray-900">{score.totalScore.toFixed(1)}</span>
                 <span className="text-gray-400 text-lg">/100</span>
               </div>
@@ -120,7 +120,7 @@ export default function HealthScore() {
                     />
                   </div>
                   {status === "poor" && (
-                    <p className="text-xs text-gray-400 mt-1 italic">💡 {dim.tip}</p>
+                    <p className="text-xs text-gray-400 mt-1 italic flex items-start gap-1"><Lightbulb className="w-3.5 h-3.5 flex-shrink-0 mt-px" aria-hidden="true" /> {dim.tip}</p>
                   )}
                 </div>
               );
@@ -163,9 +163,10 @@ export default function HealthScore() {
                   </div>
                   <div className="flex items-center gap-2">
                     {c.teamMoodScore && (
-                      <span className="text-lg">
-                        {c.teamMoodScore >= 5 ? "🚀" : c.teamMoodScore >= 4 ? "😊" : c.teamMoodScore >= 3 ? "🙂" : c.teamMoodScore >= 2 ? "😐" : "😞"}
-                      </span>
+                      (() => {
+                        const MoodIcon = c.teamMoodScore >= 5 ? Rocket : c.teamMoodScore >= 4 ? Laugh : c.teamMoodScore >= 3 ? Smile : c.teamMoodScore >= 2 ? Meh : Frown;
+                        return <MoodIcon className="w-5 h-5 text-amber-500" aria-hidden="true" />;
+                      })()
                     )}
                     <div className={`w-2 h-2 rounded-full ${c.appointmentsAttendedToday > 0 ? "bg-green-400" : "bg-gray-300"}`} />
                   </div>

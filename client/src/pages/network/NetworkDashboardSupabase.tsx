@@ -7,6 +7,7 @@ import {
   Building2, Users, Target, Calendar,
   Award, Copy, Plus, Loader2, CheckCircle, XCircle, Crown,
 } from "lucide-react";
+import { LeadTemperatureIcon } from "@/components/icons/LeadTemperatureIcon";
 import { toast } from "sonner";
 
 function StatCard({
@@ -198,9 +199,9 @@ export default function NetworkDashboardSupabase() {
                           <p className="text-[#A0AABB] text-xs">score</p>
                         </div>
                         <div className="hidden sm:flex gap-1">
-                          <span className="text-xs text-orange-400 bg-orange-500/15 px-1.5 py-0.5 rounded-full">{f.hotLeads}🔥</span>
-                          <span className="text-xs text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded-full">{f.warmLeads}🌡️</span>
-                          <span className="text-xs text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full">{f.coldLeads}❄️</span>
+                          <span className="inline-flex items-center gap-0.5 text-xs text-orange-400 bg-orange-500/15 px-1.5 py-0.5 rounded-full">{f.hotLeads}<LeadTemperatureIcon temperature="hot" className="w-3 h-3" colored={false} /></span>
+                          <span className="inline-flex items-center gap-0.5 text-xs text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded-full">{f.warmLeads}<LeadTemperatureIcon temperature="warm" className="w-3 h-3" colored={false} /></span>
+                          <span className="inline-flex items-center gap-0.5 text-xs text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded-full">{f.coldLeads}<LeadTemperatureIcon temperature="cold" className="w-3 h-3" colored={false} /></span>
                         </div>
                         <button
                           onClick={() => handleCopyInvite(f.id)}

@@ -6,7 +6,10 @@ import HomenzLayout from "@/components/HomenzLayout";
 import {
   Target, Calendar, Phone, MessageSquare,
   Loader2, Clock, TrendingUp, CheckCircle2, AlertTriangle,
+  Zap, Check, Flame, Thermometer, Snowflake, TimerOff, TriangleAlert,
+  type LucideIcon,
 } from "lucide-react";
+import { LeadTemperatureIcon } from "@/components/icons/LeadTemperatureIcon";
 import { toast } from "sonner";
 
 // ── Métricas padrão de mercado (Inside Sales / SDR) ──────────────────────────
@@ -28,11 +31,12 @@ type HeatLevel = "hot" | "warm" | "cold" | "dead";
 interface HeatInfo {
   level: HeatLevel;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
   minutesElapsed: number;
   percentCooled: number; // 0-100, quanto do "calor" foi perdido
   timeDisplay: string;
   urgencyMessage: string;
+  urgencyIcon: LucideIcon;
   borderColor: string;
   bgColor: string;
   textColor: string;
@@ -51,33 +55,38 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
   let level: HeatLevel;
   let percentCooled: number;
   let urgencyMessage: string;
+  let urgencyIcon: LucideIcon;
 
   if (minutesElapsed <= HEAT_THRESHOLDS.HOT_MAX_MINUTES) {
     level = "hot";
     percentCooled = (minutesElapsed / HEAT_THRESHOLDS.HOT_MAX_MINUTES) * 40; // 0-40%
+    urgencyIcon = minutesElapsed < 5 ? Zap : Flame;
     urgencyMessage = minutesElapsed < 5
-      ? "⚡ Acabou de chegar! Aborde agora"
+      ? "Acabou de chegar! Aborde agora"
       : minutesElapsed < 15
-      ? "🔥 Ainda muito quente — aborde já!"
-      : "🔥 Quente — aborde antes dos 30min";
+      ? "Ainda muito quente — aborde já!"
+      : "Quente — aborde antes dos 30min";
   } else if (minutesElapsed <= HEAT_THRESHOLDS.WARM_MAX_MINUTES) {
     level = "warm";
     const warmProgress = (minutesElapsed - 30) / (240 - 30);
     percentCooled = 40 + warmProgress * 40; // 40-80%
+    urgencyIcon = minutesElapsed < 120 ? Thermometer : TriangleAlert;
     urgencyMessage = minutesElapsed < 60
-      ? "🌡 Esfriando — faça contato logo"
+      ? "Esfriando — faça contato logo"
       : minutesElapsed < 120
-      ? "🌡 Morno — cada hora reduz 40% a chance"
-      : "⚠️ Quase frio — último momento para abordagem eficaz";
+      ? "Morno — cada hora reduz 40% a chance"
+      : "Quase frio — último momento para abordagem eficaz";
   } else if (minutesElapsed <= HEAT_THRESHOLDS.COLD_MAX_MINUTES) {
     level = "cold";
     const coldProgress = (minutesElapsed - 240) / (1440 - 240);
     percentCooled = 80 + coldProgress * 15; // 80-95%
-    urgencyMessage = "🧊 Lead frio — use follow-up personalizado";
+    urgencyIcon = Snowflake;
+    urgencyMessage = "Lead frio — use follow-up personalizado";
   } else {
     level = "dead";
     percentCooled = 100;
-    urgencyMessage = "💀 Lead inativo há mais de 24h — reengajamento necessário";
+    urgencyIcon = TimerOff;
+    urgencyMessage = "Lead inativo há mais de 24h — reengajamento necessário";
   }
 
   // Formatar tempo decorrido
@@ -95,10 +104,10 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     timeDisplay = `${d}d atrás`;
   }
 
-  const styleMap: Record<HeatLevel, Pick<HeatInfo, "label" | "emoji" | "borderColor" | "bgColor" | "textColor" | "avatarBg" | "avatarText">> = {
+  const styleMap: Record<HeatLevel, Pick<HeatInfo, "label" | "icon" | "borderColor" | "bgColor" | "textColor" | "avatarBg" | "avatarText">> = {
     hot: {
       label: "Quente",
-      emoji: "🔥",
+      icon: Flame,
       borderColor: "border-orange-500/40",
       bgColor: "bg-orange-500/8",
       textColor: "text-orange-400",
@@ -107,7 +116,7 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     },
     warm: {
       label: "Morno",
-      emoji: "🌡",
+      icon: Thermometer,
       borderColor: "border-amber-500/30",
       bgColor: "bg-amber-500/5",
       textColor: "text-amber-400",
@@ -116,7 +125,7 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     },
     cold: {
       label: "Frio",
-      emoji: "🧊",
+      icon: Snowflake,
       borderColor: "border-blue-500/30",
       bgColor: "bg-blue-500/5",
       textColor: "text-blue-400",
@@ -125,7 +134,7 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     },
     dead: {
       label: "Inativo",
-      emoji: "💀",
+      icon: TimerOff,
       borderColor: "border-[#E2E8F0]",
       bgColor: "bg-[#F8FAFC]",
       textColor: "text-[#A0AABB]",
@@ -140,6 +149,7 @@ function getHeatInfo(createdAt: string, lastActivityAt: string): HeatInfo {
     percentCooled,
     timeDisplay,
     urgencyMessage,
+    urgencyIcon,
     ...styleMap[level],
   };
 }
@@ -164,7 +174,7 @@ function HeatBar({ percentCooled, level }: { percentCooled: number; level: HeatL
 }
 
 // ── Badge de temperatura com animação ────────────────────────────────────────
-function HeatBadge({ level, label, emoji }: { level: HeatLevel; label: string; emoji: string }) {
+function HeatBadge({ level, label, icon: Icon }: { level: HeatLevel; label: string; icon: LucideIcon }) {
   const colorMap: Record<HeatLevel, string> = {
     hot: "text-orange-400 bg-orange-500/15 border-orange-500/30",
     warm: "text-amber-400 bg-amber-500/15 border-amber-500/30",
@@ -173,7 +183,7 @@ function HeatBadge({ level, label, emoji }: { level: HeatLevel; label: string; e
   };
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${colorMap[level]} ${level === "hot" ? "animate-pulse" : ""}`}>
-      <span>{emoji}</span>
+      <Icon className="w-3.5 h-3.5" aria-hidden="true" />
       {label}
     </span>
   );
@@ -200,7 +210,7 @@ function FunnelStepBadge({ step }: { step: string }) {
     ai_processing: "IA processando",
     ai_done: "IA concluída",
     schedule_started: "Agendando",
-    scheduled: "Agendado ✓",
+    scheduled: "Agendado",
     no_show: "Não compareceu",
     lost: "Perdido",
   };
@@ -210,7 +220,12 @@ function FunnelStepBadge({ step }: { step: string }) {
     <span className={`text-xs font-medium px-2 py-0.5 rounded-lg ${
       isScheduled ? "text-emerald-400 bg-emerald-500/15" : "text-[#5A667A] bg-white"
     }`}>
-      {label}
+      {isScheduled ? (
+        <span className="inline-flex items-center gap-1">
+          {label}
+          <Check className="w-3 h-3" aria-hidden="true" />
+        </span>
+      ) : label}
     </span>
   );
 }
@@ -254,7 +269,7 @@ function LeadCard({
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <p className="text-[#0A2540] font-bold">{lead.name}</p>
             <ScoreBadge score={lead.lead_score} />
-            <HeatBadge level={heat.level} label={heat.label} emoji={heat.emoji} />
+            <HeatBadge level={heat.level} label={heat.label} icon={heat.icon} />
           </div>
 
           {/* Dados do lead */}
@@ -271,6 +286,7 @@ function LeadCard({
             <Clock className={`w-3 h-3 ${heat.textColor} flex-shrink-0`} />
             <span className={`text-xs font-medium ${heat.textColor}`}>{heat.timeDisplay}</span>
             <span className="text-[#C0CADB] text-xs">·</span>
+            <heat.urgencyIcon className="w-3 h-3 text-[#5A667A] flex-shrink-0" aria-hidden="true" />
             <span className="text-xs text-[#5A667A] truncate">{heat.urgencyMessage}</span>
           </div>
 
@@ -315,22 +331,22 @@ function LeadCard({
             <p className="text-[#A0AABB] text-xs font-semibold mb-2 uppercase tracking-wide">Régua de temperatura (padrão de mercado)</p>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
               <div className="flex items-center gap-1.5">
-                <span>🔥</span>
+                <LeadTemperatureIcon temperature="hot" className="w-3.5 h-3.5 text-orange-400" colored={false} />
                 <span className="text-orange-400 font-medium">Quente</span>
                 <span className="text-[#A0AABB]">0–30min · conv. &gt;60%</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span>🌡</span>
+                <LeadTemperatureIcon temperature="warm" className="w-3.5 h-3.5 text-amber-400" colored={false} />
                 <span className="text-amber-400 font-medium">Morno</span>
                 <span className="text-[#A0AABB]">30min–4h · conv. 20–40%</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span>🧊</span>
+                <LeadTemperatureIcon temperature="cold" className="w-3.5 h-3.5 text-blue-400" colored={false} />
                 <span className="text-blue-400 font-medium">Frio</span>
                 <span className="text-[#A0AABB]">4h–24h · conv. 5–15%</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span>💀</span>
+                <LeadTemperatureIcon temperature="frozen" className="w-3.5 h-3.5 text-[#A0AABB]" colored={false} />
                 <span className="text-[#A0AABB] font-medium">Inativo</span>
                 <span className="text-[#C0CADB]">&gt;24h · conv. &lt;5%</span>
               </div>
@@ -457,11 +473,11 @@ export default function SellerDashboardSupabase() {
           </div>
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 text-center">
             <p className="text-2xl font-black text-orange-400">{stats.hotLeads}</p>
-            <p className="text-xs text-orange-400/60 mt-0.5">Quentes 🔥</p>
+            <p className="text-xs text-orange-400/60 mt-0.5 inline-flex items-center gap-1">Quentes <Flame className="w-3 h-3" aria-hidden="true" /></p>
           </div>
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-center">
             <p className="text-2xl font-black text-emerald-400">{stats.scheduledLeads}</p>
-            <p className="text-xs text-emerald-400/60 mt-0.5">Agendados ✓</p>
+            <p className="text-xs text-emerald-400/60 mt-0.5 inline-flex items-center gap-1">Agendados <Check className="w-3 h-3" aria-hidden="true" /></p>
           </div>
           <div className="bg-teal-50 border border-[#00C1B8] rounded-2xl p-4 text-center">
             <p className="text-2xl font-black text-[#00C1B8]">{metrics?.score ?? 0}</p>
@@ -524,9 +540,9 @@ export default function SellerDashboardSupabase() {
             {(["all", "hot", "warm", "cold"] as const).map((f) => {
               const labels = {
                 all: `Todos (${stats.totalLeads})`,
-                hot: `🔥 Quentes (${stats.hotLeads})`,
-                warm: `🌡 Mornos (${stats.warmLeads})`,
-                cold: `🧊 Frios (${stats.coldLeads})`,
+                hot: `Quentes (${stats.hotLeads})`,
+                warm: `Mornos (${stats.warmLeads})`,
+                cold: `Frios (${stats.coldLeads})`,
               };
               const colors = {
                 all: activeFilter === "all" ? "bg-[#EBF4FF] text-[#0A2540]" : "text-[#5A667A]",
@@ -538,8 +554,9 @@ export default function SellerDashboardSupabase() {
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:bg-white ${colors[f]}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all hover:bg-white ${colors[f]}`}
                 >
+                  {f !== "all" && <LeadTemperatureIcon temperature={f} className="w-4 h-4" colored={false} />}
                   {labels[f]}
                 </button>
               );

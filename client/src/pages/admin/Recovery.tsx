@@ -12,7 +12,7 @@ import {
 } from "@/lib/leadTemperature";
 import {
   MessageCircle, Phone, Flame, Thermometer, Snowflake, Skull,
-  RefreshCw, ArrowRight, Eye, Filter,
+  RefreshCw, ArrowRight, Eye, Filter, PartyPopper, Timer,
 } from "lucide-react";
 
 // Timer em tempo real por card
@@ -33,10 +33,10 @@ function TempIcon({ temp }: { temp: ReturnType<typeof getLeadTemperature> }) {
 
 const FILTER_OPTIONS = [
   { value: "all", label: "Todos", hours: 0.5 },
-  { value: "hot", label: "🔥 Quentes", hours: 0.5 },
-  { value: "warm", label: "🌡️ Mornos", hours: 2 },
-  { value: "cold", label: "🧊 Frios", hours: 24 },
-  { value: "frozen", label: "💀 Perdidos", hours: 999 },
+  { value: "hot", label: "Quentes", hours: 0.5 },
+  { value: "warm", label: "Mornos", hours: 2 },
+  { value: "cold", label: "Frios", hours: 24 },
+  { value: "frozen", label: "Perdidos", hours: 999 },
 ];
 
 export default function Recovery() {
@@ -144,7 +144,7 @@ export default function Recovery() {
         ) : filteredLeads.length === 0 ? (
           <div className="rounded-2xl border border-slate-700/50 bg-slate-800/20 p-12 text-center">
             <p className="text-slate-400 text-lg font-medium">Nenhum lead para recuperar</p>
-            <p className="text-slate-600 text-sm mt-1">Todos os leads estão avançando no funil 🎉</p>
+            <p className="text-slate-600 text-sm mt-1 inline-flex items-center gap-1.5">Todos os leads estão avançando no funil <PartyPopper className="w-4 h-4" aria-hidden="true" /></p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -170,7 +170,7 @@ export default function Recovery() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <TempIcon temp={temp} />
-                          <span className={`text-sm font-bold ${tempCfg.color}`}>{tempCfg.emoji} {tempCfg.label}</span>
+                          <span className={`text-sm font-bold ${tempCfg.color}`}>{tempCfg.label}</span>
                         </div>
                         <Badge
                           variant="outline"
@@ -202,7 +202,7 @@ export default function Recovery() {
                       <div className="bg-slate-900/40 rounded-lg p-3 space-y-1">
                         <p className="text-xs font-bold text-[#0A2540]">{playbook.title}</p>
                         <p className="text-xs text-slate-400 leading-relaxed">{playbook.instruction}</p>
-                        <p className="text-xs text-amber-400 font-medium">⏱ {playbook.timeLimit}</p>
+                        <p className="text-xs text-amber-400 font-medium flex items-center gap-1"><Timer className="w-3.5 h-3.5" aria-hidden="true" /> {playbook.timeLimit}</p>
                       </div>
                     </div>
 

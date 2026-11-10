@@ -3,6 +3,14 @@ import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { CaretRight, Sparkle, ShieldCheck, Lock, IconContext } from "@phosphor-icons/react";
+import {
+  TrendingDown, CircleAlert, Feather, ScanFace, CircleDashed,
+  ArrowUp, ArrowUpToLine, MoveHorizontal, Grip, Maximize2,
+  Timer, Calendar, CalendarDays, Hourglass,
+  Ban, Pill, Hospital, PenTool, FlaskConical,
+  EyeOff, Smile, Sprout, Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { useFunnelTheme } from "./useFunnelTheme";
 import { FunnelThemeToggle } from "./FunnelThemeToggle";
 
@@ -107,36 +115,36 @@ const REINFORCEMENTS = [
   "Isso ajuda muito!",
 ];
 
-// Emoji por opção (só visual — o valor salvo do lead continua limpo)
-const OPTION_EMOJI: Record<string, string> = {
+// Ícone por opção (só visual — o valor salvo do lead continua limpo)
+const OPTION_ICON: Record<string, LucideIcon> = {
   // Problema
-  "Queda progressiva": "😟",
-  "Calvície avançada": "😣",
-  "Cabelo fino / rarefeito": "😬",
-  "Entradas na testa": "🙂",
-  "Falhas no couro cabeludo": "😕",
+  "Queda progressiva": TrendingDown,
+  "Calvície avançada": CircleAlert,
+  "Cabelo fino / rarefeito": Feather,
+  "Entradas na testa": ScanFace,
+  "Falhas no couro cabeludo": CircleDashed,
   // Região
-  "Frente / Testa": "⬆️",
-  "Topo da cabeça": "🔝",
-  "Laterais (entradas)": "↔️",
-  "Espalhado por toda a cabeça": "🌐",
-  "Área total": "😰",
+  "Frente / Testa": ArrowUp,
+  "Topo da cabeça": ArrowUpToLine,
+  "Laterais (entradas)": MoveHorizontal,
+  "Espalhado por toda a cabeça": Grip,
+  "Área total": Maximize2,
   // Tempo
-  "Menos de 1 ano": "⏱️",
-  "1 a 3 anos": "📅",
-  "3 a 5 anos": "🗓️",
-  "Mais de 5 anos": "⏳",
+  "Menos de 1 ano": Timer,
+  "1 a 3 anos": Calendar,
+  "3 a 5 anos": CalendarDays,
+  "Mais de 5 anos": Hourglass,
   // Tratamentos
-  "Nunca fiz nada": "🚫",
-  "Minoxidil / remédios": "💊",
-  "Transplante capilar": "🏥",
-  "Micropigmentação": "🖋️",
-  "Outros tratamentos": "🧴",
+  "Nunca fiz nada": Ban,
+  "Minoxidil / remédios": Pill,
+  "Transplante capilar": Hospital,
+  "Micropigmentação": PenTool,
+  "Outros tratamentos": FlaskConical,
   // Expectativa
-  "Disfarçar a calvície no dia a dia": "🧢",
-  "Recuperar minha autoestima": "💪",
-  "Resultado natural e duradouro": "🌱",
-  "Solução rápida sem cirurgia": "⚡",
+  "Disfarçar a calvície no dia a dia": EyeOff,
+  "Recuperar minha autoestima": Smile,
+  "Resultado natural e duradouro": Sprout,
+  "Solução rápida sem cirurgia": Zap,
 };
 
 export default function FunnelChat() {
@@ -401,9 +409,10 @@ export default function FunnelChat() {
                     className="fn-option flex items-center gap-2.5 rounded-2xl px-4 py-3.5 text-sm text-left"
                     style={{ background: "var(--fn-surface)", color: "var(--fn-ink)" }}
                   >
-                    {OPTION_EMOJI[opt.label] && (
-                      <span className="text-xl leading-none flex-shrink-0" aria-hidden>{OPTION_EMOJI[opt.label]}</span>
-                    )}
+                    {(() => {
+                      const OptIcon = OPTION_ICON[opt.label];
+                      return OptIcon ? <OptIcon className="w-5 h-5 flex-shrink-0" style={{ color: "var(--fn-accent)" }} aria-hidden="true" /> : null;
+                    })()}
                     <span className="font-medium flex-1">{opt.label}</span>
                     <CaretRight className="w-4 h-4 flex-shrink-0" weight="bold" style={{ color: "var(--fn-accent)" }} />
                   </button>

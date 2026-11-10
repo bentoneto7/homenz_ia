@@ -4,10 +4,11 @@ import { useHomenzAuth } from "@/hooks/useHomenzAuth";
 import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard, Users, TrendingUp, Calendar, Settings,
-  LogOut, Menu, Bell, ChevronRight,
+  LogOut, Menu, Bell, ChevronRight, ArrowRight,
   Building2, BarChart3, Target, Award, Link2, BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LeadTemperatureIcon } from "@/components/icons/LeadTemperatureIcon";
 
 interface NavItem {
   label: string;
@@ -65,9 +66,9 @@ interface SidebarContentProps {
 // Sidebar definido FORA do HomenzLayout para evitar recriação a cada render
 function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout }: SidebarContentProps) {
   return (
-    <div className="flex flex-col h-full bg-white border-r border-[#E2E8F0]">
+    <div className="lg-glass-side flex flex-col h-full bg-white border-r border-[#E2E8F0]">
       {/* Logo */}
-      <div className="p-5 border-b border-[#E2E8F0]">
+      <div className="lg-divider p-5 border-b border-[#E2E8F0]">
         <Link href="/" onClick={onClose}>
           <div className="flex items-center gap-2.5 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-[#004A9D] flex items-center justify-center">
@@ -83,7 +84,7 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
 
       {/* User info */}
       {user && (
-        <div className="p-4 border-b border-[#E2E8F0]">
+        <div className="lg-divider p-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-[#004A9D] flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-bold">
@@ -114,7 +115,7 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
               <div
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all select-none ${
                   isActive
-                    ? "bg-[#EBF4FF] text-[#004A9D]"
+                    ? "lg-pill-active bg-[#EBF4FF] text-[#004A9D]"
                     : "text-[#5A667A] hover:text-[#0A2540] hover:bg-[#F0F4F8]"
                 }`}
               >
@@ -128,7 +129,7 @@ function SidebarContent({ navItems, location, user, roleInfo, onClose, onLogout 
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-[#E2E8F0]">
+      <div className="lg-divider p-3 border-t border-[#E2E8F0]">
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#5A667A] hover:text-red-500 hover:bg-red-50 transition-all group"
@@ -184,8 +185,8 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
     newLeads.forEach((lead) => {
       if (!notifiedIds.current.has(lead.id)) {
         notifiedIds.current.add(lead.id);
-        const heatEmoji = lead.temperature === "hot" ? "🔥" : lead.temperature === "warm" ? "🌡" : "🧊";
-        toast(`${heatEmoji} Novo lead atribuído!`, {
+        toast("Novo lead atribuído!", {
+          icon: <LeadTemperatureIcon temperature={lead.temperature} />,
           description: `${lead.name} — Score ${lead.lead_score ?? "—"}`,
           duration: 8000,
           action: {
@@ -231,7 +232,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] flex">
+    <div className="hz-shell min-h-screen bg-[#F0F4F8] flex">
       {/* Sidebar desktop — sempre visível em lg+ */}
       <div className="hidden lg:flex w-60 flex-shrink-0 flex-col sticky top-0 h-screen">
         <SidebarContent {...sidebarProps} />
@@ -253,7 +254,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 border-b border-[#E2E8F0] bg-white flex items-center px-4 gap-4 sticky top-0 z-10 shadow-sm">
+        <header className="lg-glass h-14 border-b border-[#E2E8F0] bg-white flex items-center px-4 gap-4 sticky top-0 z-10 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-[#5A667A] hover:text-[#0A2540] transition-colors"
@@ -282,7 +283,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
 
             {/* Dropdown de notificações */}
             {notifOpen && isSeller && (
-              <div className="absolute top-10 right-0 w-80 bg-white rounded-xl shadow-xl border border-[#E2E8F0] z-50 overflow-hidden">
+              <div className="lg-glass-pop absolute top-10 right-0 w-80 bg-white rounded-xl shadow-xl border border-[#E2E8F0] z-50 overflow-hidden">
                 <div className="p-3 border-b border-[#E2E8F0] flex items-center justify-between">
                   <span className="text-[#0A2540] font-semibold text-sm">Leads novos</span>
                   {newLeadsCount > 0 && (
@@ -298,16 +299,15 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
                 ) : (
                   <div className="max-h-72 overflow-y-auto divide-y divide-[#F0F4F8]">
                     {newLeadsList.map((lead) => {
-                      const heatEmoji = lead.temperature === "hot" ? "🔥" : lead.temperature === "warm" ? "🌡" : "🧊";
                       const timeAgo = Math.round((Date.now() - new Date(lead.created_at).getTime()) / 60000);
                       return (
                         <div key={lead.id} className="p-3 hover:bg-[#F8FAFC] transition-colors">
                           <div className="flex items-start gap-2">
-                            <span className="text-lg leading-none mt-0.5">{heatEmoji}</span>
+                            <LeadTemperatureIcon temperature={lead.temperature} className="w-4 h-4 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-[#0A2540] font-semibold text-sm truncate">{lead.name}</p>
                               <p className="text-[#5A667A] text-xs">{lead.phone}</p>
-                              <p className="text-[#C0CADB] text-xs mt-0.5">
+                              <p className="text-[#6B7A90] text-xs mt-0.5">
                                 {timeAgo < 1 ? "agora mesmo" : `há ${timeAgo} min`}
                                 {lead.lead_score ? ` · Score ${lead.lead_score}` : ""}
                               </p>
@@ -324,7 +324,7 @@ export default function HomenzLayout({ children, title }: HomenzLayoutProps) {
                     className="block text-center text-[#004A9D] text-xs font-semibold py-1.5 hover:bg-[#EBF4FF] rounded-lg transition-colors"
                     onClick={() => setNotifOpen(false)}
                   >
-                    Ver todos os leads →
+                    <span className="inline-flex items-center gap-1">Ver todos os leads <ArrowRight className="w-3 h-3" /></span>
                   </a>
                 </div>
               </div>

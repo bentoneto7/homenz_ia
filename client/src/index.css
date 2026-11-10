@@ -564,3 +564,138 @@
 @media (prefers-reduced-motion: reduce) {
   .funnel-theme .fn-rise { animation: fn-rise 0.01s both; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIQUID GLASS — painéis Homenz (rede, franqueado, vendedor)
+   Escopo: .hz-shell (HomenzLayout), só desktop (≥1024px).
+   Blur real apenas onde o conteúdo rola por baixo (sidebar, topbar, popovers,
+   modais). Cards usam o material sem backdrop-filter (custo zero no scroll).
+   Mobile e prefers-reduced-transparency: superfícies sólidas de sempre.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hz-shell {
+  --lg-tint: oklch(1 0 0 / 0.58);
+  --lg-tint-strong: oklch(1 0 0 / 0.74);
+  --lg-tint-card: oklch(1 0 0 / 0.66);
+  --lg-rim: oklch(1 0 0 / 0.85);
+  --lg-edge: oklch(0.42 0.06 250 / 0.14);
+  --lg-blur: blur(22px) saturate(1.8);
+  --lg-shadow: 0 1px 2px oklch(0.25 0.06 250 / 0.06), 0 12px 32px -12px oklch(0.25 0.08 250 / 0.18);
+  --lg-shadow-pop: 0 2px 6px oklch(0.25 0.06 250 / 0.08), 0 28px 60px -18px oklch(0.22 0.09 250 / 0.32);
+  --lg-specular: inset 0 1px 0 var(--lg-rim), inset 0 0 0 1px oklch(1 0 0 / 0.35), inset 0 -1px 0 oklch(0.42 0.06 250 / 0.06);
+}
+
+@media (min-width: 1024px) {
+  /* Campo de luz por trás do vidro: navy e teal Homenz, bem diluídos. */
+  .hz-shell {
+    background-color: oklch(0.955 0.012 245);
+    background-image:
+      radial-gradient(60rem 40rem at 8% -10%, oklch(0.62 0.14 255 / 0.20), transparent 60%),
+      radial-gradient(48rem 36rem at 100% 12%, oklch(0.80 0.12 185 / 0.22), transparent 62%),
+      radial-gradient(56rem 42rem at 55% 115%, oklch(0.70 0.10 265 / 0.16), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  /* Barra: o vidro fica num pseudo-elemento para que popovers filhos possam
+     ter o próprio backdrop-filter (filtro aninhado não enxerga o conteúdo). */
+  .hz-shell .lg-glass {
+    background: transparent;
+    border-color: var(--lg-edge);
+    box-shadow: var(--lg-shadow);
+    isolation: isolate;
+  }
+  .hz-shell .lg-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--lg-tint);
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    box-shadow: inset 0 1px 0 var(--lg-rim);
+    pointer-events: none;
+  }
+  .hz-shell .lg-glass-pop {
+    background: var(--lg-tint-strong);
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border-color: oklch(1 0 0 / 0.70);
+    box-shadow: var(--lg-specular), var(--lg-shadow-pop);
+  }
+  /* Sidebar: vidro com reflexo vertical na borda direita */
+  .hz-shell .lg-glass-side {
+    background: linear-gradient(180deg, oklch(1 0 0 / 0.70), oklch(1 0 0 / 0.52));
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border-color: var(--lg-edge);
+    box-shadow: inset -1px 0 0 var(--lg-rim), 8px 0 32px -20px oklch(0.25 0.08 250 / 0.22);
+  }
+  .hz-shell .lg-glass-side .lg-divider { border-color: oklch(0.42 0.06 250 / 0.10); }
+
+  /* Item ativo da navegação: gota de vidro em relevo */
+  .hz-shell .lg-pill-active {
+    background: linear-gradient(180deg, oklch(1 0 0 / 0.95), oklch(0.97 0.015 250 / 0.85));
+    box-shadow: inset 0 1px 0 oklch(1 0 0), 0 0 0 1px oklch(0.42 0.10 255 / 0.12), 0 4px 12px -4px oklch(0.40 0.17 255 / 0.30);
+  }
+
+  /* Cards do conteúdo: material de vidro sem blur (performance no scroll). */
+  .hz-shell main .bg-white:is(.rounded-xl, .rounded-2xl, .rounded-3xl):not(.lg-solid) {
+    background-color: var(--lg-tint-card);
+    border-color: oklch(1 0 0 / 0.70);
+    box-shadow: var(--lg-specular), var(--lg-shadow);
+  }
+  /* Chips e botões claros: só o material, sem sombra de card. */
+  .hz-shell main .bg-white.border:not(.rounded-xl, .rounded-2xl, .rounded-3xl, .lg-solid) {
+    background-color: oklch(1 0 0 / 0.72);
+    border-color: oklch(1 0 0 / 0.75);
+    box-shadow: inset 0 1px 0 var(--lg-rim);
+  }
+  /* Véu dos modais: navy diluído em vez de preto, para o vidro não turvar. */
+  .hz-shell .fixed.inset-0:is(.bg-black\/60, .bg-black\/50, .bg-black\/40) {
+    background-color: oklch(0.30 0.06 252 / 0.28);
+    -webkit-backdrop-filter: blur(6px) saturate(1.2);
+    backdrop-filter: blur(6px) saturate(1.2);
+  }
+  /* Modais e painéis sobre overlay: vidro completo. */
+  .hz-shell .fixed.inset-0 > :is(.bg-white, [class*="bg-white"]):not(.lg-solid) {
+    background-color: var(--lg-tint-strong);
+    -webkit-backdrop-filter: var(--lg-blur);
+    backdrop-filter: var(--lg-blur);
+    border: 1px solid oklch(1 0 0 / 0.70);
+    box-shadow: var(--lg-specular), var(--lg-shadow-pop);
+  }
+  /* Campos dentro do vidro: leitura sólida */
+  .hz-shell main :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    background-color: oklch(1 0 0 / 0.82);
+  }
+
+  /* Superfícies de navegador no tema do painel */
+  .hz-shell ::selection { background: oklch(0.72 0.135 185 / 0.30); color: #0A2540; }
+  .hz-shell *::-webkit-scrollbar { width: 10px; height: 10px; }
+  .hz-shell *::-webkit-scrollbar-track { background: transparent; }
+  .hz-shell *::-webkit-scrollbar-thumb {
+    background: oklch(0.42 0.06 250 / 0.22);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  .hz-shell *::-webkit-scrollbar-thumb:hover { background-color: oklch(0.42 0.06 250 / 0.38); }
+}
+
+/* Sem suporte a backdrop-filter: mantém leitura com fundo mais opaco. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hz-shell { --lg-tint: oklch(1 0 0 / 0.94); --lg-tint-strong: oklch(1 0 0 / 0.97); }
+  .hz-shell .lg-glass-side { background: oklch(1 0 0 / 0.95); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hz-shell { background-image: none; }
+  .hz-shell .lg-glass::before,
+  .hz-shell .lg-glass-pop,
+  .hz-shell .lg-glass-side,
+  .hz-shell main .bg-white,
+  .hz-shell .fixed.inset-0 > [class*="bg-white"] {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

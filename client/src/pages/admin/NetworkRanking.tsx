@@ -92,7 +92,7 @@ export default function NetworkRanking() {
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Trophy className="w-6 h-6 text-yellow-500" />
               </div>
-              <div className="text-xs text-yellow-600 font-bold mb-1">🏆 1º lugar</div>
+              <div className="text-xs text-yellow-600 font-bold mb-1">1º lugar</div>
               <div className="text-sm font-bold text-gray-900 truncate">{ranking[0]?.clinicName}</div>
               <div className="text-xs text-gray-500">{ranking[0]?.city}</div>
               <div className="text-3xl font-black text-yellow-600 mt-2">{ranking[0]?.totalScore.toFixed(0)}</div>

@@ -15,6 +15,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Sun, Camera, Crosshair, Warning, CaretRight, Sparkle, CalendarCheck, Clock } from "@phosphor-icons/react";
+import {
+  TrendingDown, CircleAlert, Feather, ScanFace, CircleDashed,
+  ArrowUp, ArrowUpToLine, MoveHorizontal, Grip, Maximize2,
+  Timer, Calendar, CalendarDays, Hourglass,
+  Ban, Pill, Hospital, PenTool, FlaskConical,
+  EyeOff, Smile, Sprout, Zap, Check,
+  type LucideIcon,
+} from "lucide-react";
 import FranchiseLandingView from "./funnel/FranchiseLandingView";
 import FunnelWordmark from "./funnel/FunnelWordmark";
 import { resolveLandingContent } from "./funnel/landingContent";
@@ -55,7 +63,7 @@ interface LeadData {
 const CHAT_FLOW = [
   {
     id: "age",
-    text: "E aí! 👋 Sou o assistente da Homenz.\n\nVou fazer algumas perguntas rápidas pra montar seu diagnóstico capilar personalizado. Leva menos de 2 minutos. 🚀\n\nPra começar: qual é a sua idade?",
+    text: "E aí! Sou o assistente da Homenz.\n\nVou fazer algumas perguntas rápidas pra montar seu diagnóstico capilar personalizado. Leva menos de 2 minutos.\n\nPra começar: qual é a sua idade?",
     type: "input-age" as const,
   },
   {
@@ -123,14 +131,14 @@ const CHAT_FLOW = [
   },
   {
     id: "photo",
-    text: "Perfeito! Pra fechar seu diagnóstico, me envia uma foto da área que mais te preocupa.\n\nPode ser uma selfie do topo ou da frente da cabeça. 📸",
+    text: "Perfeito! Pra fechar seu diagnóstico, me envia uma foto da área que mais te preocupa.\n\nPode ser uma selfie do topo ou da frente da cabeça.",
     type: "photo-upload" as const,
   },
 ];
 
 // Microrreforços entre perguntas — dão a sensação de conversa (igual ao original)
 const REINFORCEMENTS = [
-  "Anotado! ✅",
+  "Anotado!",
   "Boa!",
   "Entendido!",
   "Show!",
@@ -138,36 +146,36 @@ const REINFORCEMENTS = [
   "Isso ajuda muito!",
 ];
 
-// Emoji por opção (só visual — o valor salvo do lead continua limpo)
-const OPTION_EMOJI: Record<string, string> = {
+// Ícone por opção (só visual — o valor salvo do lead continua limpo)
+const OPTION_ICON: Record<string, LucideIcon> = {
   // Problema
-  "Queda progressiva": "😟",
-  "Calvície avançada": "😣",
-  "Cabelo fino / rarefeito": "😬",
-  "Entradas na testa": "🙂",
-  "Falhas no couro cabeludo": "😕",
+  "Queda progressiva": TrendingDown,
+  "Calvície avançada": CircleAlert,
+  "Cabelo fino / rarefeito": Feather,
+  "Entradas na testa": ScanFace,
+  "Falhas no couro cabeludo": CircleDashed,
   // Região
-  "Frente / testa": "🔼",
-  "Topo da cabeça": "🔝",
-  "Laterais (entradas)": "↔️",
-  "Espalhado pela cabeça": "🌐",
-  "Área toda": "😰",
+  "Frente / testa": ArrowUp,
+  "Topo da cabeça": ArrowUpToLine,
+  "Laterais (entradas)": MoveHorizontal,
+  "Espalhado pela cabeça": Grip,
+  "Área toda": Maximize2,
   // Tempo
-  "Menos de 1 ano": "⏱️",
-  "1 a 3 anos": "📅",
-  "3 a 5 anos": "🗓️",
-  "Mais de 5 anos": "⏳",
+  "Menos de 1 ano": Timer,
+  "1 a 3 anos": Calendar,
+  "3 a 5 anos": CalendarDays,
+  "Mais de 5 anos": Hourglass,
   // Tratamentos anteriores
-  "Nunca fiz nada": "🚫",
-  "Minoxidil / remédios": "💊",
-  "Transplante capilar": "🏥",
-  "Micropigmentação": "🖋️",
-  "Outros tratamentos": "🧴",
+  "Nunca fiz nada": Ban,
+  "Minoxidil / remédios": Pill,
+  "Transplante capilar": Hospital,
+  "Micropigmentação": PenTool,
+  "Outros tratamentos": FlaskConical,
   // Expectativa
-  "Disfarçar a calvície no dia a dia": "🧢",
-  "Recuperar minha autoestima": "💪",
-  "Resultado natural e duradouro": "🌱",
-  "Solução rápida sem cirurgia": "⚡",
+  "Disfarçar a calvície no dia a dia": EyeOff,
+  "Recuperar minha autoestima": Smile,
+  "Resultado natural e duradouro": Sprout,
+  "Solução rápida sem cirurgia": Zap,
 };
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
@@ -1161,7 +1169,10 @@ export default function FranchiseLanding() {
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--fn-line-strong)"; e.currentTarget.style.boxShadow = "0 2px 10px -6px oklch(0.25 0.04 258 / 0.25)"; }}
                     >
                       <span className="flex items-center gap-2.5 min-w-0">
-                        {OPTION_EMOJI[opt] && <span className="text-base flex-shrink-0 leading-none">{OPTION_EMOJI[opt]}</span>}
+                        {(() => {
+                          const OptIcon = OPTION_ICON[opt];
+                          return OptIcon ? <OptIcon className="w-4 h-4 flex-shrink-0" style={{ color: "var(--fn-accent)" }} aria-hidden="true" /> : null;
+                        })()}
                         <span className="truncate">{opt}</span>
                       </span>
                       <CaretRight weight="bold" className="w-4 h-4 flex-shrink-0 opacity-30 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5" style={{ color: "var(--fn-accent)" }} />
@@ -1217,7 +1228,7 @@ export default function FranchiseLanding() {
                         )}
                         {!isUploading && (
                           <div className="absolute top-2 right-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}>✓ Pronta</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--fn-accent)", color: "var(--fn-accent-ink)" }}><Check className="w-3 h-3 inline-block align-[-2px] mr-0.5" strokeWidth={3} aria-hidden="true" />Pronta</span>
                           </div>
                         )}
                       </div>

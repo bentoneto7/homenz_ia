@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckCircle, ClipboardList, TrendingUp, Users, Calendar, Camera, Brain, Smile, AlertCircle, ChevronRight, ChevronLeft, Star } from "lucide-react";
+import { CheckCircle, ClipboardList, TrendingUp, Users, Calendar, Camera, Brain, Smile, AlertCircle, ChevronRight, ChevronLeft, Star, Target, PartyPopper, Lightbulb, ThumbsUp, TriangleAlert, Frown, Meh, Laugh, Rocket } from "lucide-react";
 
 type Step = {
   id: string;
@@ -45,7 +45,7 @@ export default function DailyCheckin() {
   const submitCheckin = trpc.health.submitCheckin.useMutation({
     onSuccess: () => {
       setSubmitted(true);
-      toast.success("Check-in enviado! Ótimo trabalho hoje 🎯");
+      toast.success("Check-in enviado! Ótimo trabalho hoje", { icon: <Target className="w-4 h-4" aria-hidden="true" /> });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -95,7 +95,7 @@ export default function DailyCheckin() {
           <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <CheckCircle className="w-12 h-12 text-[#0A2540]" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Check-in enviado! 🎉</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">Check-in enviado! <PartyPopper className="w-7 h-7 text-amber-500" aria-hidden="true" /></h1>
           <p className="text-gray-500 mb-2">Seus dados foram registrados e o health score da clínica foi atualizado.</p>
           <p className="text-sm text-gray-400 mb-8">Consistência é o segredo do sucesso. Volte amanhã!</p>
           <div className="grid grid-cols-3 gap-4 mb-8">
@@ -177,7 +177,7 @@ export default function DailyCheckin() {
             {currentStep === 1 && (
               <>
                 <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-2">
-                  <p className="text-sm text-purple-800 font-medium">💡 Dica de conversão</p>
+                  <p className="text-sm text-purple-800 font-medium flex items-center gap-1.5"><Lightbulb className="w-4 h-4" aria-hidden="true" /> Dica de conversão</p>
                   <p className="text-xs text-purple-600 mt-1">Leads que completam o diagnóstico 3D têm <strong>3x mais chance</strong> de agendar. Incentive sempre!</p>
                 </div>
                 <NumberField label="Quantos leads enviaram as fotos?" hint="Completaram a etapa de captura de fotos no funil" value={form.leadsWithPhotosToday} onChange={v => setField("leadsWithPhotosToday", v)} />
@@ -196,7 +196,14 @@ export default function DailyCheckin() {
                   <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                     <p className="text-xs text-green-700">
                       Taxa de comparecimento: <strong>{Math.round(form.appointmentsAttendedToday / (form.appointmentsAttendedToday + form.appointmentsNoShowToday) * 100)}%</strong>
-                      {form.appointmentsAttendedToday / (form.appointmentsAttendedToday + form.appointmentsNoShowToday) >= 0.8 ? " 🎉 Excelente!" : form.appointmentsAttendedToday / (form.appointmentsAttendedToday + form.appointmentsNoShowToday) >= 0.6 ? " 👍 Bom" : " ⚠️ Precisa melhorar"}
+                      {" "}
+                      {form.appointmentsAttendedToday / (form.appointmentsAttendedToday + form.appointmentsNoShowToday) >= 0.8 ? (
+                        <span className="inline-flex items-center gap-1 align-middle"><PartyPopper className="w-3.5 h-3.5" aria-hidden="true" /> Excelente!</span>
+                      ) : form.appointmentsAttendedToday / (form.appointmentsAttendedToday + form.appointmentsNoShowToday) >= 0.6 ? (
+                        <span className="inline-flex items-center gap-1 align-middle"><ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" /> Bom</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 align-middle"><TriangleAlert className="w-3.5 h-3.5" aria-hidden="true" /> Precisa melhorar</span>
+                      )}
                     </p>
                   </div>
                 )}
@@ -248,11 +255,11 @@ export default function DailyCheckin() {
                   <label className="block text-sm font-semibold text-gray-800 mb-4">Como está o clima da equipe hoje?</label>
                   <div className="flex gap-3 justify-center">
                     {[
-                      { score: 1, emoji: "😞", label: "Difícil" },
-                      { score: 2, emoji: "😐", label: "Regular" },
-                      { score: 3, emoji: "🙂", label: "Bom" },
-                      { score: 4, emoji: "😊", label: "Ótimo" },
-                      { score: 5, emoji: "🚀", label: "Incrível" },
+                      { score: 1, icon: Frown, label: "Difícil" },
+                      { score: 2, icon: Meh, label: "Regular" },
+                      { score: 3, icon: Smile, label: "Bom" },
+                      { score: 4, icon: Laugh, label: "Ótimo" },
+                      { score: 5, icon: Rocket, label: "Incrível" },
                     ].map(item => (
                       <button
                         key={item.score}
@@ -263,7 +270,7 @@ export default function DailyCheckin() {
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <span className="text-3xl">{item.emoji}</span>
+                        <item.icon className={`w-8 h-8 ${form.teamMoodScore === item.score ? "text-amber-500" : "text-gray-500"}`} aria-hidden="true" />
                         <span className="text-xs text-gray-600 font-medium">{item.label}</span>
                       </button>
                     ))}
@@ -321,7 +328,7 @@ export default function DailyCheckin() {
               disabled={submitCheckin.isPending}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-[#0A2540] font-semibold"
             >
-              {submitCheckin.isPending ? "Enviando..." : "Enviar Check-in 🎯"}
+              {submitCheckin.isPending ? "Enviando..." : <>Enviar Check-in <Target className="w-4 h-4 ml-1" aria-hidden="true" /></>}
             </Button>
           )}
         </div>

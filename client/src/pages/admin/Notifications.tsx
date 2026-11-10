@@ -4,13 +4,16 @@ import { useLocation } from "wouter";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Bell, ArrowLeft, CheckCheck } from "lucide-react";
+import {
+  Bell, ArrowLeft, CheckCheck, User, MessageCircle, Camera, Bot, CalendarDays,
+  CircleCheck, CircleX, AlarmClock, Pill, Star, type LucideIcon,
+} from "lucide-react";
 
-const TYPE_ICONS: Record<string, string> = {
-  new_lead: "👤", chat_completed: "💬", photos_uploaded: "📷",
-  ai_ready: "🤖", appointment_new: "📅", appointment_confirmed: "✅",
-  appointment_cancelled: "❌", appointment_reminder: "⏰",
-  treatment_followup: "💊", nps_request: "⭐",
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  new_lead: User, chat_completed: MessageCircle, photos_uploaded: Camera,
+  ai_ready: Bot, appointment_new: CalendarDays, appointment_confirmed: CircleCheck,
+  appointment_cancelled: CircleX, appointment_reminder: AlarmClock,
+  treatment_followup: Pill, nps_request: Star,
 };
 
 export default function AdminNotifications() {
@@ -87,8 +90,11 @@ export default function AdminNotifications() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-lg flex-shrink-0">
-                    {TYPE_ICONS[notif.type] ?? "🔔"}
+                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
+                    {(() => {
+                      const TypeIcon = TYPE_ICONS[notif.type] ?? Bell;
+                      return <TypeIcon className="w-4 h-4" aria-hidden="true" />;
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">

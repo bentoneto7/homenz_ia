@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { Scissors, BarChart3, Calendar, Bell, Users, Zap, ChevronRight, Star } from "lucide-react";
+import { Scissors, BarChart3, Calendar, Bell, Users, Zap, ChevronRight, Star, Smartphone, MessageCircle, Camera, Brain } from "lucide-react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -104,15 +104,15 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { step: "01", title: "Landing Page", desc: "Captura nome e WhatsApp com UTMs automáticos", icon: "📱" },
-              { step: "02", title: "Chat TypeBot", desc: "Diagnóstico conversacional guiado", icon: "💬" },
-              { step: "03", title: "Fotos 360°", desc: "Câmera do celular com marcação de pontos", icon: "📸" },
-              { step: "04", title: "Análise IA", desc: "Visualização 3D do resultado + score", icon: "🧠" },
-              { step: "05", title: "Agendamento", desc: "Calendário integrado + confirmação automática", icon: "📅" },
+              { step: "01", title: "Landing Page", desc: "Captura nome e WhatsApp com UTMs automáticos", icon: Smartphone },
+              { step: "02", title: "Chat TypeBot", desc: "Diagnóstico conversacional guiado", icon: MessageCircle },
+              { step: "03", title: "Fotos 360°", desc: "Câmera do celular com marcação de pontos", icon: Camera },
+              { step: "04", title: "Análise IA", desc: "Visualização 3D do resultado + score", icon: Brain },
+              { step: "05", title: "Agendamento", desc: "Calendário integrado + confirmação automática", icon: Calendar },
             ].map((item) => (
               <div key={item.step} className="relative">
                 <div className="bg-card border border-border rounded-xl p-4 text-center h-full">
-                  <div className="text-3xl mb-3">{item.icon}</div>
+                  <div className="mb-3 flex justify-center"><item.icon className="w-7 h-7 text-primary" aria-hidden="true" /></div>
                   <div className="text-xs font-mono text-primary mb-1">{item.step}</div>
                   <div className="font-semibold text-sm mb-1">{item.title}</div>
                   <div className="text-xs text-muted-foreground">{item.desc}</div>

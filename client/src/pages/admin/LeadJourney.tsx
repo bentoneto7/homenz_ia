@@ -67,7 +67,7 @@ function TemperatureBadge({ temp }: { temp: ReturnType<typeof getLeadTemperature
   return (
     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${cfg.bgColor} ${cfg.borderColor}`}>
       <TemperatureIcon className={`w-4 h-4 ${cfg.color} ${temp === "hot" ? "animate-pulse" : ""}`} />
-      <span className={`text-sm font-bold ${cfg.color}`}>{cfg.emoji} {cfg.label}</span>
+      <span className={`text-sm font-bold ${cfg.color}`}>{cfg.label}</span>
     </div>
   );
 }
